@@ -66,6 +66,9 @@ keystore.properties
 google-services.json
 firebase_options.dart
 
+# Database credentials - NUNCA commitear!
+lib/core/database/database_config.dart
+
 # Database credentials (keeping structure but not credentials)
 database/credentials.json
 database/*.backup

@@ -4,6 +4,7 @@ import '../../../core/utils/formatters.dart';
 import 'controllers/vendas_controller.dart';
 import 'widgets/dialog_pesquisa_produto.dart';
 import 'views/tela_devedores.dart';
+import '../caixa/views/tela_fecho_caixa.dart';
 
 class VendasPage extends StatelessWidget {
   final VendasController controller = Get.put(VendasController());
@@ -23,6 +24,22 @@ class VendasPage extends StatelessWidget {
               label: Text('DESPESAS', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+            ),
+          ),
+          // Botão FECHO DE CAIXA
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Get.to(() => TelaFechoCaixa());
+              },
+              icon: Icon(Icons.point_of_sale, size: 20),
+              label: Text('FECHO CAIXA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple[700],
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),

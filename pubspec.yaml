@@ -26,6 +26,9 @@ dependencies:
   intl: ^0.18.1
   cupertino_icons: ^1.0.8
 
+  # Armazenamento local
+  shared_preferences: ^2.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

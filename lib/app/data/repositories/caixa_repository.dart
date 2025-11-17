@@ -3,6 +3,7 @@ import 'package:postgres/postgres.dart';
 import '../../../core/database/database_service.dart';
 import '../models/caixa_model.dart';
 import '../models/caixa_detalhe_model.dart';
+import '../models/conferencia_model.dart';
 
 class CaixaRepository {
   final DatabaseService _db = Get.find<DatabaseService>();
@@ -30,14 +31,33 @@ class CaixaRepository {
   }) async {
     try {
       final result = await _db.query(
-        'SELECT abrir_caixa(@terminal, @usuario)',
+        'SELECT abrir_caixa(@terminal, @usuario) as caixa_id',
         parameters: {
           'terminal': terminal,
           'usuario': usuario,
         },
       );
 
-      return result.first[0] as int;
+      if (result.isEmpty) {
+        throw Exception('Nenhum resultado retornado ao abrir caixa');
+      }
+
+      final row = result.first;
+
+      // Tentar acessar por nome da coluna
+      if (row.containsKey('caixa_id')) {
+        return int.parse(row['caixa_id'].toString());
+      }
+
+      // Tentar acessar o primeiro valor
+      if (row.values.isNotEmpty) {
+        final valor = row.values.first;
+        if (valor != null) {
+          return int.parse(valor.toString());
+        }
+      }
+
+      throw Exception('Não foi possível extrair o ID do caixa do resultado');
     } catch (e) {
       print('Erro ao abrir caixa: $e');
       rethrow;
@@ -227,6 +247,73 @@ class CaixaRepository {
       return result.map((map) => ProdutoVendidoDetalhe.fromMap(map)).toList();
     } catch (e) {
       print('Erro ao buscar produtos vendidos detalhados: $e');
+      rethrow;
+    }
+  }
+
+  /// Registrar conferência manual do caixa (FASE 1)
+  Future<int> registrarConferencia({
+    required int caixaId,
+    required double contadoCash,
+    required double contadoEmola,
+    required double contadoMpesa,
+    required double contadoPos,
+    String? observacoes,
+  }) async {
+    try {
+      final result = await _db.query(
+        'SELECT registrar_conferencia_caixa(@caixa_id, @contado_cash, @contado_emola, @contado_mpesa, @contado_pos, @observacoes) as conferencia_id',
+        parameters: {
+          'caixa_id': caixaId,
+          'contado_cash': contadoCash,
+          'contado_emola': contadoEmola,
+          'contado_mpesa': contadoMpesa,
+          'contado_pos': contadoPos,
+          'observacoes': observacoes,
+        },
+      );
+
+      if (result.isEmpty) {
+        throw Exception('Nenhum resultado retornado ao registrar conferência');
+      }
+
+      final row = result.first;
+
+      // Tentar acessar por nome da coluna
+      if (row.containsKey('conferencia_id')) {
+        return int.parse(row['conferencia_id'].toString());
+      }
+
+      // Tentar acessar o primeiro valor
+      if (row.values.isNotEmpty) {
+        final valor = row.values.first;
+        if (valor != null) {
+          return int.parse(valor.toString());
+        }
+      }
+
+      throw Exception('Não foi possível extrair o ID da conferência do resultado');
+    } catch (e) {
+      print('Erro ao registrar conferência: $e');
+      rethrow;
+    }
+  }
+
+  /// Buscar conferência do caixa (FASE 1)
+  Future<ConferenciaModel?> buscarConferencia(int caixaId) async {
+    try {
+      final result = await _db.query(
+        'SELECT * FROM conferencias_caixa WHERE caixa_id = @caixa_id ORDER BY created_at DESC LIMIT 1',
+        parameters: {'caixa_id': caixaId},
+      );
+
+      if (result.isEmpty) {
+        return null;
+      }
+
+      return ConferenciaModel.fromMap(result.first);
+    } catch (e) {
+      print('Erro ao buscar conferência: $e');
       rethrow;
     }
   }

@@ -6,12 +6,13 @@ import '../../app/data/models/venda_model.dart';
 import '../../app/data/models/item_venda_model.dart';
 import '../../app/data/models/empresa_model.dart';
 import '../../app/data/models/pagamento_venda_model.dart';
+import '../config/print_layout_config.dart';
 
 class WindowsPrinterService {
   // Nome da impressora configurada no Windows
   static const String printerName = 'balcao';
 
-  /// Imprimir cupom de venda na impressora Windows
+  /// Imprimir recibo de venda na impressora Windows
   static Future<bool> imprimirCupom(
     VendaModel venda,
     List<ItemVendaModel> itens,
@@ -38,15 +39,15 @@ class WindowsPrinterService {
         onLayout: (format) => pdf.save(),
       );
 
-      print('✅ Cupom impresso com sucesso na impressora: $printerName');
+      print('✅ Recibo impresso com sucesso na impressora: $printerName');
       return true;
     } catch (e) {
-      print('❌ Erro ao imprimir cupom: $e');
+      print('❌ Erro ao imprimir recibo: $e');
       return false;
     }
   }
 
-  /// Gerar PDF do cupom
+  /// Gerar PDF do recibo (Layout compacto baseado em recibo térmico)
   static Future<pw.Document> _gerarCupomPDF(
     VendaModel venda,
     List<ItemVendaModel> itens,
@@ -55,216 +56,230 @@ class WindowsPrinterService {
   ) async {
     final pdf = pw.Document();
 
+    // Calcular valores (DEFAULT - serão substituídos pelos reais futuramente)
+    final subtotal = venda.total;
+    final taxaIVA = PrintLayoutConfig.taxaIVAPadrao;
+    final valorIVA = subtotal * taxaIVA; // TODO: Usar valor real do banco quando implementado
+    final desconto = PrintLayoutConfig.descontoPadrao; // TODO: Usar valor real do banco quando implementado
+    final valorAPagar = subtotal; // Subtotal já inclui IVA no sistema atual
+
+    // Calcular total pago e troco
+    final totalPago = pagamentos?.fold(0.0, (sum, p) => sum + p.valor) ?? 0.0;
+    final troco = totalPago > valorAPagar ? totalPago - valorAPagar : 0.0;
+
+    // Gerar CONTA DE REFERENCIA (DEFAULT - número aleatório baseado na venda)
+    final contaReferencia = '${DateTime.now().millisecondsSinceEpoch % 1000000}';
+
+    // Operador e Setor (DEFAULT)
+    final operador = venda.terminal ?? PrintLayoutConfig.operadorPadrao; // TODO: Usar operador real do banco
+    final setor = PrintLayoutConfig.setorPadrao; // TODO: Usar setor real do banco
+
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.roll80, // Papel 80mm
+        pageFormat: PrintLayoutConfig.formatoPapel,
         build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // CABEÇALHO COM DADOS DA EMPRESA
-              pw.Center(
-                child: pw.Column(
-                  children: [
-                    if (empresa != null) ...[
+              // ========== CABEÇALHO - DADOS DA EMPRESA ==========
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  if (empresa != null) ...[
+                    pw.Text(
+                      empresa.nome.toUpperCase(),
+                      style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteTituloPrincipal),
+                    ),
+                    if (empresa.endereco != null && empresa.endereco!.isNotEmpty) ...[
+                      pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
                       pw.Text(
-                        empresa.nome,
-                        style: pw.TextStyle(
-                          fontSize: 18,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                      if (empresa.nuit != null && empresa.nuit!.isNotEmpty) ...[
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          'NUIT: ${empresa.nuit}',
-                          style: pw.TextStyle(fontSize: 9),
-                        ),
-                      ],
-                      if (empresa.endereco != null && empresa.endereco!.isNotEmpty) ...[
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          empresa.endereco!,
-                          style: pw.TextStyle(fontSize: 9),
-                        ),
-                      ],
-                      if (empresa.cidade != null && empresa.cidade!.isNotEmpty) ...[
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          empresa.cidade!,
-                          style: pw.TextStyle(fontSize: 9),
-                        ),
-                      ],
-                      if (empresa.contacto != null && empresa.contacto!.isNotEmpty) ...[
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          'Tel: ${empresa.contacto}',
-                          style: pw.TextStyle(fontSize: 9),
-                        ),
-                      ],
-                      if (empresa.email != null && empresa.email!.isNotEmpty) ...[
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          empresa.email!,
-                          style: pw.TextStyle(fontSize: 8),
-                        ),
-                      ],
-                    ] else ...[
-                      pw.Text(
-                        'SISTEMA PDV',
-                        style: pw.TextStyle(
-                          fontSize: 18,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
+                        empresa.endereco!.toUpperCase(),
+                        style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
                       ),
                     ],
+                    if (empresa.contacto != null && empresa.contacto!.isNotEmpty) ...[
+                      pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+                      pw.Text(
+                        'TELEFONE(S):${empresa.contacto}',
+                        style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+                      ),
+                    ],
+                    if (empresa.nuit != null && empresa.nuit!.isNotEmpty) ...[
+                      pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+                      pw.Text(
+                        'NUIT: ${empresa.nuit}',
+                        style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+                      ),
+                    ],
+                    if (empresa.cidade != null && empresa.cidade!.isNotEmpty) ...[
+                      pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+                      pw.Text(
+                        empresa.cidade!.toUpperCase(),
+                        style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+                      ),
+                    ],
+                  ] else ...[
+                    pw.Text(
+                      'SISTEMA PDV',
+                      style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteTituloPrincipal),
+                    ),
                   ],
+                ],
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoAposTitulo),
+
+              // NÚMERO DA VENDA (centralizado)
+              pw.Center(
+                child: pw.Text(
+                  'VENDA Nº: ${venda.numero}',
+                  style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
                 ),
               ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
 
-              // INFORMAÇÕES DA VENDA
-              _buildInfoRow('Cupom:', venda.numero),
-              _buildInfoRow(
-                'Data:',
-                DateFormat('dd/MM/yyyy HH:mm').format(venda.dataVenda),
+              // CLIENTE (placeholder - será implementado futuramente)
+              pw.Text(
+                'CLIENTE:',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
               ),
-              _buildInfoRow('Terminal:', venda.terminal ?? 'CAIXA-01'),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
 
-              // CABEÇALHO DOS ITENS
+              // ========== LINHA PONTILHADA ==========
+              _buildLinhaPontilhada(),
+              pw.SizedBox(height: PrintLayoutConfig.espacoAposDivisor),
+
+              // ========== CABEÇALHO DA TABELA ==========
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Expanded(
-                    flex: 3,
-                    child: pw.Text(
-                      'Item',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    ),
+                    flex: 4,
+                    child: pw.Text('PRODUTO', style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena)),
                   ),
-                  pw.Expanded(
-                    flex: 1,
-                    child: pw.Text(
-                      'Qtd',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                      textAlign: pw.TextAlign.right,
-                    ),
+                  pw.Container(
+                    width: 40,
+                    child: pw.Text('QUANT', style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena), textAlign: pw.TextAlign.center),
                   ),
-                  pw.Expanded(
-                    flex: 2,
-                    child: pw.Text(
-                      'Valor',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                      textAlign: pw.TextAlign.right,
-                    ),
+                  pw.Container(
+                    width: 60,
+                    child: pw.Text('SUBTOTAL', style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena), textAlign: pw.TextAlign.right),
                   ),
                 ],
               ),
-              pw.Divider(height: 2),
-              pw.SizedBox(height: 8),
+              _buildLinhaPontilhada(),
 
-              // ITENS
-              ...itens.map((item) => _buildItemRow(item)),
+              // ========== ITENS DA VENDA ==========
+              ...itens.map((item) => _buildItemRowCompacto(item)),
 
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
+              _buildLinhaPontilhada(),
+              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
 
-              // TOTAL
+              // ========== IVA (16%) - DEFAULT ==========
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text(
-                    'TOTAL:',
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                  pw.Text(
-                    _formatarValor(venda.total),
-                    style: pw.TextStyle(
-                      fontSize: 16,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
+                  pw.Text('TVA (${(taxaIVA * 100).toInt()}%)', style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                  pw.Text(_formatarValorSimples(valorIVA), style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
                 ],
               ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
 
-              pw.SizedBox(height: 15),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
+              // ========== DESCONTO - DEFAULT ==========
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('DESCONTO', style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                  pw.Text(_formatarValorSimples(desconto), style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                ],
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
 
-              // FORMAS DE PAGAMENTO
+              // ========== VALOR A PAGAR ==========
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('VALOR A PAGAR', style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                  pw.Text(_formatarValorSimples(valorAPagar), style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                ],
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
+
+              // ========== FORMA DE PAGAMENTO ==========
               if (pagamentos != null && pagamentos.isNotEmpty) ...[
-                pw.Text(
-                  'FORMAS DE PAGAMENTO:',
-                  style: pw.TextStyle(
-                    fontSize: 12,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 8),
-                ...pagamentos.map((pagamento) => pw.Padding(
-                  padding: pw.EdgeInsets.symmetric(vertical: 2),
-                  child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        pagamento.formaPagamentoNome ?? 'Pagamento',
-                        style: pw.TextStyle(fontSize: 10),
-                      ),
-                      pw.Text(
-                        _formatarValor(pagamento.valor),
-                        style: pw.TextStyle(
-                          fontSize: 10,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                ...pagamentos.map((pagamento) => pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      'PAGO  ${pagamento.formaPagamentoNome?.toUpperCase() ?? 'CASH'}',
+                      style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal),
+                    ),
+                    pw.Text(
+                      _formatarValorSimples(pagamento.valor),
+                      style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal),
+                    ),
+                  ],
                 )),
-                pw.SizedBox(height: 10),
-                pw.Divider(),
-                pw.SizedBox(height: 10),
               ],
 
-              // RODAPÉ
-              pw.Center(
-                child: pw.Column(
-                  children: [
-                    pw.Text(
-                      'Obrigado pela preferência!',
-                      style: pw.TextStyle(fontSize: 11),
-                    ),
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      'Volte sempre!',
-                      style: pw.TextStyle(
-                        fontSize: 12,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                    pw.SizedBox(height: 8),
-                    if (empresa != null)
-                      pw.Text(
-                        empresa.nome,
-                        style: pw.TextStyle(fontSize: 8),
-                      )
-                    else
-                      pw.Text(
-                        'Sistema PDV',
-                        style: pw.TextStyle(fontSize: 8),
-                      ),
-                  ],
-                ),
+              _buildLinhaPontilhada(),
+              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
+
+              // ========== TOTAL PAGO E TROCO ==========
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('TOTAL PAGO', style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                  pw.Text(_formatarValorSimples(totalPago), style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                ],
               ),
-              pw.SizedBox(height: 20),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('TROCO', style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                  pw.Text(_formatarValorSimples(troco), style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                ],
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreSecoes),
+
+              // ========== INFORMAÇÕES ADICIONAIS (RODAPÉ) ==========
+              pw.Text(
+                'CONTA DE REFERENCIA: $contaReferencia',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Text(
+                'CONTA CRIADA POR:    ${operador.toUpperCase()}', // TODO: Nome do operador real
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Text(
+                'CONTA CRIADA A:      ${DateFormat('dd-MM-yyyy HH:mm:ss').format(venda.dataVenda)}',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Text(
+                'DATA E HORA: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now())}',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Text(
+                'OPERADOR:    ${operador.toUpperCase()}',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Text(
+                'SECTOR: $setor',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoAntesRodape),
+
+              // ========== RODAPÉ FINAL ==========
+              pw.Text(
+                '/*${empresa?.nome.toUpperCase() ?? 'SISTEMA PDV'}*/',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              ),
+              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
             ],
           );
         },
@@ -274,64 +289,61 @@ class WindowsPrinterService {
     return pdf;
   }
 
-  /// Construir linha de informação
-  static pw.Widget _buildInfoRow(String label, String value) {
-    return pw.Padding(
-      padding: pw.EdgeInsets.symmetric(vertical: 2),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(
-            label,
-            style: pw.TextStyle(fontSize: 10),
-          ),
-          pw.Text(
-            value,
-            style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-          ),
-        ],
-      ),
+  /// Construir linha pontilhada (separador)
+  static pw.Widget _buildLinhaPontilhada() {
+    return pw.Text(
+      '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -',
+      style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
     );
   }
 
-  /// Construir linha de item
-  static pw.Widget _buildItemRow(ItemVendaModel item) {
-    return pw.Padding(
-      padding: pw.EdgeInsets.symmetric(vertical: 4),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            item.produtoNome ?? 'Produto',
-            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.SizedBox(height: 2),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                '${item.quantidade}x ${_formatarValor(item.precoUnitario)}',
-                style: pw.TextStyle(fontSize: 9),
+  /// Construir linha de item compacta (estilo térmico)
+  static pw.Widget _buildItemRowCompacto(ItemVendaModel item) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        // Nome do produto
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Expanded(
+              flex: 4,
+              child: pw.Text(
+                item.produtoNome?.toUpperCase() ?? 'PRODUTO',
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal),
               ),
-              pw.Text(
-                _formatarValor(item.subtotal),
-                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Container(
+              width: 40,
+              child: pw.Text(
+                item.quantidade.toStringAsFixed(2),
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+                textAlign: pw.TextAlign.center,
               ),
-            ],
-          ),
-          pw.SizedBox(height: 4),
-        ],
-      ),
+            ),
+            pw.Container(
+              width: 60,
+              child: pw.Text(
+                _formatarValorSimples(item.subtotal),
+                style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal),
+                textAlign: pw.TextAlign.right,
+              ),
+            ),
+          ],
+        ),
+        // Preço unitário e IVA
+        pw.Text(
+          '${_formatarValorSimples(item.precoUnitario)}/Un    ${(PrintLayoutConfig.taxaIVAPadrao * 100).toInt()}%',
+          style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+        ),
+        pw.SizedBox(height: PrintLayoutConfig.espacoEntreItens),
+      ],
     );
   }
 
-  /// Formatar valor em moeda
-  static String _formatarValor(double valor) {
-    return NumberFormat.currency(
-      locale: 'pt_MZ',
-      symbol: 'MT ',
-      decimalDigits: 2,
-    ).format(valor);
+  /// Formatar valor simples (sem símbolo de moeda)
+  static String _formatarValorSimples(double valor) {
+    return valor.toStringAsFixed(2);
   }
 
   /// Buscar impressora pelo nome
@@ -383,7 +395,7 @@ class WindowsPrinterService {
     }
   }
 
-  /// Visualizar cupom antes de imprimir (Preview)
+  /// Visualizar recibo antes de imprimir (Preview)
   static Future<void> visualizarCupom(
     VendaModel venda,
     List<ItemVendaModel> itens,
@@ -395,10 +407,10 @@ class WindowsPrinterService {
 
       await Printing.layoutPdf(
         onLayout: (format) => pdf.save(),
-        name: 'Cupom_${venda.numero}.pdf',
+        name: 'Recibo_${venda.numero}.pdf',
       );
     } catch (e) {
-      print('❌ Erro ao visualizar cupom: $e');
+      print('❌ Erro ao visualizar recibo: $e');
     }
   }
 

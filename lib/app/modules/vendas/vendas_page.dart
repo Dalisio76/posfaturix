@@ -5,6 +5,7 @@ import 'controllers/vendas_controller.dart';
 import 'widgets/dialog_pesquisa_produto.dart';
 import 'views/tela_devedores.dart';
 import '../caixa/views/tela_fecho_caixa.dart';
+import '../definicoes/definicoes_page.dart';
 
 class VendasPage extends StatelessWidget {
   final VendasController controller = Get.put(VendasController());
@@ -95,6 +96,15 @@ class VendasPage extends StatelessWidget {
             onPressed: controller.carregarDados,
             tooltip: 'Atualizar',
           ),
+          SizedBox(width: 4),
+          IconButton(
+            icon: Icon(Icons.settings, size: 24),
+            onPressed: () {
+              Get.to(() => DefinicoesPage());
+            },
+            tooltip: 'Definições',
+          ),
+          SizedBox(width: 8),
         ],
       ),
       body: Row(

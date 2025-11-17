@@ -16,8 +16,10 @@ import '../../../data/repositories/forma_pagamento_repository.dart';
 import '../../../data/repositories/empresa_repository.dart';
 import '../../../data/repositories/divida_repository.dart';
 import '../../../../core/utils/windows_printer_service.dart';
+import '../../../../core/services/definicoes_service.dart';
 import '../widgets/dialog_pagamento.dart';
 import '../widgets/dialog_despesas.dart';
+import '../../caixa/controllers/caixa_controller.dart';
 
 class ItemCarrinho {
   final ProdutoModel produto;
@@ -32,9 +34,13 @@ class VendasController extends GetxController {
   final FamiliaRepository _familiaRepo = FamiliaRepository();
   final ProdutoRepository _produtoRepo = ProdutoRepository();
   final VendaRepository _vendaRepo = VendaRepository();
-  final FormaPagamentoRepository _formaPagamentoRepo = FormaPagamentoRepository();
+  final FormaPagamentoRepository _formaPagamentoRepo =
+      FormaPagamentoRepository();
   final EmpresaRepository _empresaRepo = EmpresaRepository();
   final DividaRepository _dividaRepo = DividaRepository();
+
+  // Referência ao CaixaController para validação de caixa aberto
+  final CaixaController _caixaController = Get.put(CaixaController());
 
   final familias = <FamiliaModel>[].obs;
   final produtos = <ProdutoModel>[].obs;
@@ -73,8 +79,9 @@ class VendasController extends GetxController {
     if (familia == null) {
       produtosFiltrados.value = produtos;
     } else {
-      produtosFiltrados.value =
-          produtos.where((p) => p.familiaId == familia.id).toList();
+      produtosFiltrados.value = produtos
+          .where((p) => p.familiaId == familia.id)
+          .toList();
     }
   }
 
@@ -124,6 +131,65 @@ class VendasController extends GetxController {
       return;
     }
 
+    // FASE 1: Validar e abrir caixa automaticamente se necessário
+    if (!_caixaController.existeCaixaAberto.value) {
+      // Mostrar dialog de confirmação
+      final confirmar = await Get.dialog<bool>(
+        AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.blue),
+              SizedBox(width: 10),
+              Text('Abrir Caixa'),
+            ],
+          ),
+          content: Text(
+            'Não há caixa aberto. Deseja abrir o caixa automaticamente para realizar esta venda?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: Text('CANCELAR'),
+            ),
+            ElevatedButton(
+              onPressed: () => Get.back(result: true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: Text('SIM, ABRIR CAIXA'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmar != true) {
+        return; // Usuário cancelou
+      }
+
+      // Abrir caixa automaticamente
+      final sucesso = await _caixaController.abrirCaixa(
+        terminal: 'CAIXA-01',
+        usuario: 'Sistema',
+      );
+
+      if (!sucesso) {
+        Get.snackbar(
+          'Erro',
+          'Não foi possível abrir o caixa. Tente novamente.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // Mostrar notificação de sucesso
+      Get.snackbar(
+        'Caixa Aberto',
+        'Caixa aberto automaticamente para esta venda!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: Duration(seconds: 2),
+      );
+    }
+
     // Mostrar dialog de pagamento
     final result = await Get.dialog<Map<String, dynamic>>(
       DialogPagamento(
@@ -140,7 +206,8 @@ class VendasController extends GetxController {
 
   Future<void> _processarVenda(Map<String, dynamic> resultado) async {
     try {
-      final List<PagamentoVendaModel> pagamentos = resultado['pagamentos'] ?? [];
+      final List<PagamentoVendaModel> pagamentos =
+          resultado['pagamentos'] ?? [];
       final bool modoDivida = resultado['modoDivida'] ?? false;
       final ClienteModel? cliente = resultado['cliente'];
       final double valorRestante = resultado['valorRestante'] ?? 0;
@@ -168,11 +235,20 @@ class VendasController extends GetxController {
       }).toList();
 
       // Registrar venda no banco
-      final vendaId = await _vendaRepo.registrarVenda(vendaData, itens, pagamentos);
+      final vendaId = await _vendaRepo.registrarVenda(
+        vendaData,
+        itens,
+        pagamentos,
+      );
 
       // Se for venda a crédito, registrar dívida
       if (modoDivida && cliente != null && valorRestante > 0) {
-        await _registrarDivida(vendaId, cliente.id!, valorRestante, pagamentos.fold(0.0, (sum, p) => sum + p.valor));
+        await _registrarDivida(
+          vendaId,
+          cliente.id!,
+          valorRestante,
+          pagamentos.fold(0.0, (sum, p) => sum + p.valor),
+        );
       }
 
       // Criar venda completa com ID
@@ -191,37 +267,45 @@ class VendasController extends GetxController {
         colorText: Colors.white,
       );
 
-      // Perguntar se deseja imprimir
-      Get.dialog(
-        AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.print, color: Colors.blue),
-              SizedBox(width: 10),
-              Text('Imprimir Cupom?'),
+      // Verificar configuração de impressão
+      final definicoes = await DefinicoesService.carregar();
+
+      if (definicoes.perguntarAntesDeImprimir) {
+        // Perguntar se deseja imprimir
+        final resultado = await Get.dialog<bool>(
+          AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.print, color: Colors.blue),
+                SizedBox(width: 10),
+                Text('Imprimir Recibo?'),
+              ],
+            ),
+            content: Text('Deseja imprimir o recibo desta venda?'),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(result: false),
+                child: Text('NÃO'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => Get.back(result: true),
+                icon: Icon(Icons.print),
+                label: Text('SIM, IMPRIMIR'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              ),
             ],
           ),
-          content: Text('Deseja imprimir o cupom desta venda?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Get.back();
-                _finalizarSemImprimir();
-              },
-              child: Text('NÃO'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {
-                Get.back();
-                await _imprimirEFinalizar(vendaCompleta, itens, pagamentos);
-              },
-              icon: Icon(Icons.print),
-              label: Text('SIM, IMPRIMIR'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            ),
-          ],
-        ),
-      );
+        );
+
+        if (resultado == true) {
+          await _imprimirEFinalizar(vendaCompleta, itens, pagamentos);
+        } else {
+          _finalizarSemImprimir();
+        }
+      } else {
+        // Imprimir automaticamente
+        await _imprimirEFinalizar(vendaCompleta, itens, pagamentos);
+      }
     } catch (e) {
       Get.snackbar('Erro', 'Erro ao finalizar venda: $e');
     }
@@ -243,7 +327,7 @@ class VendasController extends GetxController {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text('Imprimindo cupom...'),
+                Text('Imprimindo recibo...'),
               ],
             ),
           ),
@@ -265,7 +349,7 @@ class VendasController extends GetxController {
     if (sucesso) {
       Get.snackbar(
         'Sucesso',
-        'Cupom impresso com sucesso!',
+        'Recibo impresso com sucesso!',
         backgroundColor: Colors.green,
         colorText: Colors.white,
         duration: Duration(seconds: 2),
@@ -297,10 +381,7 @@ class VendasController extends GetxController {
         title: Text('Confirmar'),
         content: Text('Deseja limpar o carrinho?'),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('CANCELAR'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: Text('CANCELAR')),
           ElevatedButton(
             onPressed: () {
               carrinho.clear();
@@ -323,7 +404,12 @@ class VendasController extends GetxController {
   }
 
   // ===== DÍVIDAS =====
-  Future<void> _registrarDivida(int vendaId, int clienteId, double valorRestante, double valorPago) async {
+  Future<void> _registrarDivida(
+    int vendaId,
+    int clienteId,
+    double valorRestante,
+    double valorPago,
+  ) async {
     try {
       final divida = DividaModel(
         clienteId: clienteId,

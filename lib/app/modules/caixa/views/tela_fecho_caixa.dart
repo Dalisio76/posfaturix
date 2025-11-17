@@ -1,19 +1,25 @@
+import 'dart:io' show exit;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/caixa_model.dart';
 import '../../../data/models/caixa_detalhe_model.dart';
 import '../../../data/models/empresa_model.dart';
+import '../../../data/models/conferencia_model.dart';
 import '../controllers/caixa_controller.dart';
 import '../../../data/repositories/empresa_repository.dart';
+import '../../../data/repositories/caixa_repository.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/caixa_printer_service.dart';
+import '../widgets/dialog_conferencia_manual.dart';
 
 class TelaFechoCaixa extends StatelessWidget {
   final CaixaController controller = Get.put(CaixaController());
   final TextEditingController observacoesController = TextEditingController();
   final EmpresaRepository _empresaRepo = EmpresaRepository();
+  final CaixaRepository _caixaRepo = CaixaRepository();
   final Rx<EmpresaModel?> empresa = Rx<EmpresaModel?>(null);
+  final Rx<ConferenciaModel?> conferenciaAtual = Rx<ConferenciaModel?>(null);
 
   @override
   Widget build(BuildContext context) {
@@ -657,59 +663,176 @@ class TelaFechoCaixa extends StatelessWidget {
     );
   }
 
-  void _mostrarDialogFecharCaixa(BuildContext context, CaixaModel caixa) {
+  /// FASE 1: Novo fluxo de fechamento com conferência manual
+  void _mostrarDialogFecharCaixa(BuildContext context, CaixaModel caixa) async {
     observacoesController.clear();
 
+    // PASSO 1: Mostrar dialog de conferência manual
+    final resultadoConferencia = await Get.dialog<Map<String, dynamic>>(
+      DialogConferenciaManual(caixa: caixa),
+      barrierDismissible: false,
+    );
+
+    if (resultadoConferencia == null || resultadoConferencia['conferido'] != true) {
+      // Usuário cancelou
+      return;
+    }
+
+    // PASSO 2: Registrar conferência no banco
+    try {
+      final valores = resultadoConferencia['valores'] as Map<String, dynamic>;
+      final observacoes = resultadoConferencia['observacoes'] as String?;
+
+      // Registrar conferência
+      await _caixaRepo.registrarConferencia(
+        caixaId: caixa.id!,
+        contadoCash: valores['cash']['digitado'] ?? 0.0,
+        contadoEmola: valores['emola']['digitado'] ?? 0.0,
+        contadoMpesa: valores['mpesa']['digitado'] ?? 0.0,
+        contadoPos: valores['pos']['digitado'] ?? 0.0,
+        observacoes: observacoes,
+      );
+
+      // Buscar conferência registrada
+      conferenciaAtual.value = await _caixaRepo.buscarConferencia(caixa.id!);
+
+      // PASSO 3: Fechar o caixa
+      Get.dialog(
+        Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      final resultado = await controller.fecharCaixa(
+        observacoes: observacoes,
+      );
+
+      Get.back(); // Fechar loading
+
+      if (resultado != null) {
+        // PASSO 4: Mostrar resultado e imprimir
+        Get.defaultDialog(
+          title: 'CAIXA FECHADO',
+          barrierDismissible: false,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 60),
+              SizedBox(height: 20),
+              Text(
+                'Caixa ${resultado['numero_caixa']} fechado com sucesso!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Saldo Final: ${Formatters.formatarMoeda(resultado['saldo_final'])}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+              ),
+              if (conferenciaAtual.value != null && conferenciaAtual.value!.diferencaTotal != 0) ...[
+                SizedBox(height: 10),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange),
+                  ),
+                  child: Text(
+                    'Diferença na conferência: ${Formatters.formatarMoeda(conferenciaAtual.value!.diferencaTotal)}',
+                    style: TextStyle(color: Colors.orange.shade900),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          textConfirm: 'IMPRIMIR RELATÓRIO',
+          textCancel: 'FECHAR SEM IMPRIMIR',
+          confirmTextColor: Colors.white,
+          cancelTextColor: Colors.grey,
+          onConfirm: () async {
+            Get.back(); // Fechar dialog
+            await _imprimirRelatorioComConferencia(caixa);
+            _finalizarEFecharSistema();
+          },
+          onCancel: () {
+            _finalizarEFecharSistema();
+          },
+        );
+      }
+    } catch (e) {
+      Get.back(); // Fechar qualquer dialog aberto
+      Get.snackbar(
+        'Erro',
+        'Erro ao fechar caixa: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// FASE 1: Imprimir relatório com dados de conferência
+  Future<void> _imprimirRelatorioComConferencia(CaixaModel caixa) async {
+    try {
+      Get.dialog(
+        Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // Recarregar dados do caixa para ter os valores atualizados
+      final caixaAtualizado = await _caixaRepo.buscarResumo(caixa.id!);
+
+      final sucesso = await CaixaPrinterService.imprimirFechoCaixaComConferencia(
+        caixaAtualizado ?? caixa,
+        empresa.value,
+        controller.despesas,
+        controller.pagamentosDividas,
+        controller.produtosVendidos,
+        conferenciaAtual.value, // Passar conferência
+      );
+
+      Get.back(); // Fechar loading
+
+      if (sucesso) {
+        Get.snackbar(
+          'Sucesso',
+          'Relatório impresso com sucesso!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: Duration(seconds: 2),
+        );
+      } else {
+        Get.snackbar(
+          'Aviso',
+          'Erro ao imprimir relatório.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      Get.back();
+      print('Erro ao imprimir relatório: $e');
+    }
+  }
+
+  /// FASE 1: Finalizar e fechar sistema
+  void _finalizarEFecharSistema() {
     Get.defaultDialog(
-      title: 'FECHAR CAIXA',
+      title: 'ENCERRANDO SISTEMA',
+      barrierDismissible: false,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Tem certeza que deseja fechar o caixa?',
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Saldo Final: ${Formatters.formatarMoeda(caixa.saldoFinal)}',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          CircularProgressIndicator(),
           SizedBox(height: 20),
-          TextField(
-            controller: observacoesController,
-            decoration: InputDecoration(
-              labelText: 'Observações (opcional)',
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 3,
-          ),
+          Text('O sistema será encerrado em 3 segundos...'),
         ],
       ),
-      textConfirm: 'FECHAR',
-      textCancel: 'CANCELAR',
-      confirmTextColor: Colors.white,
-      onConfirm: () async {
-        Get.back(); // Fechar dialog
-        final resultado = await controller.fecharCaixa(
-          observacoes: observacoesController.text.isEmpty ? null : observacoesController.text,
-        );
-
-        if (resultado != null) {
-          // Mostrar resultado
-          Get.defaultDialog(
-            title: 'CAIXA FECHADO',
-            middleText: 'Caixa ${resultado['numero_caixa']} fechado com sucesso!\n\n'
-                'Saldo Final: ${Formatters.formatarMoeda(resultado['saldo_final'])}',
-            textConfirm: 'OK',
-            confirmTextColor: Colors.white,
-            onConfirm: () {
-              Get.back(); // Fechar dialog
-              Get.back(); // Voltar para tela de vendas
-            },
-          );
-        }
-      },
     );
+
+    Future.delayed(Duration(seconds: 3), () {
+      exit(0); // Fechar aplicação
+    });
   }
 
   Future<void> _carregarEmpresa() async {

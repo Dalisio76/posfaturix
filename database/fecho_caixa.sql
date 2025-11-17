@@ -592,3 +592,146 @@ GROUP BY c.id, c.numero, p.id, p.nome, iv.preco_unitario
 ORDER BY quantidade_total DESC, produto_nome;
 
 COMMENT ON VIEW v_resumo_produtos_caixa IS 'Resumo agregado de produtos vendidos por caixa';
+
+-- ===================================
+-- TABELA: conferencias_caixa (NOVA - FASE 1)
+-- ===================================
+CREATE TABLE IF NOT EXISTS conferencias_caixa (
+    id SERIAL PRIMARY KEY,
+    caixa_id INTEGER NOT NULL REFERENCES caixas(id) ON DELETE CASCADE,
+
+    -- Valores do Sistema
+    sistema_cash DECIMAL(10,2) DEFAULT 0,
+    sistema_emola DECIMAL(10,2) DEFAULT 0,
+    sistema_mpesa DECIMAL(10,2) DEFAULT 0,
+    sistema_pos DECIMAL(10,2) DEFAULT 0,
+    sistema_total DECIMAL(10,2) DEFAULT 0,
+
+    -- Valores Contados Manualmente
+    contado_cash DECIMAL(10,2) DEFAULT 0,
+    contado_emola DECIMAL(10,2) DEFAULT 0,
+    contado_mpesa DECIMAL(10,2) DEFAULT 0,
+    contado_pos DECIMAL(10,2) DEFAULT 0,
+    contado_total DECIMAL(10,2) DEFAULT 0,
+
+    -- Diferenças
+    diferenca_cash DECIMAL(10,2) DEFAULT 0,
+    diferenca_emola DECIMAL(10,2) DEFAULT 0,
+    diferenca_mpesa DECIMAL(10,2) DEFAULT 0,
+    diferenca_pos DECIMAL(10,2) DEFAULT 0,
+    diferenca_total DECIMAL(10,2) DEFAULT 0,
+
+    -- Status
+    conferencia_ok BOOLEAN DEFAULT FALSE,
+    observacoes TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índice
+CREATE INDEX IF NOT EXISTS idx_conferencias_caixa_caixa_id ON conferencias_caixa(caixa_id);
+
+COMMENT ON TABLE conferencias_caixa IS 'Registra a conferência manual dos valores ao fechar o caixa (FASE 1)';
+
+-- ===================================
+-- FUNCTION: Registrar Conferência Manual
+-- ===================================
+CREATE OR REPLACE FUNCTION registrar_conferencia_caixa(
+    p_caixa_id INTEGER,
+    p_contado_cash DECIMAL(10,2) DEFAULT 0,
+    p_contado_emola DECIMAL(10,2) DEFAULT 0,
+    p_contado_mpesa DECIMAL(10,2) DEFAULT 0,
+    p_contado_pos DECIMAL(10,2) DEFAULT 0,
+    p_observacoes TEXT DEFAULT NULL
+)
+RETURNS INTEGER AS $$
+DECLARE
+    v_sistema_cash DECIMAL(10,2);
+    v_sistema_emola DECIMAL(10,2);
+    v_sistema_mpesa DECIMAL(10,2);
+    v_sistema_pos DECIMAL(10,2);
+    v_conferencia_id INTEGER;
+BEGIN
+    -- Buscar valores do sistema
+    SELECT
+        total_cash,
+        total_emola,
+        total_mpesa,
+        total_pos
+    INTO
+        v_sistema_cash,
+        v_sistema_emola,
+        v_sistema_mpesa,
+        v_sistema_pos
+    FROM caixas
+    WHERE id = p_caixa_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Caixa não encontrado: %', p_caixa_id;
+    END IF;
+
+    -- Inserir conferência
+    INSERT INTO conferencias_caixa (
+        caixa_id,
+        sistema_cash,
+        sistema_emola,
+        sistema_mpesa,
+        sistema_pos,
+        sistema_total,
+        contado_cash,
+        contado_emola,
+        contado_mpesa,
+        contado_pos,
+        contado_total,
+        diferenca_cash,
+        diferenca_emola,
+        diferenca_mpesa,
+        diferenca_pos,
+        diferenca_total,
+        conferencia_ok,
+        observacoes
+    ) VALUES (
+        p_caixa_id,
+        v_sistema_cash,
+        v_sistema_emola,
+        v_sistema_mpesa,
+        v_sistema_pos,
+        v_sistema_cash + v_sistema_emola + v_sistema_mpesa + v_sistema_pos,
+        p_contado_cash,
+        p_contado_emola,
+        p_contado_mpesa,
+        p_contado_pos,
+        p_contado_cash + p_contado_emola + p_contado_mpesa + p_contado_pos,
+        p_contado_cash - v_sistema_cash,
+        p_contado_emola - v_sistema_emola,
+        p_contado_mpesa - v_sistema_mpesa,
+        p_contado_pos - v_sistema_pos,
+        (p_contado_cash + p_contado_emola + p_contado_mpesa + p_contado_pos) -
+        (v_sistema_cash + v_sistema_emola + v_sistema_mpesa + v_sistema_pos),
+        (p_contado_cash + p_contado_emola + p_contado_mpesa + p_contado_pos) =
+        (v_sistema_cash + v_sistema_emola + v_sistema_mpesa + v_sistema_pos),
+        p_observacoes
+    )
+    RETURNING id INTO v_conferencia_id;
+
+    RETURN v_conferencia_id;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION registrar_conferencia_caixa IS 'Registra a conferência manual dos valores do caixa';
+
+-- ===================================
+-- VIEW: Conferências por Caixa
+-- ===================================
+CREATE OR REPLACE VIEW v_conferencias_caixa AS
+SELECT
+    cc.*,
+    c.numero as caixa_numero,
+    c.status as caixa_status,
+    c.data_abertura,
+    c.data_fechamento
+FROM conferencias_caixa cc
+INNER JOIN caixas c ON cc.caixa_id = c.id
+ORDER BY cc.created_at DESC;
+
+COMMENT ON VIEW v_conferencias_caixa IS 'Lista de conferências com dados do caixa';

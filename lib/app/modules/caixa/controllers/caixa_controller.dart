@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/caixa_model.dart';
 import '../../../data/models/caixa_detalhe_model.dart';
@@ -25,21 +26,27 @@ class CaixaController extends GetxController {
   Future<void> verificarCaixaAtual() async {
     try {
       isLoading.value = true;
+      print('🔍 Verificando caixa atual...');
+
       final caixa = await _repository.buscarCaixaAtual();
 
       if (caixa != null) {
+        print('✅ Caixa encontrado: ${caixa.numero} - Saldo: ${caixa.saldoFinal}');
         caixaAtual.value = caixa;
         existeCaixaAberto.value = true;
       } else {
+        print('⚠️ Nenhum caixa aberto encontrado');
         caixaAtual.value = null;
         existeCaixaAberto.value = false;
       }
     } catch (e) {
-      print('Erro ao verificar caixa atual: $e');
+      print('❌ Erro ao verificar caixa atual: $e');
       Get.snackbar(
         'Erro',
         'Erro ao verificar caixa: $e',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
@@ -96,22 +103,47 @@ class CaixaController extends GetxController {
   Future<void> atualizarTotais() async {
     try {
       if (caixaAtual.value == null) {
+        print('⚠️ Não é possível atualizar totais: caixa atual é null');
+        Get.snackbar(
+          'Atenção',
+          'Nenhum caixa aberto para atualizar',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
       isLoading.value = true;
+      print('🔄 Atualizando totais do caixa ${caixaAtual.value!.numero}...');
+
       await _repository.calcularTotais(caixaAtual.value!.id!);
 
       // Recarregar dados do caixa
       final caixa = await _repository.buscarResumo(caixaAtual.value!.id!);
       if (caixa != null) {
         caixaAtual.value = caixa;
+        print('✅ Totais atualizados - Saldo: ${caixa.saldoFinal}');
       }
 
       // Carregar detalhes
       await carregarDetalhes();
+
+      Get.snackbar(
+        'Sucesso',
+        'Dados atualizados!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: Duration(seconds: 1),
+      );
     } catch (e) {
-      print('Erro ao atualizar totais: $e');
+      print('❌ Erro ao atualizar totais: $e');
+      Get.snackbar(
+        'Erro',
+        'Erro ao atualizar: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -121,10 +153,12 @@ class CaixaController extends GetxController {
   Future<void> carregarDetalhes() async {
     try {
       if (caixaAtual.value == null) {
+        print('⚠️ Não é possível carregar detalhes: caixa atual é null');
         return;
       }
 
       final caixaId = caixaAtual.value!.id!;
+      print('📊 Carregando detalhes do caixa ID: $caixaId');
 
       // Carregar em paralelo
       final results = await Future.wait([
@@ -136,8 +170,17 @@ class CaixaController extends GetxController {
       despesas.value = results[0] as List<DespesaDetalhe>;
       pagamentosDividas.value = results[1] as List<PagamentoDividaDetalhe>;
       produtosVendidos.value = results[2] as List<ResumoProdutoVendido>;
+
+      print('✅ Detalhes carregados: ${despesas.length} despesas, ${pagamentosDividas.length} pagamentos, ${produtosVendidos.length} produtos');
     } catch (e) {
-      print('Erro ao carregar detalhes: $e');
+      print('❌ Erro ao carregar detalhes: $e');
+      Get.snackbar(
+        'Erro',
+        'Erro ao carregar detalhes: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
     }
   }
 

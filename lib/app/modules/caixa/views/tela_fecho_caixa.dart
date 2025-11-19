@@ -24,12 +24,8 @@ class TelaFechoCaixa extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Carregar dados do caixa e empresa ao abrir a tela
-    controller.verificarCaixaAtual().then((_) {
-      if (controller.caixaAtual.value != null) {
-        controller.carregarDetalhes();
-      }
-    });
     _carregarEmpresa();
+    _carregarDadosCaixa();
 
     return Scaffold(
       appBar: AppBar(
@@ -37,7 +33,7 @@ class TelaFechoCaixa extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
-            onPressed: () => controller.atualizarTotais(),
+            onPressed: () => _carregarDadosCaixa(),
             tooltip: 'Atualizar',
           ),
         ],
@@ -55,6 +51,24 @@ class TelaFechoCaixa extends StatelessWidget {
         return _buildRelatorioCaixa(context, caixa);
       }),
     );
+  }
+
+  /// Carregar dados do caixa com tratamento de erro
+  Future<void> _carregarDadosCaixa() async {
+    try {
+      await controller.verificarCaixaAtual();
+      if (controller.caixaAtual.value != null) {
+        await controller.carregarDetalhes();
+      }
+    } catch (e) {
+      print('Erro ao carregar dados do caixa: $e');
+      Get.snackbar(
+        'Erro',
+        'Erro ao carregar dados: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   Widget _buildNenhumCaixaAberto() {
@@ -665,6 +679,61 @@ class TelaFechoCaixa extends StatelessWidget {
 
   /// FASE 1: Novo fluxo de fechamento com conferência manual
   void _mostrarDialogFecharCaixa(BuildContext context, CaixaModel caixa) async {
+    // PASSO 0: Confirmação simples antes de continuar
+    final confirmar = await Get.defaultDialog<bool>(
+      title: 'FECHAR CAIXA',
+      titleStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.warning_amber_rounded, size: 60, color: Colors.orange),
+          SizedBox(height: 20),
+          Text(
+            'Tem certeza que deseja fechar o caixa?',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 10),
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Saldo Atual:',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  Formatters.formatarMoeda(caixa.saldoFinal),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      textCancel: 'NÃO',
+      textConfirm: 'SIM, FECHAR',
+      confirmTextColor: Colors.white,
+      cancelTextColor: Colors.grey[700],
+      buttonColor: Colors.red,
+      onCancel: () => Get.back(result: false),
+      onConfirm: () => Get.back(result: true),
+    );
+
+    if (confirmar != true) {
+      // Usuário cancelou
+      return;
+    }
+
     observacoesController.clear();
 
     // PASSO 1: Mostrar dialog de conferência manual
@@ -674,7 +743,7 @@ class TelaFechoCaixa extends StatelessWidget {
     );
 
     if (resultadoConferencia == null || resultadoConferencia['conferido'] != true) {
-      // Usuário cancelou
+      // Usuário cancelou na conferência
       return;
     }
 

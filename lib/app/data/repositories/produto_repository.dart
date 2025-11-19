@@ -7,11 +7,9 @@ class ProdutoRepository {
 
   Future<List<ProdutoModel>> listarTodos() async {
     final result = await _db.query('''
-      SELECT p.*, f.nome as familia_nome
-      FROM produtos p
-      LEFT JOIN familias f ON p.familia_id = f.id
-      WHERE p.ativo = true
-      ORDER BY p.nome
+      SELECT * FROM v_produtos_completo
+      WHERE ativo = true
+      ORDER BY nome
     ''');
 
     return result.map((map) => ProdutoModel.fromMap(map)).toList();
@@ -19,22 +17,38 @@ class ProdutoRepository {
 
   Future<List<ProdutoModel>> listarPorFamilia(int familiaId) async {
     final result = await _db.query('''
-      SELECT p.*, f.nome as familia_nome
-      FROM produtos p
-      LEFT JOIN familias f ON p.familia_id = f.id
-      WHERE p.familia_id = @familia_id AND p.ativo = true
-      ORDER BY p.nome
+      SELECT * FROM v_produtos_completo
+      WHERE familia_id = @familia_id AND ativo = true
+      ORDER BY nome
     ''', parameters: {'familia_id': familiaId});
+
+    return result.map((map) => ProdutoModel.fromMap(map)).toList();
+  }
+
+  Future<List<ProdutoModel>> listarPorSetor(int setorId) async {
+    final result = await _db.query('''
+      SELECT * FROM v_produtos_completo
+      WHERE setor_id = @setor_id AND ativo = true
+      ORDER BY nome
+    ''', parameters: {'setor_id': setorId});
+
+    return result.map((map) => ProdutoModel.fromMap(map)).toList();
+  }
+
+  Future<List<ProdutoModel>> listarPorArea(int areaId) async {
+    final result = await _db.query('''
+      SELECT * FROM v_produtos_completo
+      WHERE area_id = @area_id AND ativo = true
+      ORDER BY nome
+    ''', parameters: {'area_id': areaId});
 
     return result.map((map) => ProdutoModel.fromMap(map)).toList();
   }
 
   Future<ProdutoModel?> buscarPorCodigo(String codigo) async {
     final result = await _db.query('''
-      SELECT p.*, f.nome as familia_nome
-      FROM produtos p
-      LEFT JOIN familias f ON p.familia_id = f.id
-      WHERE p.codigo = @codigo AND p.ativo = true
+      SELECT * FROM v_produtos_completo
+      WHERE codigo = @codigo AND ativo = true
     ''', parameters: {'codigo': codigo});
 
     if (result.isEmpty) return null;
@@ -43,20 +57,24 @@ class ProdutoRepository {
 
   Future<int> inserir(ProdutoModel produto) async {
     return await _db.insert('''
-      INSERT INTO produtos (codigo, nome, familia_id, preco, estoque, ativo)
-      VALUES (@codigo, @nome, @familia_id, @preco, @estoque, @ativo)
+      INSERT INTO produtos (nome, familia_id, preco, preco_compra, estoque, ativo, contavel, iva, setor_id, area_id)
+      VALUES (@nome, @familia_id, @preco, @preco_compra, @estoque, @ativo, @contavel, @iva, @setor_id, @area_id)
     ''', parameters: produto.toMap());
   }
 
   Future<void> atualizar(int id, ProdutoModel produto) async {
     await _db.execute('''
       UPDATE produtos
-      SET codigo = @codigo,
-          nome = @nome,
+      SET nome = @nome,
           familia_id = @familia_id,
           preco = @preco,
+          preco_compra = @preco_compra,
           estoque = @estoque,
           ativo = @ativo,
+          contavel = @contavel,
+          iva = @iva,
+          setor_id = @setor_id,
+          area_id = @area_id,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = @id
     ''', parameters: {

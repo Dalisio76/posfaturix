@@ -7,6 +7,7 @@ import '../../../data/models/setor_model.dart';
 import '../../../data/models/area_model.dart';
 import '../../../data/models/cliente_model.dart';
 import '../../../data/models/despesa_model.dart';
+import '../../../data/models/produto_composicao_model.dart';
 import '../../../data/repositories/familia_repository.dart';
 import '../../../data/repositories/produto_repository.dart';
 import '../../../data/repositories/empresa_repository.dart';
@@ -15,6 +16,7 @@ import '../../../data/repositories/setor_repository.dart';
 import '../../../data/repositories/area_repository.dart';
 import '../../../data/repositories/cliente_repository.dart';
 import '../../../data/repositories/despesa_repository.dart';
+import '../../../data/repositories/produto_composicao_repository.dart';
 
 class AdminController extends GetxController {
   final FamiliaRepository _familiaRepo = FamiliaRepository();
@@ -25,6 +27,7 @@ class AdminController extends GetxController {
   final AreaRepository _areaRepo = AreaRepository();
   final ClienteRepository _clienteRepo = ClienteRepository();
   final DespesaRepository _despesaRepo = DespesaRepository();
+  final ProdutoComposicaoRepository _composicaoRepo = ProdutoComposicaoRepository();
 
   final familias = <FamiliaModel>[].obs;
   final produtos = <ProdutoModel>[].obs;
@@ -35,6 +38,11 @@ class AdminController extends GetxController {
   final clientes = <ClienteModel>[].obs;
   final despesas = <DespesaModel>[].obs;
   final isLoading = false.obs;
+
+  // Variáveis para memorizar últimas seleções ao criar produtos
+  final Rxn<int> ultimaFamiliaSelecionada = Rxn<int>();
+  final Rxn<int> ultimoSetorSelecionado = Rxn<int>();
+  final Rxn<int> ultimaAreaSelecionada = Rxn<int>();
 
   @override
   void onInit() {
@@ -180,25 +188,25 @@ class AdminController extends GetxController {
   }
 
   // FAMÍLIA
-  Future<void> adicionarFamilia(String nome, String? descricao) async {
+  Future<void> adicionarFamilia(String nome, String? descricao, List<int> setorIds) async {
     try {
       final familia = FamiliaModel(nome: nome, descricao: descricao);
-      await _familiaRepo.inserir(familia);
+      await _familiaRepo.inserir(familia, setorIds);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Família adicionada!');
+      Get.snackbar('Sucesso', 'Família adicionada com sucesso!');
     } catch (e) {
       Get.snackbar('Erro', 'Erro ao adicionar família: $e');
     }
   }
 
-  Future<void> editarFamilia(int id, String nome, String? descricao) async {
+  Future<void> editarFamilia(int id, String nome, String? descricao, List<int> setorIds) async {
     try {
       final familia = FamiliaModel(nome: nome, descricao: descricao);
-      await _familiaRepo.atualizar(id, familia);
+      await _familiaRepo.atualizar(id, familia, setorIds);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Família atualizada!');
+      Get.snackbar('Sucesso', 'Família atualizada com sucesso!');
     } catch (e) {
       Get.snackbar('Erro', 'Erro ao atualizar família: $e');
     }
@@ -215,9 +223,28 @@ class AdminController extends GetxController {
   }
 
   // PRODUTO
-  Future<void> adicionarProduto(ProdutoModel produto) async {
+  Future<void> adicionarProduto(
+    ProdutoModel produto, [
+    List<ProdutoComposicaoModel>? composicao,
+  ]) async {
     try {
-      await _produtoRepo.inserir(produto);
+      // Inserir produto
+      final produtoId = await _produtoRepo.inserir(produto);
+
+      // Salvar composição se fornecida
+      if (composicao != null && composicao.isNotEmpty) {
+        await _composicaoRepo.salvarComposicao(produtoId, composicao);
+      }
+
+      // Memorizar seleções para o próximo produto
+      ultimaFamiliaSelecionada.value = produto.familiaId;
+      if (produto.setorId != null) {
+        ultimoSetorSelecionado.value = produto.setorId;
+      }
+      if (produto.areaId != null) {
+        ultimaAreaSelecionada.value = produto.areaId;
+      }
+
       await carregarDados();
       Get.back();
       Get.snackbar('Sucesso', 'Produto adicionado!');
@@ -226,14 +253,35 @@ class AdminController extends GetxController {
     }
   }
 
-  Future<void> editarProduto(int id, ProdutoModel produto) async {
+  Future<void> editarProduto(
+    int id,
+    ProdutoModel produto, [
+    List<ProdutoComposicaoModel>? composicao,
+  ]) async {
     try {
+      // Atualizar produto
       await _produtoRepo.atualizar(id, produto);
+
+      // Atualizar composição
+      if (composicao != null) {
+        await _composicaoRepo.salvarComposicao(id, composicao);
+      }
+
       await carregarDados();
       Get.back();
       Get.snackbar('Sucesso', 'Produto atualizado!');
     } catch (e) {
       Get.snackbar('Erro', 'Erro ao atualizar produto: $e');
+    }
+  }
+
+  Future<List<ProdutoComposicaoModel>> buscarComposicaoProduto(
+      int produtoId) async {
+    try {
+      return await _composicaoRepo.buscarComposicao(produtoId);
+    } catch (e) {
+      Get.snackbar('Erro', 'Erro ao buscar composição: $e');
+      return [];
     }
   }
 

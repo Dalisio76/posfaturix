@@ -58,16 +58,14 @@ class VendaRepository {
           },
         );
 
-        // 3. Atualizar estoque
+        // 3. Abater estoque (considera composição automaticamente)
         await conn.execute(
           Sql.named('''
-            UPDATE produtos
-            SET estoque = estoque - @quantidade
-            WHERE id = @produto_id
+            SELECT abater_estoque_produto(@produto_id, @quantidade)
           '''),
           parameters: {
-            'quantidade': item.quantidade,
             'produto_id': item.produtoId,
+            'quantidade': item.quantidade,
           },
         );
       }

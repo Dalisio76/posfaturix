@@ -425,7 +425,12 @@ SELECT
         WHEN ABS((c.total_cash + c.total_emola + c.total_mpesa + c.total_pos) - c.total_entradas) < 0.01
         THEN 'OK'
         ELSE 'ERRO: Totais não batem!'
-    END as status_validacao
+    END as status_validacao,
+    CASE
+        WHEN ABS((c.total_cash + c.total_emola + c.total_mpesa + c.total_pos) - c.total_entradas) < 0.01
+        THEN TRUE
+        ELSE FALSE
+    END as totais_corretos
 FROM caixas c
 WHERE c.status = 'ABERTO'
 ORDER BY c.data_abertura DESC
@@ -478,7 +483,12 @@ SELECT
     c.saldo_final,
 
     -- VALIDAÇÃO
-    (c.total_cash + c.total_emola + c.total_mpesa + c.total_pos) as soma_formas,
+    (c.total_cash + c.total_emola + c.total_mpesa + c.total_pos) as soma_formas_validacao,
+    CASE
+        WHEN ABS((c.total_cash + c.total_emola + c.total_mpesa + c.total_pos) - c.total_entradas) < 0.01
+        THEN 'OK'
+        ELSE 'ERRO'
+    END as status_validacao,
     CASE
         WHEN ABS((c.total_cash + c.total_emola + c.total_mpesa + c.total_pos) - c.total_entradas) < 0.01
         THEN TRUE
@@ -502,15 +512,17 @@ SELECT
     d.id as despesa_id,
     d.descricao,
     d.valor,
+    d.categoria,
     d.data_despesa,
-    d.observacoes
+    d.observacoes,
+    d.usuario
 FROM caixas c
 CROSS JOIN despesas d
 WHERE d.data_despesa >= c.data_abertura
   AND d.data_despesa <= COALESCE(c.data_fechamento, NOW())
 ORDER BY d.data_despesa DESC;
 
-COMMENT ON VIEW v_despesas_caixa IS 'Lista detalhada de despesas por caixa';
+COMMENT ON VIEW v_despesas_caixa IS 'Lista detalhada de despesas por caixa com categoria';
 
 -- ===================================
 -- VIEW: Detalhes de Pagamentos de Dívidas do Caixa
@@ -557,7 +569,7 @@ SELECT
     iv.quantidade,
     iv.preco_unitario,
     iv.subtotal,
-    (iv.quantidade * iv.preco_unitario) as total_item
+    (iv.quantidade * iv.preco_unitario) as total_vendido
 FROM caixas c
 CROSS JOIN vendas v
 INNER JOIN itens_venda iv ON v.id = iv.venda_id
@@ -580,7 +592,7 @@ SELECT
     p.nome as produto_nome,
     SUM(iv.quantidade) as quantidade_total,
     iv.preco_unitario,
-    SUM(iv.subtotal) as subtotal_total
+    SUM(iv.subtotal) as total_vendido
 FROM caixas c
 CROSS JOIN vendas v
 INNER JOIN itens_venda iv ON v.id = iv.venda_id
@@ -589,7 +601,7 @@ WHERE v.data_venda >= c.data_abertura
   AND v.data_venda <= COALESCE(c.data_fechamento, NOW())
   AND (v.tipo_venda = 'NORMAL' OR v.tipo_venda IS NULL)
 GROUP BY c.id, c.numero, p.id, p.nome, iv.preco_unitario
-ORDER BY quantidade_total DESC, produto_nome;
+ORDER BY total_vendido DESC;
 
 COMMENT ON VIEW v_resumo_produtos_caixa IS 'Resumo agregado de produtos vendidos por caixa';
 

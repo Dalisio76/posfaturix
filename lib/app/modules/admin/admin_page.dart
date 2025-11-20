@@ -9,6 +9,8 @@ import 'views/setores_tab.dart';
 import 'views/areas_tab.dart';
 import 'views/clientes_tab.dart';
 import 'views/despesas_tab.dart';
+import 'views/relatorios_tab.dart';
+import 'views/margens_tab.dart';
 
 class AdminPage extends StatelessWidget {
   final AdminController controller = Get.put(AdminController());
@@ -63,6 +65,9 @@ class AdminPage extends StatelessWidget {
           _buildMenuItem(6, Icons.people, 'Clientes'),
           _buildMenuItem(7, Icons.receipt_long, 'Despesas'),
           Divider(),
+          _buildMenuItem(8, Icons.analytics, 'Relatórios'),
+          _buildMenuItem(9, Icons.trending_up, 'Margens/Lucros'),
+          Divider(),
           ListTile(
             leading: Icon(Icons.arrow_back, color: Colors.red),
             title: Text('Voltar', style: TextStyle(color: Colors.red)),
@@ -111,6 +116,8 @@ class AdminPage extends StatelessWidget {
       case 5: return 'ÁREAS';
       case 6: return 'CLIENTES';
       case 7: return 'DESPESAS';
+      case 8: return 'RELATÓRIOS';
+      case 9: return 'MARGENS/LUCROS';
       default: return 'ADMIN';
     }
   }
@@ -125,6 +132,8 @@ class AdminPage extends StatelessWidget {
       case 5: return AreasTab();
       case 6: return ClientesTab();
       case 7: return DespesasTab();
+      case 8: return RelatoriosTab();
+      case 9: return MargensTab();
       default: return EmpresaTab();
     }
   }

@@ -6,97 +6,413 @@ import '../../../data/models/produto_composicao_model.dart';
 import '../controllers/admin_controller.dart';
 
 class ProdutosTab extends GetView<AdminController> {
+  final RxList<int> produtosSelecionados = <int>[].obs;
+  final RxBool selecionarTodos = false.obs;
+
+  // Controle de ordenação
+  final RxString campoOrdenacao = 'nome'.obs;
+  final RxBool ordemCrescente = true.obs;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return Center(child: CircularProgressIndicator());
-        }
+      body: Column(
+        children: [
+          _buildFiltros(),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-        if (controller.produtos.isEmpty) {
-          return Center(
-            child: Text('Nenhum produto cadastrado'),
-          );
-        }
+              if (controller.produtos.isEmpty) {
+                return const Center(
+                  child: Text('Nenhum produto cadastrado. Clique em ADICIONAR PRODUTO para criar.'),
+                );
+              }
 
-        return ListView.builder(
-          padding: EdgeInsets.all(16),
-          itemCount: controller.produtos.length,
-          itemBuilder: (context, index) {
-            final produto = controller.produtos[index];
-            return Card(
-              child: ListTile(
-                leading: CircleAvatar(
-                  child: Text(
-                    produto.codigo,
-                    style: TextStyle(fontSize: 12),
+              return _buildTabela();
+            }),
+          ),
+          _buildRodape(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFiltros() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.grey[100],
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              decoration: const InputDecoration(
+                labelText: 'PESQUISAR PRODUTO',
+                hintText: 'Digite o código ou nome...',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              onChanged: (value) {
+                // TODO: Implementar filtro de pesquisa
+              },
+            ),
+          ),
+          const SizedBox(width: 16),
+          Obx(() => Chip(
+                avatar: const Icon(Icons.inventory, size: 16, color: Colors.white),
+                label: Text('${controller.produtos.length} produtos'),
+                backgroundColor: Colors.blue[700],
+                labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabela() {
+    return Column(
+      children: [
+        // Cabeçalho
+        Container(
+          color: Colors.grey[300],
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 40,
+                child: Obx(
+                  () => Checkbox(
+                    value: selecionarTodos.value,
+                    onChanged: (_) => toggleSelecionarTodos(),
+                    tristate: false,
                   ),
                 ),
-                title: Text(produto.nome),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Família: ${produto.familiaNome ?? "N/A"}'),
-                    if (produto.setorNome != null)
-                      Row(
-                        children: [
-                          Icon(Icons.store, size: 12, color: Colors.blue),
-                          SizedBox(width: 4),
-                          Text(
-                            'Setor: ${produto.setorNome}',
-                            style: TextStyle(fontSize: 12, color: Colors.blue[700]),
-                          ),
-                        ],
-                      ),
-                    if (produto.areaNome != null)
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, size: 12, color: Colors.orange),
-                          SizedBox(width: 4),
-                          Text(
-                            'Área: ${produto.areaNome}',
-                            style: TextStyle(fontSize: 12, color: Colors.orange[700]),
-                          ),
-                        ],
-                      ),
-                    Text('Estoque: ${produto.estoque}'),
-                  ],
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      Formatters.formatarMoeda(produto.preco),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue, size: 20),
-                          onPressed: () => _mostrarDialogProduto(produto),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red, size: 20),
-                          onPressed: () => _confirmarDelete(produto.id!),
-                        ),
-                      ],
-                    ),
-                  ],
+              ),
+              _buildCabecalho('ID', 'id', flex: 1),
+              _buildCabecalho('NOME', 'nome', flex: 4),
+              _buildCabecalho('FAMÍLIA', 'familia', flex: 2),
+              _buildCabecalho('SETOR', 'setor', flex: 2),
+              _buildCabecalho('ÁREA', 'area', flex: 2),
+              _buildCabecalho('COMPRA', 'compra', flex: 2),
+              _buildCabecalho('VENDA', 'venda', flex: 2),
+              _buildCabecalho('ESTOQUE', 'estoque', flex: 1),
+              _buildCabecalhoFixo('AÇÕES', flex: 2),
+            ],
+          ),
+        ),
+        // Linhas
+        Expanded(
+          child: Obx(
+            () {
+              final produtosOrdenados = _obterProdutosOrdenados();
+              return ListView.builder(
+                itemCount: produtosOrdenados.length,
+                itemBuilder: (context, index) {
+                  final produto = produtosOrdenados[index];
+                  return _buildLinha(produto, index);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCabecalho(String texto, String campo, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Obx(() => InkWell(
+        onTap: () => ordenarPor(campo),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  texto,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                    color: campoOrdenacao.value == campo ? Colors.blue[700] : Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (campoOrdenacao.value == campo) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  ordemCrescente.value ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 14,
+                  color: Colors.blue[700],
+                ),
+              ],
+            ],
+          ),
+        ),
+      )),
+    );
+  }
+
+  Widget _buildCabecalhoFixo(String texto, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Text(
+          texto,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLinha(ProdutoModel produto, int index) {
+    final produtoId = produto.id!;
+    final corFundo = index % 2 == 0 ? Colors.white : Colors.grey[50];
+
+    return Obx(
+      () => Container(
+        color: produtosSelecionados.contains(produtoId)
+            ? Colors.blue[50]
+            : corFundo,
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40,
+              child: Checkbox(
+                value: produtosSelecionados.contains(produtoId),
+                onChanged: (_) => toggleProduto(produtoId),
+              ),
+            ),
+            _buildCelula(produto.id.toString(), flex: 1),
+            _buildCelula(produto.nome, flex: 4, align: TextAlign.left),
+            _buildCelula(produto.familiaNome ?? '-', flex: 2),
+            _buildCelula(produto.setorNome ?? '-', flex: 2),
+            _buildCelula(produto.areaNome ?? '-', flex: 2),
+            _buildCelula(Formatters.formatarMoeda(produto.precoCompra), flex: 2),
+            _buildCelula(Formatters.formatarMoeda(produto.preco), flex: 2),
+            _buildCelula(produto.estoque.toString(), flex: 1),
+            Expanded(
+              flex: 2,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 18, color: Colors.blue),
+                    onPressed: () => _mostrarDialogProduto(produto),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                    onPressed: () => _confirmarDelete(produto.id!),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCelula(
+    String texto, {
+    int flex = 1,
+    TextAlign align = TextAlign.center,
+    Color? cor,
+  }) {
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Text(
+          texto,
+          style: TextStyle(fontSize: 10, color: cor, fontWeight: cor != null ? FontWeight.bold : null),
+          textAlign: align,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRodape() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        border: Border(top: BorderSide(color: Colors.grey[400]!, width: 2)),
+      ),
+      child: Row(
+        children: [
+          ElevatedButton.icon(
+            onPressed: () => _mostrarDialogProduto(null),
+            icon: const Icon(Icons.add),
+            label: const Text('ADICIONAR PRODUTO'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[700],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Obx(() {
+            if (produtosSelecionados.isEmpty) return const SizedBox.shrink();
+            return ElevatedButton.icon(
+              onPressed: () => _deletarSelecionados(),
+              icon: const Icon(Icons.delete),
+              label: Text('DELETAR ${produtosSelecionados.length} SELECIONADOS'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[700],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              ),
             );
-          },
-        );
-      }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _mostrarDialogProduto(null),
-        child: Icon(Icons.add),
+          }),
+          const Spacer(),
+          Obx(() => Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Total de produtos: ${controller.produtos.length}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  Text(
+                    'Contáveis: ${controller.produtos.where((p) => p.contavel).length}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  Text(
+                    'Compostos: ${controller.produtos.where((p) => !p.contavel).length}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              )),
+        ],
+      ),
+    );
+  }
+
+  void toggleSelecionarTodos() {
+    selecionarTodos.value = !selecionarTodos.value;
+    if (selecionarTodos.value) {
+      produtosSelecionados.value = controller.produtos.map((p) => p.id!).toList();
+    } else {
+      produtosSelecionados.clear();
+    }
+  }
+
+  void toggleProduto(int produtoId) {
+    if (produtosSelecionados.contains(produtoId)) {
+      produtosSelecionados.remove(produtoId);
+    } else {
+      produtosSelecionados.add(produtoId);
+    }
+    selecionarTodos.value = produtosSelecionados.length == controller.produtos.length;
+  }
+
+  void ordenarPor(String campo) {
+    if (campoOrdenacao.value == campo) {
+      // Inverte a ordem se clicar no mesmo campo
+      ordemCrescente.value = !ordemCrescente.value;
+    } else {
+      // Novo campo, começa crescente
+      campoOrdenacao.value = campo;
+      ordemCrescente.value = true;
+    }
+  }
+
+  List<ProdutoModel> _obterProdutosOrdenados() {
+    final lista = List<ProdutoModel>.from(controller.produtos);
+
+    lista.sort((a, b) {
+      int comparacao = 0;
+
+      switch (campoOrdenacao.value) {
+        case 'id':
+          comparacao = (a.id ?? 0).compareTo(b.id ?? 0);
+          break;
+        case 'nome':
+          comparacao = a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+          break;
+        case 'familia':
+          final famA = a.familiaNome ?? '';
+          final famB = b.familiaNome ?? '';
+          comparacao = famA.toLowerCase().compareTo(famB.toLowerCase());
+          // Se famílias iguais, ordena por nome do produto
+          if (comparacao == 0) {
+            comparacao = a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+          }
+          break;
+        case 'setor':
+          final setA = a.setorNome ?? '';
+          final setB = b.setorNome ?? '';
+          comparacao = setA.toLowerCase().compareTo(setB.toLowerCase());
+          // Se setores iguais, ordena por família e depois nome
+          if (comparacao == 0) {
+            final famA = a.familiaNome ?? '';
+            final famB = b.familiaNome ?? '';
+            comparacao = famA.toLowerCase().compareTo(famB.toLowerCase());
+            if (comparacao == 0) {
+              comparacao = a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+            }
+          }
+          break;
+        case 'area':
+          final areaA = a.areaNome ?? '';
+          final areaB = b.areaNome ?? '';
+          comparacao = areaA.toLowerCase().compareTo(areaB.toLowerCase());
+          break;
+        case 'compra':
+          comparacao = a.precoCompra.compareTo(b.precoCompra);
+          break;
+        case 'venda':
+          comparacao = a.preco.compareTo(b.preco);
+          break;
+        case 'estoque':
+          comparacao = a.estoque.compareTo(b.estoque);
+          break;
+      }
+
+      return ordemCrescente.value ? comparacao : -comparacao;
+    });
+
+    return lista;
+  }
+
+  void _deletarSelecionados() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Confirmar'),
+        content: Text('Deseja realmente remover ${produtosSelecionados.length} produtos selecionados?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back();
+              for (var id in produtosSelecionados.toList()) {
+                await controller.deletarProduto(id);
+              }
+              produtosSelecionados.clear();
+              selecionarTodos.value = false;
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('REMOVER'),
+          ),
+        ],
       ),
     );
   }
@@ -153,7 +469,7 @@ class ProdutosTab extends GetView<AdminController> {
                     padding: const EdgeInsets.only(bottom: 15.0),
                     child: Text(
                       'Código: ${produto.codigo}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
@@ -163,19 +479,19 @@ class ProdutosTab extends GetView<AdminController> {
 
                 TextField(
                   controller: nomeController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Nome *',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
 
                 Row(
                   children: [
                     Expanded(
                       child: Obx(() => DropdownButtonFormField<int>(
                             value: familiaIdSelecionada.value,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Família *',
                               border: OutlineInputBorder(),
                             ),
@@ -190,11 +506,11 @@ class ProdutosTab extends GetView<AdminController> {
                             },
                           )),
                     ),
-                    SizedBox(width: 15),
+                    const SizedBox(width: 15),
                     Expanded(
                       child: Obx(() => DropdownButtonFormField<int>(
                             value: setorIdSelecionado.value,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Setor',
                               border: OutlineInputBorder(),
                             ),
@@ -211,11 +527,11 @@ class ProdutosTab extends GetView<AdminController> {
                     ),
                   ],
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
 
                 Obx(() => DropdownButtonFormField<int>(
                       value: areaIdSelecionada.value,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Área',
                         border: OutlineInputBorder(),
                       ),
@@ -229,25 +545,25 @@ class ProdutosTab extends GetView<AdminController> {
                         areaIdSelecionada.value = value;
                       },
                     )),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
 
                 Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: precoCompraController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Preço de Compra *',
                           border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                       ),
                     ),
-                    SizedBox(width: 15),
+                    const SizedBox(width: 15),
                     Expanded(
                       child: TextField(
                         controller: precoController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Preço de Venda *',
                           border: OutlineInputBorder(),
                         ),
@@ -256,14 +572,14 @@ class ProdutosTab extends GetView<AdminController> {
                     ),
                   ],
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
 
                 Row(
                   children: [
                     Expanded(
                       child: Obx(() => DropdownButtonFormField<String>(
                             value: iva.value,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'IVA *',
                               border: OutlineInputBorder(),
                             ),
@@ -278,11 +594,11 @@ class ProdutosTab extends GetView<AdminController> {
                             },
                           )),
                     ),
-                    SizedBox(width: 15),
+                    const SizedBox(width: 15),
                     Expanded(
                       child: Obx(() => TextField(
                             controller: estoqueController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Estoque',
                               border: OutlineInputBorder(),
                             ),
@@ -292,11 +608,11 @@ class ProdutosTab extends GetView<AdminController> {
                     ),
                   ],
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
 
                 // Switch Contável
                 Obx(() => SwitchListTile(
-                      title: Text('Produto Contável'),
+                      title: const Text('Produto Contável'),
                       subtitle: Text(contavel.value
                           ? 'Este produto tem estoque próprio'
                           : 'Este produto é composto por outros (Menu)'),
@@ -307,20 +623,20 @@ class ProdutosTab extends GetView<AdminController> {
                       },
                       activeColor: Colors.green,
                     )),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
 
                 // Seção de Composição (só aparece se não-contável)
                 Obx(() {
-                  if (contavel.value) return SizedBox.shrink();
+                  if (contavel.value) return const SizedBox.shrink();
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Divider(thickness: 2),
+                      const Divider(thickness: 2),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             'Composição do Produto (Menu)',
                             style: TextStyle(
                               fontSize: 16,
@@ -329,24 +645,24 @@ class ProdutosTab extends GetView<AdminController> {
                           ),
                           ElevatedButton.icon(
                             onPressed: () => _adicionarComponente(composicoes),
-                            icon: Icon(Icons.add, size: 18),
-                            label: Text('Adicionar'),
+                            icon: const Icon(Icons.add, size: 18),
+                            label: const Text('Adicionar'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Obx(() {
                         if (composicoes.isEmpty) {
                           return Container(
-                            padding: EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
+                            child: const Text(
                               'Nenhum componente adicionado.\nClique em "Adicionar" para incluir produtos.',
                               style: TextStyle(color: Colors.grey),
                               textAlign: TextAlign.center,
@@ -356,7 +672,7 @@ class ProdutosTab extends GetView<AdminController> {
 
                         return ListView.builder(
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: composicoes.length,
                           itemBuilder: (context, index) {
                             final comp = composicoes[index];
@@ -370,7 +686,7 @@ class ProdutosTab extends GetView<AdminController> {
                                   'Estoque: ${comp.componenteEstoque ?? 0}',
                                 ),
                                 trailing: IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(Icons.delete, color: Colors.red),
                                   onPressed: () => composicoes.removeAt(index),
                                 ),
                               ),
@@ -388,7 +704,7 @@ class ProdutosTab extends GetView<AdminController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('CANCELAR'),
+            child: const Text('CANCELAR'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -417,7 +733,7 @@ class ProdutosTab extends GetView<AdminController> {
                 controller.editarProduto(produto.id!, novoProduto, composicoes.toList());
               }
             },
-            child: Text('SALVAR'),
+            child: const Text('SALVAR'),
           ),
         ],
       ),
@@ -453,7 +769,7 @@ class ProdutosTab extends GetView<AdminController> {
 
     Get.dialog(
       AlertDialog(
-        title: Text('Adicionar Componente'),
+        title: const Text('Adicionar Componente'),
         content: SizedBox(
           width: 500,
           child: Column(
@@ -465,11 +781,11 @@ class ProdutosTab extends GetView<AdminController> {
                 decoration: InputDecoration(
                   labelText: 'Pesquisar produto',
                   hintText: 'Digite o código ou nome...',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.search),
                   suffixIcon: pesquisaController.text.isNotEmpty
                       ? IconButton(
-                          icon: Icon(Icons.clear),
+                          icon: const Icon(Icons.clear),
                           onPressed: () {
                             pesquisaController.clear();
                             filtrarProdutos('');
@@ -479,18 +795,18 @@ class ProdutosTab extends GetView<AdminController> {
                 ),
                 onChanged: filtrarProdutos,
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
 
               // Lista de produtos filtrados (máximo 5 visíveis)
               Obx(() {
                 if (produtosFiltrados.isEmpty) {
                   return Container(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Nenhum produto encontrado',
                       style: TextStyle(color: Colors.grey),
                     ),
@@ -517,13 +833,13 @@ class ProdutosTab extends GetView<AdminController> {
                               backgroundColor: isSelected ? Colors.blue : Colors.grey,
                               child: Text(
                                 produto.codigo,
-                                style: TextStyle(fontSize: 10, color: Colors.white),
+                                style: const TextStyle(fontSize: 10, color: Colors.white),
                               ),
                             ),
                             title: Text(produto.nome),
                             subtitle: Text('Estoque: ${produto.estoque}'),
                             trailing: isSelected
-                                ? Icon(Icons.check_circle, color: Colors.blue)
+                                ? const Icon(Icons.check_circle, color: Colors.blue)
                                 : null,
                             onTap: () {
                               produtoSelecionado.value = produto;
@@ -534,11 +850,11 @@ class ProdutosTab extends GetView<AdminController> {
 
                 );
               }),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
 
               TextField(
                 controller: quantidadeController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Quantidade *',
                   border: OutlineInputBorder(),
                 ),
@@ -550,7 +866,7 @@ class ProdutosTab extends GetView<AdminController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('CANCELAR'),
+            child: const Text('CANCELAR'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -588,7 +904,7 @@ class ProdutosTab extends GetView<AdminController> {
               Get.back();
               Get.snackbar('Sucesso', 'Componente adicionado!');
             },
-            child: Text('ADICIONAR'),
+            child: const Text('ADICIONAR'),
           ),
         ],
       ),
@@ -598,12 +914,12 @@ class ProdutosTab extends GetView<AdminController> {
   void _confirmarDelete(int id) {
     Get.dialog(
       AlertDialog(
-        title: Text('Confirmar'),
-        content: Text('Deseja realmente remover este produto?'),
+        title: const Text('Confirmar'),
+        content: const Text('Deseja realmente remover este produto?'),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('CANCELAR'),
+            child: const Text('CANCELAR'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -611,7 +927,7 @@ class ProdutosTab extends GetView<AdminController> {
               controller.deletarProduto(id);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('REMOVER'),
+            child: const Text('REMOVER'),
           ),
         ],
       ),

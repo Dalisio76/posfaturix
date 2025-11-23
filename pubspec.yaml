@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # Estado e Navegação
   get: ^4.6.6
@@ -23,7 +25,7 @@ dependencies:
   # UI
   flutter_svg: ^2.0.9
   google_fonts: ^6.1.0
-  intl: ^0.18.1
+  intl: ^0.20.2
   cupertino_icons: ^1.0.8
 
   # Armazenamento local

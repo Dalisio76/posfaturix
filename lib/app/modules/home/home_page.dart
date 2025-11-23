@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../routes/app_routes.dart';
+import '../login/login_page.dart';
+import '../../data/models/usuario_model.dart';
 
 class HomePage extends StatelessWidget {
   @override
@@ -54,14 +56,14 @@ class HomePage extends StatelessWidget {
                     icon: Icons.shopping_cart,
                     label: 'VENDAS',
                     color: AppTheme.secondaryColor,
-                    onTap: () => Get.toNamed(AppRoutes.vendas),
+                    onTap: () => _abrirComLogin(AppRoutes.vendas),
                   ),
                   SizedBox(width: 40),
                   _buildMenuButton(
                     icon: Icons.admin_panel_settings,
                     label: 'ADMIN',
                     color: AppTheme.warningColor,
-                    onTap: () => Get.toNamed(AppRoutes.admin),
+                    onTap: () => _abrirComLogin(AppRoutes.admin),
                   ),
                 ],
               ),
@@ -70,6 +72,14 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _abrirComLogin(String rota) async {
+    final usuario = await Get.to<UsuarioModel>(() => LoginPage());
+
+    if (usuario != null) {
+      Get.toNamed(rota);
+    }
   }
 
   Widget _buildMenuButton({

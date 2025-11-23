@@ -11,6 +11,12 @@ import 'views/clientes_tab.dart';
 import 'views/despesas_tab.dart';
 import 'views/relatorios_tab.dart';
 import 'views/margens_tab.dart';
+import 'views/acerto_stock_tab.dart';
+import 'views/fornecedores_tab.dart';
+import 'views/faturas_entrada_tab.dart';
+import 'views/relatorio_stock_tab.dart';
+import 'views/perfis_usuario_tab.dart';
+import 'views/usuarios_tab.dart';
 
 class AdminPage extends StatelessWidget {
   final AdminController controller = Get.put(AdminController());
@@ -64,9 +70,16 @@ class AdminPage extends StatelessWidget {
           Divider(),
           _buildMenuItem(6, Icons.people, 'Clientes'),
           _buildMenuItem(7, Icons.receipt_long, 'Despesas'),
+          _buildMenuItem(8, Icons.business, 'Fornecedores'),
+          _buildMenuItem(9, Icons.shopping_cart, 'Faturas de Entrada'),
           Divider(),
-          _buildMenuItem(8, Icons.analytics, 'Relatórios'),
-          _buildMenuItem(9, Icons.trending_up, 'Margens/Lucros'),
+          _buildMenuItem(10, Icons.analytics, 'Relatórios'),
+          _buildMenuItem(11, Icons.trending_up, 'Margens/Lucros'),
+          _buildMenuItem(12, Icons.inventory_2, 'Acerto de Stock'),
+          _buildMenuItem(13, Icons.warehouse, 'Relatório de Stock'),
+          Divider(),
+          _buildMenuItem(14, Icons.people, 'Usuários'),
+          _buildMenuItem(15, Icons.badge, 'Perfis de Usuário'),
           Divider(),
           ListTile(
             leading: Icon(Icons.arrow_back, color: Colors.red),
@@ -116,8 +129,14 @@ class AdminPage extends StatelessWidget {
       case 5: return 'ÁREAS';
       case 6: return 'CLIENTES';
       case 7: return 'DESPESAS';
-      case 8: return 'RELATÓRIOS';
-      case 9: return 'MARGENS/LUCROS';
+      case 8: return 'FORNECEDORES';
+      case 9: return 'FATURAS DE ENTRADA';
+      case 10: return 'RELATÓRIOS';
+      case 11: return 'MARGENS/LUCROS';
+      case 12: return 'ACERTO DE STOCK';
+      case 13: return 'RELATÓRIO DE STOCK';
+      case 14: return 'USUÁRIOS';
+      case 15: return 'PERFIS DE USUÁRIO';
       default: return 'ADMIN';
     }
   }
@@ -132,8 +151,14 @@ class AdminPage extends StatelessWidget {
       case 5: return AreasTab();
       case 6: return ClientesTab();
       case 7: return DespesasTab();
-      case 8: return RelatoriosTab();
-      case 9: return MargensTab();
+      case 8: return FornecedoresTab();
+      case 9: return FaturasEntradaTab();
+      case 10: return RelatoriosTab();
+      case 11: return MargensTab();
+      case 12: return AcertoStockTab();
+      case 13: return RelatorioStockTab();
+      case 14: return UsuariosTab();
+      case 15: return PerfisUsuarioTab();
       default: return EmpresaTab();
     }
   }

@@ -105,14 +105,14 @@ class UsuarioRepository {
     return result.map((map) => UsuarioModel.fromMap(map)).toList();
   }
 
-  /// Verificar se código já existe (para evitar duplicatas)
-  Future<bool> codigoExiste(String codigo, {int? excluirId}) async {
+  /// Verificar se nome já existe (para evitar duplicatas)
+  Future<bool> nomeExiste(String nome, {int? excluirId}) async {
     final result = await _db.query('''
       SELECT COUNT(*) as count FROM usuarios
-      WHERE codigo = @codigo
+      WHERE nome = @nome
       ${excluirId != null ? 'AND id != @excluir_id' : ''}
     ''', parameters: {
-      'codigo': codigo,
+      'nome': nome,
       if (excluirId != null) 'excluir_id': excluirId,
     });
 

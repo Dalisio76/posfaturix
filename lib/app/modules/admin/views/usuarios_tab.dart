@@ -149,13 +149,13 @@ class _UsuariosTabState extends State<UsuariosTab> {
                 return;
               }
 
-              // Verificar se código já existe
-              final codigoExiste = await _usuarioRepo.codigoExiste(
-                codigoController.text,
+              // Verificar se nome já existe
+              final nomeExiste = await _usuarioRepo.nomeExiste(
+                nomeController.text,
                 excluirId: usuario?.id
               );
-              if (codigoExiste) {
-                Get.snackbar('Erro', 'Este código já está em uso por outro usuário');
+              if (nomeExiste) {
+                Get.snackbar('Erro', 'Este nome já está em uso por outro usuário');
                 return;
               }
 
@@ -232,16 +232,6 @@ class _UsuariosTabState extends State<UsuariosTab> {
               }
               if (codigoController.text.length < 1 || codigoController.text.length > 8) {
                 Get.snackbar('Erro', 'Código deve ter de 1 a 8 dígitos');
-                return;
-              }
-
-              // Verificar se código já existe
-              final codigoExiste = await _usuarioRepo.codigoExiste(
-                codigoController.text,
-                excluirId: usuario.id
-              );
-              if (codigoExiste) {
-                Get.snackbar('Erro', 'Este código já está em uso por outro usuário');
                 return;
               }
 

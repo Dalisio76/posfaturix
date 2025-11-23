@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/auth_service.dart';
 import 'controllers/admin_controller.dart';
+import 'utils/admin_menu_permissions.dart';
 import 'views/familias_tab.dart';
 import 'views/produtos_tab.dart';
 import 'views/empresa_tab.dart';
@@ -17,10 +19,12 @@ import 'views/faturas_entrada_tab.dart';
 import 'views/relatorio_stock_tab.dart';
 import 'views/perfis_usuario_tab.dart';
 import 'views/usuarios_tab.dart';
+import 'views/configurar_permissoes_tab.dart';
 
 class AdminPage extends StatelessWidget {
   final AdminController controller = Get.put(AdminController());
   final RxInt selectedIndex = 0.obs;
+  final AuthService authService = Get.find<AuthService>();
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +84,7 @@ class AdminPage extends StatelessWidget {
           Divider(),
           _buildMenuItem(14, Icons.people, 'Usuários'),
           _buildMenuItem(15, Icons.badge, 'Perfis de Usuário'),
+          _buildMenuItem(16, Icons.security, 'Configurar Permissões'),
           Divider(),
           ListTile(
             leading: Icon(Icons.arrow_back, color: Colors.red),
@@ -112,7 +117,24 @@ class AdminPage extends StatelessWidget {
               : Colors.black,
         ),
       ),
-      onTap: () {
+      onTap: () async {
+        // Verificar permissões antes de permitir acesso
+        final permissoesNecessarias = AdminMenuPermissions.getPermissions(index);
+
+        if (permissoesNecessarias.isNotEmpty) {
+          final temPermissao = await authService.temAlgumaPermissao(permissoesNecessarias);
+
+          if (!temPermissao) {
+            Get.snackbar(
+              'Acesso Negado',
+              'Você não tem permissão para acessar $title',
+              snackPosition: SnackPosition.TOP,
+              duration: const Duration(seconds: 3),
+            );
+            return;
+          }
+        }
+
         selectedIndex.value = index;
         Get.back(); // Fechar drawer
       },
@@ -137,6 +159,7 @@ class AdminPage extends StatelessWidget {
       case 13: return 'RELATÓRIO DE STOCK';
       case 14: return 'USUÁRIOS';
       case 15: return 'PERFIS DE USUÁRIO';
+      case 16: return 'CONFIGURAR PERMISSÕES';
       default: return 'ADMIN';
     }
   }
@@ -159,6 +182,7 @@ class AdminPage extends StatelessWidget {
       case 13: return RelatorioStockTab();
       case 14: return UsuariosTab();
       case 15: return PerfisUsuarioTab();
+      case 16: return ConfigurarPermissoesTab();
       default: return EmpresaTab();
     }
   }

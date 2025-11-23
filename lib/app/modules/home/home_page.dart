@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/auth_service.dart';
 import '../../routes/app_routes.dart';
 import '../login/login_page.dart';
 import '../../data/models/usuario_model.dart';
@@ -78,6 +79,21 @@ class HomePage extends StatelessWidget {
     final usuario = await Get.to<UsuarioModel>(() => LoginPage());
 
     if (usuario != null) {
+      final authService = Get.find<AuthService>();
+
+      // Verificar permissão específica dependendo da rota
+      if (rota == AppRoutes.admin) {
+        final temPermissao = await authService.verificarPermissao(
+          'acesso_admin',
+          mensagem: 'Você não tem permissão para acessar a Administração',
+        );
+
+        if (!temPermissao) {
+          authService.logout();
+          return;
+        }
+      }
+
       Get.toNamed(rota);
     }
   }

@@ -10,6 +10,11 @@ class FamiliaModel {
   final List<String>? setorNomes;
   final String? setoresTexto;
 
+  // Campos adicionais para relacionamento com áreas
+  final List<int>? areaIds;
+  final List<String>? areaNomes;
+  final String? areasTexto;
+
   FamiliaModel({
     this.id,
     required this.nome,
@@ -19,6 +24,9 @@ class FamiliaModel {
     this.setorIds,
     this.setorNomes,
     this.setoresTexto,
+    this.areaIds,
+    this.areaNomes,
+    this.areasTexto,
   });
 
   factory FamiliaModel.fromMap(Map<String, dynamic> map) {
@@ -54,6 +62,38 @@ class FamiliaModel {
       }
     }
 
+    // Processar array de IDs de áreas
+    List<int>? areaIds;
+    if (map['area_ids'] != null) {
+      if (map['area_ids'] is List) {
+        areaIds = (map['area_ids'] as List).map((e) => e as int).toList();
+      } else if (map['area_ids'] is String) {
+        // PostgreSQL pode retornar array como string: "{1,2,3}"
+        final arrayStr = (map['area_ids'] as String)
+            .replaceAll('{', '')
+            .replaceAll('}', '');
+        if (arrayStr.isNotEmpty) {
+          areaIds = arrayStr.split(',').map((e) => int.parse(e.trim())).toList();
+        }
+      }
+    }
+
+    // Processar array de nomes de áreas
+    List<String>? areaNomes;
+    if (map['area_nomes'] != null) {
+      if (map['area_nomes'] is List) {
+        areaNomes = (map['area_nomes'] as List).map((e) => e.toString()).toList();
+      } else if (map['area_nomes'] is String) {
+        // PostgreSQL pode retornar array como string: "{BAR,COZINHA}"
+        final arrayStr = (map['area_nomes'] as String)
+            .replaceAll('{', '')
+            .replaceAll('}', '');
+        if (arrayStr.isNotEmpty) {
+          areaNomes = arrayStr.split(',').map((e) => e.trim()).toList();
+        }
+      }
+    }
+
     return FamiliaModel(
       id: map['id'],
       nome: map['nome'],
@@ -65,6 +105,9 @@ class FamiliaModel {
       setorIds: setorIds,
       setorNomes: setorNomes,
       setoresTexto: map['setores_texto'],
+      areaIds: areaIds,
+      areaNomes: areaNomes,
+      areasTexto: map['areas_texto'],
     );
   }
 

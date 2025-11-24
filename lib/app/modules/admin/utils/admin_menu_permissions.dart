@@ -11,13 +11,15 @@ class AdminMenuPermissions {
     7: ['registar_despesas'], // Despesas
     8: ['registar_fornecedores'], // Fornecedores
     9: ['entrada_stock'], // Faturas de Entrada
-    10: ['relatorios'], // Relatórios
-    11: ['reportar_margens_fecho'], // Margens/Lucros
-    12: ['acerto_stock'], // Acerto de Stock
-    13: ['ver_stock'], // Relatório de Stock
-    14: ['gestao_usuarios'], // Usuários
-    15: ['gestao_perfis'], // Perfis de Usuário
-    16: ['gestao_permissoes'], // Configurar Permissões
+    10: ['gestao_mesas'], // Mesas
+    11: ['relatorios'], // Relatórios
+    12: ['reportar_margens_fecho'], // Margens/Lucros
+    13: ['acerto_stock'], // Acerto de Stock
+    14: ['ver_stock'], // Relatório de Stock
+    15: ['gestao_usuarios'], // Usuários
+    16: ['gestao_perfis'], // Perfis de Usuário
+    17: ['gestao_permissoes'], // Configurar Permissões
+    18: ['configuracoes_sistema'], // Configurações do Sistema
   };
 
   /// Retorna as permissões necessárias para acessar um menu

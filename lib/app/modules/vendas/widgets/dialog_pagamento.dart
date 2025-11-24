@@ -429,14 +429,6 @@ class _DialogPagamentoState extends State<DialogPagamento> {
     ));
 
     _limparValor();
-
-    Get.snackbar(
-      'Adicionado',
-      'MT ${valor.toStringAsFixed(2)} via ${forma.nome}',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: Duration(seconds: 1),
-    );
   }
 
   void _removerPagamento(PagamentoVendaModel pagamento) {

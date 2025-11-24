@@ -101,4 +101,51 @@ class FamiliaRepository {
       UPDATE familias SET ativo = false WHERE id = @id
     ''', parameters: {'id': id});
   }
+
+  // ===== MÉTODOS PARA ÁREAS =====
+
+  Future<void> associarAreas(int familiaId, List<int> areaIds) async {
+    for (final areaId in areaIds) {
+      await _db.execute('''
+        INSERT INTO familia_areas (familia_id, area_id)
+        VALUES (@familia_id, @area_id)
+        ON CONFLICT (familia_id, area_id) DO NOTHING
+      ''', parameters: {
+        'familia_id': familiaId,
+        'area_id': areaId,
+      });
+    }
+  }
+
+  Future<void> desassociarArea(int familiaId, int areaId) async {
+    await _db.execute('''
+      DELETE FROM familia_areas
+      WHERE familia_id = @familia_id AND area_id = @area_id
+    ''', parameters: {
+      'familia_id': familiaId,
+      'area_id': areaId,
+    });
+  }
+
+  Future<List<int>> buscarAreasDaFamilia(int familiaId) async {
+    final result = await _db.query('''
+      SELECT area_id FROM familia_areas
+      WHERE familia_id = @familia_id
+      ORDER BY area_id
+    ''', parameters: {'familia_id': familiaId});
+
+    return result.map((map) => map['area_id'] as int).toList();
+  }
+
+  Future<void> atualizarAreas(int familiaId, List<int> areaIds) async {
+    // Remover áreas antigas
+    await _db.execute('''
+      DELETE FROM familia_areas WHERE familia_id = @id
+    ''', parameters: {'id': familiaId});
+
+    // Adicionar novas áreas
+    if (areaIds.isNotEmpty) {
+      await associarAreas(familiaId, areaIds);
+    }
+  }
 }

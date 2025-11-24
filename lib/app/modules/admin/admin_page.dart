@@ -17,9 +17,11 @@ import 'views/acerto_stock_tab.dart';
 import 'views/fornecedores_tab.dart';
 import 'views/faturas_entrada_tab.dart';
 import 'views/relatorio_stock_tab.dart';
+import 'views/mesas_tab.dart';
 import 'views/perfis_usuario_tab.dart';
 import 'views/usuarios_tab.dart';
 import 'views/configurar_permissoes_tab.dart';
+import '../definicoes/definicoes_page.dart';
 
 class AdminPage extends StatelessWidget {
   final AdminController controller = Get.put(AdminController());
@@ -76,15 +78,17 @@ class AdminPage extends StatelessWidget {
           _buildMenuItem(7, Icons.receipt_long, 'Despesas'),
           _buildMenuItem(8, Icons.business, 'Fornecedores'),
           _buildMenuItem(9, Icons.shopping_cart, 'Faturas de Entrada'),
+          _buildMenuItem(10, Icons.table_restaurant, 'Mesas'),
           Divider(),
-          _buildMenuItem(10, Icons.analytics, 'Relatórios'),
-          _buildMenuItem(11, Icons.trending_up, 'Margens/Lucros'),
-          _buildMenuItem(12, Icons.inventory_2, 'Acerto de Stock'),
-          _buildMenuItem(13, Icons.warehouse, 'Relatório de Stock'),
+          _buildMenuItem(11, Icons.analytics, 'Relatórios'),
+          _buildMenuItem(12, Icons.trending_up, 'Margens/Lucros'),
+          _buildMenuItem(13, Icons.inventory_2, 'Acerto de Stock'),
+          _buildMenuItem(14, Icons.warehouse, 'Relatório de Stock'),
           Divider(),
-          _buildMenuItem(14, Icons.people, 'Usuários'),
-          _buildMenuItem(15, Icons.badge, 'Perfis de Usuário'),
-          _buildMenuItem(16, Icons.security, 'Configurar Permissões'),
+          _buildMenuItem(15, Icons.people, 'Usuários'),
+          _buildMenuItem(16, Icons.badge, 'Perfis de Usuário'),
+          _buildMenuItem(17, Icons.security, 'Configurar Permissões'),
+          _buildMenuItem(18, Icons.settings, 'Configurações do Sistema'),
           Divider(),
           ListTile(
             leading: Icon(Icons.arrow_back, color: Colors.red),
@@ -153,13 +157,15 @@ class AdminPage extends StatelessWidget {
       case 7: return 'DESPESAS';
       case 8: return 'FORNECEDORES';
       case 9: return 'FATURAS DE ENTRADA';
-      case 10: return 'RELATÓRIOS';
-      case 11: return 'MARGENS/LUCROS';
-      case 12: return 'ACERTO DE STOCK';
-      case 13: return 'RELATÓRIO DE STOCK';
-      case 14: return 'USUÁRIOS';
-      case 15: return 'PERFIS DE USUÁRIO';
-      case 16: return 'CONFIGURAR PERMISSÕES';
+      case 10: return 'MESAS';
+      case 11: return 'RELATÓRIOS';
+      case 12: return 'MARGENS/LUCROS';
+      case 13: return 'ACERTO DE STOCK';
+      case 14: return 'RELATÓRIO DE STOCK';
+      case 15: return 'USUÁRIOS';
+      case 16: return 'PERFIS DE USUÁRIO';
+      case 17: return 'CONFIGURAR PERMISSÕES';
+      case 18: return 'CONFIGURAÇÕES DO SISTEMA';
       default: return 'ADMIN';
     }
   }
@@ -176,13 +182,15 @@ class AdminPage extends StatelessWidget {
       case 7: return DespesasTab();
       case 8: return FornecedoresTab();
       case 9: return FaturasEntradaTab();
-      case 10: return RelatoriosTab();
-      case 11: return MargensTab();
-      case 12: return AcertoStockTab();
-      case 13: return RelatorioStockTab();
-      case 14: return UsuariosTab();
-      case 15: return PerfisUsuarioTab();
-      case 16: return ConfigurarPermissoesTab();
+      case 10: return MesasTab();
+      case 11: return RelatoriosTab();
+      case 12: return MargensTab();
+      case 13: return AcertoStockTab();
+      case 14: return RelatorioStockTab();
+      case 15: return UsuariosTab();
+      case 16: return PerfisUsuarioTab();
+      case 17: return ConfigurarPermissoesTab();
+      case 18: return DefinicoesPage();
       default: return EmpresaTab();
     }
   }

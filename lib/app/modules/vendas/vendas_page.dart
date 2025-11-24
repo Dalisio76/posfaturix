@@ -5,7 +5,6 @@ import 'controllers/vendas_controller.dart';
 import 'widgets/dialog_pesquisa_produto.dart';
 import 'views/tela_devedores.dart';
 import '../caixa/views/tela_fecho_caixa.dart';
-import '../definicoes/definicoes_page.dart';
 
 class VendasPage extends StatelessWidget {
   final VendasController controller = Get.put(VendasController());
@@ -14,19 +13,18 @@ class VendasPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('VENDAS', style: TextStyle(fontSize: 18)),
         actions: [
           // Botão DESPESAS
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4),
             child: ElevatedButton.icon(
               onPressed: controller.abrirDialogDespesas,
-              icon: Icon(Icons.money_off, size: 20),
-              label: Text('DESPESAS', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              icon: Icon(Icons.money_off, size: 24),
+              label: Text('DESPESAS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               ),
             ),
           ),
@@ -37,33 +35,12 @@ class VendasPage extends StatelessWidget {
               onPressed: () {
                 Get.to(() => TelaFechoCaixa());
               },
-              icon: Icon(Icons.point_of_sale, size: 20),
-              label: Text('FECHO CAIXA', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              icon: Icon(Icons.point_of_sale, size: 24),
+              label: Text('FECHO CAIXA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple[700],
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-          ),
-          // Botão PEDIDO
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Get.snackbar(
-                  'Em Desenvolvimento',
-                  'Funcionalidade de Pedidos será implementada em breve',
-                  backgroundColor: Colors.orange,
-                  colorText: Colors.white,
-                );
-              },
-              icon: Icon(Icons.receipt_long, size: 20),
-              label: Text('PEDIDO', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               ),
             ),
           ),
@@ -74,35 +51,56 @@ class VendasPage extends StatelessWidget {
               onPressed: () {
                 Get.to(() => TelaDevedores());
               },
-              icon: Icon(Icons.people, size: 20),
-              label: Text('CLIENTES', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              icon: Icon(Icons.people, size: 24),
+              label: Text('CLIENTES', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[700],
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               ),
             ),
           ),
-          SizedBox(width: 8),
           // Botão de Pesquisa
-          IconButton(
-            icon: Icon(Icons.search, size: 28),
-            onPressed: _abrirPesquisa,
-            tooltip: 'Pesquisar Produto',
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: ElevatedButton.icon(
+              onPressed: _abrirPesquisa,
+              icon: Icon(Icons.search, size: 24),
+              label: Text('PESQUISAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange[700],
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              ),
+            ),
           ),
-          SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.refresh, size: 24),
-            onPressed: controller.carregarDados,
-            tooltip: 'Atualizar',
+          // Botão ATUALIZAR
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: ElevatedButton.icon(
+              onPressed: controller.carregarDados,
+              icon: Icon(Icons.refresh, size: 24),
+              label: Text('ATUALIZAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[700],
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              ),
+            ),
           ),
-          SizedBox(width: 4),
-          IconButton(
-            icon: Icon(Icons.settings, size: 24),
-            onPressed: () {
-              Get.to(() => DefinicoesPage());
-            },
-            tooltip: 'Definições',
+          // Botão LIMPAR
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: ElevatedButton.icon(
+              onPressed: controller.limparCarrinho,
+              icon: Icon(Icons.delete_sweep, size: 24),
+              label: Text('LIMPAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[700],
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              ),
+            ),
           ),
           SizedBox(width: 8),
         ],
@@ -114,10 +112,13 @@ class VendasPage extends StatelessWidget {
             flex: 2,
             child: Column(
               children: [
-                // Filtro por família (maior)
+                // Filtro por área
+                _buildFiltroAreas(),
+                Divider(height: 1),
+                // Filtro por família
                 _buildFiltroFamilias(),
                 Divider(height: 1),
-                // Grid de produtos (menor)
+                // Grid de produtos
                 Expanded(child: _buildGridProdutos()),
               ],
             ),
@@ -155,52 +156,91 @@ class VendasPage extends StatelessWidget {
     );
   }
 
+  Widget _buildFiltroAreas() {
+    return Container(
+      height: 80,
+      padding: EdgeInsets.all(12),
+      color: Colors.grey[200],
+      child: Obx(() {
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: controller.areas.length,
+          separatorBuilder: (context, index) => SizedBox(width: 10),
+          itemBuilder: (context, index) {
+            final area = controller.areas[index];
+            final isSelected = controller.areaSelecionadaId == area['id'];
+
+            return ChoiceChip(
+              label: Text(
+                area['nome'],
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              selected: isSelected,
+              onSelected: (_) => controller.selecionarArea(isSelected ? null : area['id']),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              selectedColor: Colors.blue,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
   Widget _buildFiltroFamilias() {
     return Container(
-      height: 120,  // Aumentado para acomodar grid
+      height: 150,
       padding: EdgeInsets.all(12),
       color: Colors.grey[100],
       child: Obx(() {
-        final todasAsFamilias = [null, ...controller.familias];
+        if (controller.familiasFiltradas.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.info_outline, size: 32, color: Colors.grey),
+                SizedBox(height: 8),
+                Text(
+                  controller.areaSelecionadaId == null
+                    ? 'Selecione uma área acima para ver as famílias'
+                    : 'Nenhuma família cadastrada nesta área',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
         return GridView.builder(
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 6,  // 6 famílias por linha
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 3.0,  // Largura/altura
+            crossAxisCount: 6,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 3.0,
           ),
-          itemCount: todasAsFamilias.length,
+          itemCount: controller.familiasFiltradas.length,
           itemBuilder: (context, index) {
-            if (index == 0) {
-              // Botão TODAS
-              return FilterChip(
-                label: Text('TODAS', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                selected: controller.familiaSelecionada == null,
-                onSelected: (_) => controller.selecionarFamilia(null),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                selectedColor: Get.theme.primaryColor,
-                labelStyle: TextStyle(
-                  color: controller.familiaSelecionada == null ? Colors.white : Colors.black,
-                ),
-              );
-            } else {
-              final familia = todasAsFamilias[index];
-              final isSelected = controller.familiaSelecionada?.id == familia?.id;
-              return FilterChip(
-                label: Text(
-                  familia!.nome,
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                selected: isSelected,
-                onSelected: (_) => controller.selecionarFamilia(familia),
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                selectedColor: Get.theme.primaryColor,
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black,
-                ),
-              );
-            }
+            final familia = controller.familiasFiltradas[index];
+            final isSelected = controller.familiaSelecionada?.id == familia.id;
+
+            return FilterChip(
+              label: Text(
+                familia.nome,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                maxLines: 2,
+                textAlign: TextAlign.center,
+              ),
+              selected: isSelected,
+              onSelected: (_) => controller.selecionarFamilia(isSelected ? null : familia),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              selectedColor: Get.theme.primaryColor,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+              ),
+            );
           },
         );
       }),
@@ -437,11 +477,6 @@ class VendasPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    '${Formatters.formatarMoeda(item.produto.preco)} cada',
-                    style: TextStyle(fontSize: 10, color: Colors.grey),
-                  ),
                 ],
               ),
             ),
@@ -486,30 +521,38 @@ class VendasPage extends StatelessWidget {
       padding: EdgeInsets.all(12),
       child: Column(
         children: [
-          SizedBox(
+          Obx(() => SizedBox(
             width: double.infinity,
+            height: 70,
             child: ElevatedButton.icon(
-              onPressed: controller.limparCarrinho,
-              icon: Icon(Icons.delete_sweep, size: 20),
-              label: Text('LIMPAR', style: TextStyle(fontSize: 14)),
+              onPressed: controller.abrirSelecaoMesa,
+              icon: Icon(
+                controller.temProdutosNoCarrinho ? Icons.table_restaurant : Icons.receipt_long,
+                size: 28,
+              ),
+              label: Text(
+                controller.textoBotaoPedido,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: controller.temProdutosNoCarrinho ? Colors.orange[700] : Colors.blue[700],
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.all(14),
+                padding: EdgeInsets.all(18),
               ),
             ),
-          ),
-          SizedBox(height: 8),
+          )),
+          SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
+            height: 80,
             child: ElevatedButton.icon(
               onPressed: controller.finalizarVenda,
-              icon: Icon(Icons.payment, size: 22),
-              label: Text('FINALIZAR VENDA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              icon: Icon(Icons.payment, size: 32),
+              label: Text('FINALIZAR VENDA', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.all(18),
+                padding: EdgeInsets.all(20),
               ),
             ),
           ),

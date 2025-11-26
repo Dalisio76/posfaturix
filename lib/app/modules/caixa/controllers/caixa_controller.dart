@@ -3,9 +3,13 @@ import 'package:get/get.dart';
 import '../../../data/models/caixa_model.dart';
 import '../../../data/models/caixa_detalhe_model.dart';
 import '../../../data/repositories/caixa_repository.dart';
+import '../../../data/repositories/pedido_repository.dart';
+import '../../../../core/database/database_service.dart';
 
 class CaixaController extends GetxController {
   final CaixaRepository _repository = CaixaRepository();
+  final PedidoRepository _pedidoRepository = PedidoRepository();
+  final DatabaseService _db = Get.find<DatabaseService>();
 
   final Rx<CaixaModel?> caixaAtual = Rx<CaixaModel?>(null);
   final RxBool isLoading = false.obs;
@@ -186,8 +190,10 @@ class CaixaController extends GetxController {
 
   /// Fechar o caixa atual
   Future<Map<String, dynamic>?> fecharCaixa({String? observacoes}) async {
+    print('[CaixaController] Iniciando fechamento de caixa...');
     try {
       if (caixaAtual.value == null) {
+        print('[CaixaController] ERRO: Caixa atual é null');
         Get.snackbar(
           'Atenção',
           'Não há caixa aberto para fechar.',
@@ -196,26 +202,67 @@ class CaixaController extends GetxController {
         return null;
       }
 
+      print('[CaixaController] Caixa ID: ${caixaAtual.value!.id}');
+
+      // Verificar se há pedidos abertos (mesas ocupadas)
+      print('[CaixaController] Verificando pedidos abertos...');
+      final pedidosAbertos = await _db.query('''
+        SELECT COUNT(*) as total FROM pedidos WHERE status = 'aberto'
+      ''');
+
+      final totalPedidosAbertos = pedidosAbertos.first['total'] as int;
+      print('[CaixaController] Total de pedidos abertos: $totalPedidosAbertos');
+
+      if (totalPedidosAbertos > 0) {
+        print('[CaixaController] ERRO: Existem mesas ocupadas');
+        Get.defaultDialog(
+          title: 'Não é possível fechar o caixa',
+          titleStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange[800]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.warning_amber_rounded, size: 60, color: Colors.orange),
+              SizedBox(height: 20),
+              Text(
+                'Existem $totalPedidosAbertos mesa(s) com pedidos abertos.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Finalize todos os pedidos antes de fechar o caixa.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              ),
+            ],
+          ),
+          textConfirm: 'ENTENDI',
+          confirmTextColor: Colors.white,
+          buttonColor: Colors.orange,
+        );
+        return null;
+      }
+
+      print('[CaixaController] Setando isLoading = true');
       isLoading.value = true;
 
+      print('[CaixaController] Chamando repository.fecharCaixa...');
       final resultado = await _repository.fecharCaixa(
         caixaAtual.value!.id!,
         observacoes: observacoes,
       );
-
-      Get.snackbar(
-        'Sucesso',
-        'Caixa ${resultado['numero_caixa']} fechado com sucesso!',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      print('[CaixaController] Repository retornou: $resultado');
 
       // Limpar caixa atual
+      print('[CaixaController] Limpando caixa atual...');
       caixaAtual.value = null;
       existeCaixaAberto.value = false;
 
+      print('[CaixaController] Caixa fechado com sucesso');
       return resultado;
-    } catch (e) {
-      print('Erro ao fechar caixa: $e');
+    } catch (e, stackTrace) {
+      print('[CaixaController] ERRO ao fechar caixa: $e');
+      print('[CaixaController] StackTrace: $stackTrace');
       Get.snackbar(
         'Erro',
         'Erro ao fechar caixa: $e',
@@ -223,6 +270,7 @@ class CaixaController extends GetxController {
       );
       return null;
     } finally {
+      print('[CaixaController] Setando isLoading = false');
       isLoading.value = false;
     }
   }

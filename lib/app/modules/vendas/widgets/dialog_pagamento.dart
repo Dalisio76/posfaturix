@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../data/models/forma_pagamento_model.dart';
 import '../../../data/models/pagamento_venda_model.dart';
@@ -28,11 +29,23 @@ class _DialogPagamentoState extends State<DialogPagamento> {
   final RxList<ClienteModel> clientes = <ClienteModel>[].obs;
   final Rxn<ClienteModel> clienteSelecionado = Rxn<ClienteModel>();
   final RxBool modoDivida = false.obs;
+  final TextEditingController _valorController = TextEditingController(text: '0');
 
   @override
   void initState() {
     super.initState();
     _carregarClientes();
+
+    // Sincronizar controller com valorDigitado
+    _valorController.addListener(() {
+      valorDigitado.value = _valorController.text.isEmpty ? '0' : _valorController.text;
+    });
+  }
+
+  @override
+  void dispose() {
+    _valorController.dispose();
+    super.dispose();
   }
 
   Future<void> _carregarClientes() async {
@@ -65,8 +78,45 @@ class _DialogPagamentoState extends State<DialogPagamento> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: Container(
+    return Focus(
+      autofocus: true,
+      onKey: (node, event) {
+        if (event is RawKeyDownEvent) {
+          final key = event.logicalKey;
+
+          // F1-F8 para selecionar formas de pagamento
+          if (widget.formasPagamento.isNotEmpty) {
+            if (key == LogicalKeyboardKey.f1 && widget.formasPagamento.length >= 1) {
+              _adicionarPagamento(widget.formasPagamento[0]);
+              return KeyEventResult.handled;
+            } else if (key == LogicalKeyboardKey.f2 && widget.formasPagamento.length >= 2) {
+              _adicionarPagamento(widget.formasPagamento[1]);
+              return KeyEventResult.handled;
+            } else if (key == LogicalKeyboardKey.f3 && widget.formasPagamento.length >= 3) {
+              _adicionarPagamento(widget.formasPagamento[2]);
+              return KeyEventResult.handled;
+            } else if (key == LogicalKeyboardKey.f4 && widget.formasPagamento.length >= 4) {
+              _adicionarPagamento(widget.formasPagamento[3]);
+              return KeyEventResult.handled;
+            }
+          }
+
+          // F9 - Finalizar pagamento
+          if (key == LogicalKeyboardKey.f9 && pagamentoCompleto) {
+            _finalizarPagamento();
+            return KeyEventResult.handled;
+          }
+
+          // ESC - Fechar dialog
+          if (key == LogicalKeyboardKey.escape) {
+            Get.back();
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Dialog(
+        child: Container(
         width: 900,
         height: MediaQuery.of(context).size.height * 0.85,
         padding: EdgeInsets.all(16),
@@ -181,7 +231,7 @@ class _DialogPagamentoState extends State<DialogPagamento> {
             Obx(() => ElevatedButton.icon(
               onPressed: pagamentoCompleto ? _finalizarPagamento : null,
               icon: Icon(Icons.check_circle, size: 20),
-              label: Text('FINALIZAR PAGAMENTO', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              label: Text('FINALIZAR PAGAMENTO (F9)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
@@ -192,6 +242,7 @@ class _DialogPagamentoState extends State<DialogPagamento> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -319,19 +370,29 @@ class _DialogPagamentoState extends State<DialogPagamento> {
   }
 
   Widget _buildCampoValor() {
-    return Obx(() => Container(
-      padding: EdgeInsets.all(12),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.grey[400]!, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        'MT ${_formatarValor(valorDigitado.value)}',
+      child: TextField(
+        controller: _valorController,
+        keyboardType: TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+        ],
         style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
         textAlign: TextAlign.right,
+        decoration: InputDecoration(
+          prefix: Text('MT ', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildGridFormasPagamento() {
@@ -346,12 +407,14 @@ class _DialogPagamentoState extends State<DialogPagamento> {
       itemCount: widget.formasPagamento.length,
       itemBuilder: (context, index) {
         final forma = widget.formasPagamento[index];
-        return _buildBotaoFormaPagamento(forma);
+        return _buildBotaoFormaPagamento(forma, index);
       },
     );
   }
 
-  Widget _buildBotaoFormaPagamento(FormaPagamentoModel forma) {
+  Widget _buildBotaoFormaPagamento(FormaPagamentoModel forma, int index) {
+    final atalho = index < 4 ? ' (F${index + 1})' : '';
+
     return ElevatedButton(
       onPressed: () => _adicionarPagamento(forma),
       style: ElevatedButton.styleFrom(
@@ -367,7 +430,7 @@ class _DialogPagamentoState extends State<DialogPagamento> {
           SizedBox(width: 6),
           Flexible(
             child: Text(
-              forma.nome,
+              '${forma.nome}$atalho',
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
@@ -388,24 +451,24 @@ class _DialogPagamentoState extends State<DialogPagamento> {
   }
 
   void _adicionarDigito(String digito) {
-    if (digito == '.' && valorDigitado.value.contains('.')) return;
-    if (valorDigitado.value == '0' && digito != '.') {
-      valorDigitado.value = digito;
+    if (digito == '.' && _valorController.text.contains('.')) return;
+    if (_valorController.text == '0' && digito != '.') {
+      _valorController.text = digito;
     } else {
-      valorDigitado.value += digito;
+      _valorController.text += digito;
     }
   }
 
   void _removerUltimoDigito() {
-    if (valorDigitado.value.length > 1) {
-      valorDigitado.value = valorDigitado.value.substring(0, valorDigitado.value.length - 1);
+    if (_valorController.text.length > 1) {
+      _valorController.text = _valorController.text.substring(0, _valorController.text.length - 1);
     } else {
-      valorDigitado.value = '0';
+      _valorController.text = '0';
     }
   }
 
   void _limparValor() {
-    valorDigitado.value = '0';
+    _valorController.text = '0';
   }
 
   String _formatarValor(String valor) {

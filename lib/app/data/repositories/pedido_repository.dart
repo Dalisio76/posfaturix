@@ -98,6 +98,50 @@ class PedidoRepository {
     ''', parameters: {'id': itemId});
   }
 
+  /// Cancela item do pedido com justificativa
+  Future<void> cancelarItem({
+    required int itemId,
+    required int pedidoId,
+    required int usuarioId,
+    required String usuarioNome,
+    required String justificativa,
+  }) async {
+    // Buscar informações do item antes de cancelar
+    final item = await _db.query('''
+      SELECT * FROM itens_pedido WHERE id = @id
+    ''', parameters: {'id': itemId});
+
+    if (item.isEmpty) {
+      throw Exception('Item não encontrado');
+    }
+
+    final itemData = item.first;
+
+    // Registrar cancelamento no log
+    await _db.execute('''
+      INSERT INTO cancelamentos_item_pedido
+        (item_pedido_id, pedido_id, produto_id, produto_nome, quantidade,
+         preco_unitario, subtotal, usuario_id, usuario_nome, justificativa)
+      VALUES
+        (@item_pedido_id, @pedido_id, @produto_id, @produto_nome, @quantidade,
+         @preco_unitario, @subtotal, @usuario_id, @usuario_nome, @justificativa)
+    ''', parameters: {
+      'item_pedido_id': itemId,
+      'pedido_id': pedidoId,
+      'produto_id': itemData['produto_id'],
+      'produto_nome': itemData['produto_nome'],
+      'quantidade': itemData['quantidade'],
+      'preco_unitario': itemData['preco_unitario'],
+      'subtotal': itemData['subtotal'],
+      'usuario_id': usuarioId,
+      'usuario_nome': usuarioNome,
+      'justificativa': justificativa,
+    });
+
+    // Remover item do pedido
+    await removerItem(itemId);
+  }
+
   /// Atualiza quantidade de item
   Future<void> atualizarQuantidadeItem(int itemId, int novaQuantidade) async {
     await _db.execute('''
@@ -150,5 +194,37 @@ class PedidoRepository {
     ''', parameters: {'pedido_id': pedidoId});
 
     return double.parse(result.first['total'].toString());
+  }
+
+  /// Conta quantos itens tem no pedido
+  Future<int> contarItensPedido(int pedidoId) async {
+    final result = await _db.query('''
+      SELECT COUNT(*) as count FROM itens_pedido WHERE pedido_id = @pedido_id
+    ''', parameters: {'pedido_id': pedidoId});
+
+    return result.first['count'] as int;
+  }
+
+  /// Move todos os itens de um pedido para outro (para unir contas)
+  Future<void> moverItensPedido(int pedidoOrigemId, int pedidoDestinoId) async {
+    await _db.execute('''
+      UPDATE itens_pedido
+      SET pedido_id = @pedido_destino
+      WHERE pedido_id = @pedido_origem
+    ''', parameters: {
+      'pedido_origem': pedidoOrigemId,
+      'pedido_destino': pedidoDestinoId,
+    });
+
+    // Fechar pedido origem
+    await fechar(pedidoOrigemId);
+  }
+
+  /// Cancela pedido vazio (sem itens)
+  Future<void> cancelarSeVazio(int pedidoId) async {
+    final count = await contarItensPedido(pedidoId);
+    if (count == 0) {
+      await cancelar(pedidoId);
+    }
   }
 }

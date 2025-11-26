@@ -572,7 +572,7 @@ class VendasController extends GetxController {
 
   /// Verifica se deve mostrar "PEDIDOS" ou "MESA"
   String get textoBotaoPedido {
-    return carrinho.isEmpty ? 'PEDIDOS' : 'MESA';
+    return carrinho.isEmpty ? 'PEDIDOS (F3)' : 'MESA (F3)';
   }
 
   /// Getter para saber se tem produtos no carrinho

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'controllers/login_controller.dart';
 import '../../data/models/usuario_model.dart';
@@ -100,9 +101,61 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget _buildPasswordPanel() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
+    return Focus(
+      autofocus: true,
+      onKey: (node, event) {
+        if (event is RawKeyDownEvent) {
+          final key = event.logicalKey;
+
+          // Lista de teclas numéricas do teclado principal
+          final mainDigits = [
+            LogicalKeyboardKey.digit0, LogicalKeyboardKey.digit1, LogicalKeyboardKey.digit2,
+            LogicalKeyboardKey.digit3, LogicalKeyboardKey.digit4, LogicalKeyboardKey.digit5,
+            LogicalKeyboardKey.digit6, LogicalKeyboardKey.digit7, LogicalKeyboardKey.digit8,
+            LogicalKeyboardKey.digit9
+          ];
+
+          // Lista de teclas numéricas do numpad
+          final numpadDigits = [
+            LogicalKeyboardKey.numpad0, LogicalKeyboardKey.numpad1, LogicalKeyboardKey.numpad2,
+            LogicalKeyboardKey.numpad3, LogicalKeyboardKey.numpad4, LogicalKeyboardKey.numpad5,
+            LogicalKeyboardKey.numpad6, LogicalKeyboardKey.numpad7, LogicalKeyboardKey.numpad8,
+            LogicalKeyboardKey.numpad9
+          ];
+
+          // Números do teclado principal
+          if (mainDigits.contains(key)) {
+            controller.adicionarDigito(key.keyLabel);
+            return KeyEventResult.handled;
+          }
+          // Números do numpad
+          else if (numpadDigits.contains(key)) {
+            controller.adicionarDigito(key.keyLabel);
+            return KeyEventResult.handled;
+          }
+          // Backspace ou Delete
+          else if (key == LogicalKeyboardKey.backspace || key == LogicalKeyboardKey.delete) {
+            if (controller.senha.value.isNotEmpty) {
+              controller.senha.value = controller.senha.value.substring(0, controller.senha.value.length - 1);
+            }
+            return KeyEventResult.handled;
+          }
+          // Enter
+          else if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
+            controller.fazerLogin();
+            return KeyEventResult.handled;
+          }
+          // Escape para limpar
+          else if (key == LogicalKeyboardKey.escape) {
+            controller.limparSenha();
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
         children: [
           // Botões superiores
           Row(
@@ -205,6 +258,7 @@ class LoginPage extends StatelessWidget {
           const Spacer(),
         ],
       ),
+    ),
     );
   }
 

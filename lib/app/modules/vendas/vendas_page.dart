@@ -1,18 +1,142 @@
+import 'dart:io' show exit;
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/caixa_printer_service.dart';
+import '../../data/repositories/empresa_repository.dart';
+import '../../data/repositories/configuracao_repository.dart';
 import 'controllers/vendas_controller.dart';
 import 'widgets/dialog_pesquisa_produto.dart';
 import 'views/tela_devedores.dart';
-import '../caixa/views/tela_fecho_caixa.dart';
+import '../caixa/widgets/dialog_conferencia_manual.dart';
+import '../caixa/controllers/caixa_controller.dart';
+import '../login/login_page.dart';
 
-class VendasPage extends StatelessWidget {
+class VendasPage extends StatefulWidget {
+  const VendasPage({Key? key}) : super(key: key);
+
+  @override
+  State<VendasPage> createState() => _VendasPageState();
+}
+
+class _VendasPageState extends State<VendasPage> {
   final VendasController controller = Get.put(VendasController());
+  final CaixaController caixaController = Get.put(CaixaController());
+  final EmpresaRepository _empresaRepo = EmpresaRepository();
+  final ConfiguracaoRepository _configRepo = ConfiguracaoRepository();
+
+  Timer? _inactivityTimer;
+  bool _timeoutAtivo = true;
+  int _timeoutSegundos = 30;
+  bool _mostrarPedidos = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarConfiguracoes();
+  }
+
+  @override
+  void dispose() {
+    _inactivityTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _carregarConfiguracoes() async {
+    _timeoutAtivo = await _configRepo.buscarBoolean('vendas_timeout_ativo', defaultValue: true);
+    _timeoutSegundos = await _configRepo.buscarInt('vendas_timeout_segundos', defaultValue: 30);
+    _mostrarPedidos = await _configRepo.buscarBoolean('vendas_mostrar_pedidos', defaultValue: true);
+
+    if (_timeoutAtivo) {
+      _resetarTimer();
+    }
+
+    setState(() {}); // Atualizar UI com as configurações
+  }
+
+  void _resetarTimer() {
+    if (!_timeoutAtivo) return;
+
+    _inactivityTimer?.cancel();
+    _inactivityTimer = Timer(Duration(seconds: _timeoutSegundos), () {
+      // Voltar para login
+      Get.offAll(() => LoginPage());
+      Get.snackbar(
+        'Sessão Expirada',
+        'Você foi desconectado por inatividade',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: Duration(seconds: 3),
+      );
+    });
+  }
+
+  void _registrarAtividade() {
+    if (_timeoutAtivo) {
+      _resetarTimer();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return Listener(
+      onPointerDown: (_) => _registrarAtividade(),
+      onPointerMove: (_) => _registrarAtividade(),
+      onPointerUp: (_) => _registrarAtividade(),
+      child: Focus(
+        autofocus: true,
+        onKey: (node, event) {
+          if (event is RawKeyDownEvent) {
+            _registrarAtividade(); // Registrar atividade no teclado
+            final key = event.logicalKey;
+
+            // F1 - Pesquisar
+            if (key == LogicalKeyboardKey.f1) {
+              _abrirPesquisa();
+              return KeyEventResult.handled;
+            }
+            // F2 - Finalizar Venda
+            else if (key == LogicalKeyboardKey.f2) {
+              controller.finalizarVenda();
+              return KeyEventResult.handled;
+            }
+            // F3 - Pedido/Mesas (se habilitado)
+            else if (key == LogicalKeyboardKey.f3 && _mostrarPedidos) {
+              controller.abrirSelecaoMesa();
+              return KeyEventResult.handled;
+            }
+            // F4 - Despesas
+            else if (key == LogicalKeyboardKey.f4) {
+              controller.abrirDialogDespesas();
+              return KeyEventResult.handled;
+            }
+            // F5 - Fecho Caixa
+            else if (key == LogicalKeyboardKey.f5) {
+              _fecharCaixa();
+              return KeyEventResult.handled;
+            }
+            // F6 - Clientes
+            else if (key == LogicalKeyboardKey.f6) {
+              Get.to(() => TelaDevedores());
+              return KeyEventResult.handled;
+            }
+            // F7 - Atualizar
+            else if (key == LogicalKeyboardKey.f7) {
+              controller.carregarDados();
+              return KeyEventResult.handled;
+            }
+            // F8 - Limpar
+            else if (key == LogicalKeyboardKey.f8) {
+              controller.limparCarrinho();
+              return KeyEventResult.handled;
+            }
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Scaffold(
+        appBar: AppBar(
         actions: [
           // Botão DESPESAS
           Padding(
@@ -20,7 +144,7 @@ class VendasPage extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: controller.abrirDialogDespesas,
               icon: Icon(Icons.money_off, size: 24),
-              label: Text('DESPESAS', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: Text('DESPESAS (F4)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
                 foregroundColor: Colors.white,
@@ -32,11 +156,11 @@ class VendasPage extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4),
             child: ElevatedButton.icon(
-              onPressed: () {
-                Get.to(() => TelaFechoCaixa());
+              onPressed: () async {
+                await _fecharCaixa();
               },
               icon: Icon(Icons.point_of_sale, size: 24),
-              label: Text('FECHO CAIXA', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: Text('FECHO CAIXA (F5)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple[700],
                 foregroundColor: Colors.white,
@@ -52,7 +176,7 @@ class VendasPage extends StatelessWidget {
                 Get.to(() => TelaDevedores());
               },
               icon: Icon(Icons.people, size: 24),
-              label: Text('CLIENTES', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: Text('CLIENTES (F6)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[700],
                 foregroundColor: Colors.white,
@@ -66,7 +190,7 @@ class VendasPage extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: _abrirPesquisa,
               icon: Icon(Icons.search, size: 24),
-              label: Text('PESQUISAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: Text('PESQUISAR (F1)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange[700],
                 foregroundColor: Colors.white,
@@ -80,7 +204,7 @@ class VendasPage extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: controller.carregarDados,
               icon: Icon(Icons.refresh, size: 24),
-              label: Text('ATUALIZAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: Text('ATUALIZAR (F7)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal[700],
                 foregroundColor: Colors.white,
@@ -94,7 +218,7 @@ class VendasPage extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: controller.limparCarrinho,
               icon: Icon(Icons.delete_sweep, size: 24),
-              label: Text('LIMPAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: Text('LIMPAR (F8)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
                 foregroundColor: Colors.white,
@@ -142,6 +266,9 @@ class VendasPage extends StatelessWidget {
           ),
         ],
       ),
+    ),
+    ),
+    ),
     );
   }
 
@@ -521,34 +648,37 @@ class VendasPage extends StatelessWidget {
       padding: EdgeInsets.all(12),
       child: Column(
         children: [
-          Obx(() => SizedBox(
-            width: double.infinity,
-            height: 70,
-            child: ElevatedButton.icon(
-              onPressed: controller.abrirSelecaoMesa,
-              icon: Icon(
-                controller.temProdutosNoCarrinho ? Icons.table_restaurant : Icons.receipt_long,
-                size: 28,
+          // Botão de Pedidos/Mesas - Condicional
+          if (_mostrarPedidos) ...[
+            Obx(() => SizedBox(
+              width: double.infinity,
+              height: 70,
+              child: ElevatedButton.icon(
+                onPressed: controller.abrirSelecaoMesa,
+                icon: Icon(
+                  controller.temProdutosNoCarrinho ? Icons.table_restaurant : Icons.receipt_long,
+                  size: 28,
+                ),
+                label: Text(
+                  controller.textoBotaoPedido,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: controller.temProdutosNoCarrinho ? Colors.orange[700] : Colors.blue[700],
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.all(18),
+                ),
               ),
-              label: Text(
-                controller.textoBotaoPedido,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: controller.temProdutosNoCarrinho ? Colors.orange[700] : Colors.blue[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.all(18),
-              ),
-            ),
-          )),
-          SizedBox(height: 12),
+            )),
+            SizedBox(height: 12),
+          ],
           SizedBox(
             width: double.infinity,
             height: 80,
             child: ElevatedButton.icon(
               onPressed: controller.finalizarVenda,
               icon: Icon(Icons.payment, size: 32),
-              label: Text('FINALIZAR VENDA', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              label: Text('FINALIZAR VENDA (F2)', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
@@ -559,5 +689,152 @@ class VendasPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Abre dialog de fecho de caixa diretamente
+  Future<void> _fecharCaixa() async {
+    // Verificar se há caixa aberto
+    await caixaController.verificarCaixaAtual();
+
+    if (caixaController.caixaAtual.value == null) {
+      Get.snackbar(
+        'Atenção',
+        'Não há caixa aberto.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final caixa = caixaController.caixaAtual.value!;
+
+    // Abrir dialog de conferência
+    final resultadoConferencia = await Get.dialog<Map<String, dynamic>>(
+      DialogConferenciaManual(caixa: caixa),
+      barrierDismissible: false,
+    );
+
+    if (resultadoConferencia == null || resultadoConferencia['conferido'] != true) {
+      return;
+    }
+
+    // Fechar caixa
+    Get.dialog(
+      Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
+    try {
+      final resultado = await caixaController.fecharCaixa();
+
+      // Sempre fechar o loading
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      if (resultado != null) {
+        // Caixa fechado com sucesso - Imprimir e fechar sistema
+        await _imprimirEFecharSistema(caixa);
+      }
+      // Se resultado == null, significa que houve erro (ex: mesas abertas)
+      // O controller já mostrou o dialog de aviso
+    } catch (e) {
+      // Fechar loading em caso de erro
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      Get.snackbar(
+        'Erro',
+        'Erro ao fechar caixa: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Imprimir relatório e fechar sistema
+  Future<void> _imprimirEFecharSistema(caixa) async {
+    try {
+      // Carregar detalhes do caixa
+      await caixaController.carregarDetalhes();
+
+      // Buscar empresa
+      final empresa = await _empresaRepo.buscarDados();
+
+      // Mostrar dialog de impressão
+      Get.defaultDialog(
+        title: 'Caixa Fechado',
+        barrierDismissible: false,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, color: Colors.green, size: 60),
+            SizedBox(height: 20),
+            Text(
+              'Caixa fechado com sucesso!',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            CircularProgressIndicator(),
+            SizedBox(height: 10),
+            Text('Imprimindo relatório...'),
+          ],
+        ),
+      );
+
+      // Imprimir relatório
+      await CaixaPrinterService.imprimirFechoCaixa(
+        caixa,
+        empresa,
+        caixaController.despesas,
+        caixaController.pagamentosDividas,
+        caixaController.produtosVendidos,
+      );
+
+      // Fechar dialog
+      Get.back();
+
+      // Mostrar mensagem de encerramento
+      Get.defaultDialog(
+        title: 'Encerrando Sistema',
+        barrierDismissible: false,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text('O sistema será encerrado em 3 segundos...'),
+          ],
+        ),
+      );
+
+      // Aguardar 3 segundos e fechar
+      await Future.delayed(Duration(seconds: 3));
+      exit(0);
+    } catch (e) {
+      Get.back(); // Fechar dialog
+
+      Get.snackbar(
+        'Erro',
+        'Erro ao imprimir relatório: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+
+      // Mesmo com erro na impressão, perguntar se quer fechar o sistema
+      final fechar = await Get.defaultDialog<bool>(
+        title: 'Fechar Sistema?',
+        content: Text('Deseja fechar o sistema mesmo assim?'),
+        textConfirm: 'SIM',
+        textCancel: 'NÃO',
+        onConfirm: () => Get.back(result: true),
+        onCancel: () => Get.back(result: false),
+      );
+
+      if (fechar == true) {
+        exit(0);
+      }
+    }
   }
 }

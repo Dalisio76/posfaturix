@@ -679,64 +679,7 @@ class TelaFechoCaixa extends StatelessWidget {
 
   /// FASE 1: Novo fluxo de fechamento com conferência manual
   void _mostrarDialogFecharCaixa(BuildContext context, CaixaModel caixa) async {
-    // PASSO 0: Confirmação simples antes de continuar
-    final confirmar = await Get.defaultDialog<bool>(
-      title: 'FECHAR CAIXA',
-      titleStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.warning_amber_rounded, size: 60, color: Colors.orange),
-          SizedBox(height: 20),
-          Text(
-            'Tem certeza que deseja fechar o caixa?',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
-          ),
-          SizedBox(height: 10),
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Saldo Atual:',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  Formatters.formatarMoeda(caixa.saldoFinal),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      textCancel: 'NÃO',
-      textConfirm: 'SIM, FECHAR',
-      confirmTextColor: Colors.white,
-      cancelTextColor: Colors.grey[700],
-      buttonColor: Colors.red,
-      onCancel: () => Get.back(result: false),
-      onConfirm: () => Get.back(result: true),
-    );
-
-    if (confirmar != true) {
-      // Usuário cancelou
-      return;
-    }
-
-    observacoesController.clear();
-
-    // PASSO 1: Mostrar dialog de conferência manual
+    // Abrir dialog de conferência diretamente
     final resultadoConferencia = await Get.dialog<Map<String, dynamic>>(
       DialogConferenciaManual(caixa: caixa),
       barrierDismissible: false,

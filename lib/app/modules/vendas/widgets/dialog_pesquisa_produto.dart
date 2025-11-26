@@ -20,11 +20,22 @@ class DialogPesquisaProduto extends StatefulWidget {
 class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
   final RxString textoPesquisa = ''.obs;
   final RxList<ProdutoModel> produtosFiltrados = <ProdutoModel>[].obs;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     produtosFiltrados.value = widget.produtos;
+    _searchController.addListener(() {
+      textoPesquisa.value = _searchController.text;
+      _filtrarProdutos();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _filtrarProdutos() {
@@ -40,26 +51,22 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
   }
 
   void _adicionarLetra(String letra) {
-    textoPesquisa.value += letra;
-    _filtrarProdutos();
+    _searchController.text += letra;
   }
 
   void _removerLetra() {
-    if (textoPesquisa.value.isNotEmpty) {
-      textoPesquisa.value =
-          textoPesquisa.value.substring(0, textoPesquisa.value.length - 1);
-      _filtrarProdutos();
+    if (_searchController.text.isNotEmpty) {
+      _searchController.text =
+          _searchController.text.substring(0, _searchController.text.length - 1);
     }
   }
 
   void _limparTexto() {
-    textoPesquisa.value = '';
-    _filtrarProdutos();
+    _searchController.clear();
   }
 
   void _adicionarEspaco() {
-    textoPesquisa.value += ' ';
-    _filtrarProdutos();
+    _searchController.text += ' ';
   }
 
   @override
@@ -92,38 +99,49 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
             Divider(height: 20),
 
             // Campo de pesquisa
-            Obx(() => Container(
-                  padding: EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.grey[400]!, width: 2),
-                    borderRadius: BorderRadius.circular(8),
+            Container(
+              padding: EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey[400]!, width: 2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Digite para pesquisar...',
+                  hintStyle: TextStyle(
+                    fontSize: 20,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Text(
-                    textoPesquisa.value.isEmpty
-                        ? 'Digite para pesquisar...'
-                        : textoPesquisa.value,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: textoPesquisa.value.isEmpty
-                          ? Colors.grey
-                          : Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )),
-
-            SizedBox(height: 14),
-
-            // Teclado QWERTY (maior)
-            TecladoQwerty(
-              onLetraPressed: _adicionarLetra,
-              onBackspace: _removerLetra,
-              onClear: _limparTexto,
-              onEspaco: _adicionarEspaco,
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
             ),
 
-            SizedBox(height: 14),
+            SizedBox(height: 8),
+
+            // Teclado QWERTY (maior)
+            Flexible(
+              flex: 0,
+              child: TecladoQwerty(
+                onLetraPressed: _adicionarLetra,
+                onBackspace: _removerLetra,
+                onClear: _limparTexto,
+                onEspaco: _adicionarEspaco,
+              ),
+            ),
+
+            SizedBox(height: 8),
 
             // Resultados
             Obx(() => Text(
@@ -131,7 +149,7 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 )),
 
-            SizedBox(height: 8),
+            SizedBox(height: 6),
 
             // Lista de produtos
             Expanded(

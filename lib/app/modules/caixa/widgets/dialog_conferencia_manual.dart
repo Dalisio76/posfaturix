@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../../data/models/caixa_model.dart';
 
 /// Dialog para conferência manual dos valores ao fechar o caixa
-/// Permite que o operador digite manualmente os valores contados
-/// e compara com os valores do sistema
+/// Permite que o operador digite manualmente os valores contados usando teclado numérico
 class DialogConferenciaManual extends StatefulWidget {
   final CaixaModel caixa;
 
@@ -19,126 +19,75 @@ class DialogConferenciaManual extends StatefulWidget {
 }
 
 class _DialogConferenciaManualState extends State<DialogConferenciaManual> {
-  // Controllers para os campos de entrada
-  final TextEditingController _cashController = TextEditingController();
-  final TextEditingController _emolaController = TextEditingController();
-  final TextEditingController _mpesaController = TextEditingController();
-  final TextEditingController _posController = TextEditingController();
-  final TextEditingController _observacoesController = TextEditingController();
+  // Controllers para os text fields
+  final Map<String, TextEditingController> _controllersEmCaixa = {
+    'CASH': TextEditingController(),
+    'EMOLA': TextEditingController(),
+    'MPESA': TextEditingController(),
+    'POS': TextEditingController(),
+  };
 
-  // Valores digitados (convertidos)
-  double _cashDigitado = 0.0;
-  double _emolaDigitado = 0.0;
-  double _mpesaDigitado = 0.0;
-  double _posDigitado = 0.0;
+  final Map<String, TextEditingController> _controllersGorjeta = {
+    'CASH': TextEditingController(),
+    'EMOLA': TextEditingController(),
+    'MPESA': TextEditingController(),
+    'POS': TextEditingController(),
+  };
 
-  // Estado de conferência
-  bool _conferido = false;
+  // Campo focado atualmente
+  TextEditingController? _controllerFocado;
+  FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
-    _cashController.dispose();
-    _emolaController.dispose();
-    _mpesaController.dispose();
-    _posController.dispose();
-    _observacoesController.dispose();
+    _controllersEmCaixa.values.forEach((c) => c.dispose());
+    _controllersGorjeta.values.forEach((c) => c.dispose());
+    _focusNode.dispose();
     super.dispose();
   }
 
-  /// Verifica se a forma de pagamento foi usada
-  bool _formaUsada(String forma) {
-    switch (forma) {
-      case 'CASH':
-        return widget.caixa.totalCash > 0;
-      case 'EMOLA':
-        return widget.caixa.totalEmola > 0;
-      case 'MPESA':
-        return widget.caixa.totalMpesa > 0;
-      case 'POS':
-        return widget.caixa.totalPos > 0;
-      default:
-        return false;
+  /// Processa tecla do teclado numérico
+  void _processTecla(String tecla) {
+    if (_controllerFocado == null) return;
+
+    final text = _controllerFocado!.text;
+
+    if (tecla == 'C') {
+      // Limpar
+      _controllerFocado!.text = '';
+    } else if (tecla == '.') {
+      // Adicionar ponto decimal se ainda não tiver
+      if (!text.contains('.')) {
+        _controllerFocado!.text = text + '.';
+      }
+    } else {
+      // Número
+      _controllerFocado!.text = text + tecla;
     }
   }
 
-  /// Calcula a diferença entre valor digitado e sistema
-  double _calcularDiferenca(String forma) {
-    double digitado = 0.0;
-    double sistema = 0.0;
-
-    switch (forma) {
-      case 'CASH':
-        digitado = _cashDigitado;
-        sistema = widget.caixa.totalCash;
-        break;
-      case 'EMOLA':
-        digitado = _emolaDigitado;
-        sistema = widget.caixa.totalEmola;
-        break;
-      case 'MPESA':
-        digitado = _mpesaDigitado;
-        sistema = widget.caixa.totalMpesa;
-        break;
-      case 'POS':
-        digitado = _posDigitado;
-        sistema = widget.caixa.totalPos;
-        break;
-    }
-
-    return digitado - sistema;
-  }
-
-  /// Valida se todos os campos obrigatórios foram preenchidos
-  bool _validarCampos() {
-    if (_formaUsada('CASH') && _cashController.text.isEmpty) return false;
-    if (_formaUsada('EMOLA') && _emolaController.text.isEmpty) return false;
-    if (_formaUsada('MPESA') && _mpesaController.text.isEmpty) return false;
-    if (_formaUsada('POS') && _posController.text.isEmpty) return false;
-    return true;
-  }
-
-  /// Realiza a conferência e mostra o resumo
-  void _conferir() {
-    if (!_validarCampos()) {
-      Get.snackbar(
-        'Atenção',
-        'Preencha todos os campos das formas de pagamento utilizadas.',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    setState(() {
-      _cashDigitado = double.tryParse(_cashController.text) ?? 0.0;
-      _emolaDigitado = double.tryParse(_emolaController.text) ?? 0.0;
-      _mpesaDigitado = double.tryParse(_mpesaController.text) ?? 0.0;
-      _posDigitado = double.tryParse(_posController.text) ?? 0.0;
-      _conferido = true;
-    });
-  }
-
-  /// Confirma o fechamento e retorna os dados
-  void _confirmarFechamento() {
-    if (!_conferido) {
-      Get.snackbar(
-        'Atenção',
-        'Realize a conferência antes de confirmar.',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    // Retornar dados da conferência
+  /// Confirma e retorna os valores
+  void _confirmar() {
     final resultado = {
       'conferido': true,
-      'observacoes': _observacoesController.text.trim(),
+      'observacoes': null,
       'valores': {
-        'cash': {'digitado': _cashDigitado, 'sistema': widget.caixa.totalCash},
-        'emola': {'digitado': _emolaDigitado, 'sistema': widget.caixa.totalEmola},
-        'mpesa': {'digitado': _mpesaDigitado, 'sistema': widget.caixa.totalMpesa},
-        'pos': {'digitado': _posDigitado, 'sistema': widget.caixa.totalPos},
+        'cash': {
+          'digitado': double.tryParse(_controllersEmCaixa['CASH']!.text) ?? 0.0,
+          'sistema': widget.caixa.totalCash
+        },
+        'emola': {
+          'digitado': double.tryParse(_controllersEmCaixa['EMOLA']!.text) ?? 0.0,
+          'sistema': widget.caixa.totalEmola
+        },
+        'mpesa': {
+          'digitado': double.tryParse(_controllersEmCaixa['MPESA']!.text) ?? 0.0,
+          'sistema': widget.caixa.totalMpesa
+        },
+        'pos': {
+          'digitado': double.tryParse(_controllersEmCaixa['POS']!.text) ?? 0.0,
+          'sistema': widget.caixa.totalPos
+        },
       },
     };
 
@@ -149,132 +98,107 @@ class _DialogConferenciaManualState extends State<DialogConferenciaManual> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        width: 600,
-        constraints: BoxConstraints(maxHeight: 700),
+        width: MediaQuery.of(context).size.width * 0.7,
+        height: MediaQuery.of(context).size.height * 0.85,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             // Cabeçalho
             Container(
               padding: EdgeInsets.all(16),
-              color: Colors.blue,
+              color: Colors.blue[800],
               child: Row(
                 children: [
-                  Icon(Icons.calculate, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text(
-                    'Conferência Manual de Valores',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  // Botão voltar
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    onPressed: () => Get.back(),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          'FECHO CAIXA',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        // Datas
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildDataInfo('INICIO', widget.caixa.dataAbertura),
+                            _buildDataInfo('FIM', DateTime.now()),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
+                  SizedBox(width: 40), // Espaço para balancear o botão voltar
                 ],
               ),
             ),
 
-            // Conteúdo
+            // Conteúdo principal
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Instruções
-                    if (!_conferido)
-                      Container(
-                        padding: EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.blue.shade200),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline, color: Colors.blue),
-                            SizedBox(width: 10),
-                            Expanded(
+              child: Row(
+                children: [
+                  // Lado esquerdo: Tabela de valores
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Tabela
+                          Expanded(
+                            child: _buildTabela(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Lado direito: Teclado numérico
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      color: Colors.grey[200],
+                      child: Column(
+                        children: [
+                          // Teclado
+                          Expanded(
+                            child: _buildTeclado(),
+                          ),
+
+                          SizedBox(height: 10),
+
+                          // Botão OK
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: _confirmar,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
                               child: Text(
-                                'Digite os valores contados manualmente para cada forma de pagamento utilizada.',
-                                style: TextStyle(fontSize: 14),
+                                'OK',
+                                style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    SizedBox(height: 20),
-
-                    // Campos de entrada (se não conferido)
-                    if (!_conferido) ...[
-                      _buildCampoValor('CASH', _cashController),
-                      _buildCampoValor('E-MOLA', _emolaController),
-                      _buildCampoValor('M-PESA', _mpesaController),
-                      _buildCampoValor('POS/CARTÃO', _posController),
-                      SizedBox(height: 20),
-                    ],
-
-                    // Tabela de comparação (se conferido)
-                    if (_conferido) ...[
-                      Text(
-                        'RESULTADO DA CONFERÊNCIA',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      _buildTabelaComparacao(),
-                      SizedBox(height: 20),
-                    ],
-
-                    // Campo de observações
-                    TextField(
-                      controller: _observacoesController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'Observações (opcional)',
-                        hintText: 'Adicione observações sobre o fechamento...',
-                        border: OutlineInputBorder(),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Botões
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: Colors.grey.shade300)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    child: Text('CANCELAR'),
                   ),
-                  SizedBox(width: 10),
-                  if (!_conferido)
-                    ElevatedButton.icon(
-                      onPressed: _conferir,
-                      icon: Icon(Icons.calculate),
-                      label: Text('CONFERIR'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                      ),
-                    )
-                  else
-                    ElevatedButton.icon(
-                      onPressed: _confirmarFechamento,
-                      icon: Icon(Icons.check),
-                      label: Text('CONFIRMAR FECHAMENTO'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -284,205 +208,177 @@ class _DialogConferenciaManualState extends State<DialogConferenciaManual> {
     );
   }
 
-  /// Constrói campo de entrada de valor
-  Widget _buildCampoValor(String label, TextEditingController controller) {
-    // Normalizar label para comparação: remover hífens, barras e espaços
-    final labelNormalizado = label.replaceAll('-', '').replaceAll('/', '').replaceAll(' ', '').toUpperCase();
-
-    if (!_formaUsada(labelNormalizado)) {
-      return SizedBox.shrink();
-    }
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+  Widget _buildDataInfo(String label, DateTime data) {
+    return Container(
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+          SizedBox(height: 4),
+          Text(
+            DateFormat('MM/dd/yyyy HH:mm:ss').format(data),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
-        decoration: InputDecoration(
-          labelText: '$label (MT)',
-          hintText: '0.00',
-          prefixIcon: Icon(Icons.money),
-          border: OutlineInputBorder(),
-        ),
       ),
     );
   }
 
-  /// Constrói tabela de comparação
-  Widget _buildTabelaComparacao() {
+  Widget _buildTabela() {
     final formas = ['CASH', 'EMOLA', 'MPESA', 'POS'];
-    final formasUsadas = formas.where((f) => _formaUsada(f)).toList();
-
-    double totalDigitado = 0.0;
-    double totalSistema = 0.0;
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
         children: [
           // Cabeçalho
           Container(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: Colors.grey[300],
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+                topLeft: Radius.circular(4),
+                topRight: Radius.circular(4),
               ),
             ),
             child: Row(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: Text('Forma', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text('Contado', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text('Sistema', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text('Diferença', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
+                Expanded(flex: 1, child: Text('FORMA', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(flex: 2, child: Text('EM CAIXA', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
               ],
             ),
           ),
-          Divider(height: 1),
 
-          // Linhas de dados
-          ...formasUsadas.map((forma) {
-            double digitado = 0.0;
-            double sistema = 0.0;
+          // Linhas
+          ...formas.map((forma) => _buildLinhaForma(forma)).toList(),
+        ],
+      ),
+    );
+  }
 
-            switch (forma) {
-              case 'CASH':
-                digitado = _cashDigitado;
-                sistema = widget.caixa.totalCash;
-                break;
-              case 'EMOLA':
-                digitado = _emolaDigitado;
-                sistema = widget.caixa.totalEmola;
-                break;
-              case 'MPESA':
-                digitado = _mpesaDigitado;
-                sistema = widget.caixa.totalMpesa;
-                break;
-              case 'POS':
-                digitado = _posDigitado;
-                sistema = widget.caixa.totalPos;
-                break;
-            }
+  Widget _buildLinhaForma(String forma) {
+    final controllerEmCaixa = _controllersEmCaixa[forma]!;
+    final isFocadoEmCaixa = _controllerFocado == controllerEmCaixa;
 
-            totalDigitado += digitado;
-            totalSistema += sistema;
-
-            final diferenca = digitado - sistema;
-            final diferencaColor = diferenca == 0
-                ? Colors.green
-                : (diferenca > 0 ? Colors.blue : Colors.red);
-
-            return Container(
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(forma, style: TextStyle(fontWeight: FontWeight.w500)),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('${digitado.toStringAsFixed(2)} MT'),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('${sistema.toStringAsFixed(2)} MT'),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        Text(
-                          '${diferenca.toStringAsFixed(2)} MT',
-                          style: TextStyle(
-                            color: diferencaColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(width: 5),
-                        Icon(
-                          diferenca == 0
-                              ? Icons.check_circle
-                              : Icons.warning,
-                          color: diferencaColor,
-                          size: 18,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-
-          // Totais
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8),
-              ),
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Text(
+              forma,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    '${totalDigitado.toStringAsFixed(2)} MT',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            flex: 2,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _controllerFocado = controllerEmCaixa;
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: isFocadoEmCaixa ? Colors.blue : Colors.grey,
+                    width: isFocadoEmCaixa ? 2 : 1,
                   ),
+                  borderRadius: BorderRadius.circular(4),
+                  color: isFocadoEmCaixa ? Colors.blue[50] : Colors.white,
                 ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    '${totalSistema.toStringAsFixed(2)} MT',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                child: TextField(
+                  controller: controllerEmCaixa,
+                  readOnly: false,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                  ],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
+                  onTap: () {
+                    setState(() {
+                      _controllerFocado = controllerEmCaixa;
+                    });
+                  },
                 ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    '${(totalDigitado - totalSistema).toStringAsFixed(2)} MT',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: (totalDigitado - totalSistema) == 0
-                          ? Colors.green
-                          : Colors.red,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTeclado() {
+    return GridView.count(
+      crossAxisCount: 3,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      childAspectRatio: 1.2,
+      children: [
+        _buildTecla('7'),
+        _buildTecla('8'),
+        _buildTecla('9'),
+        _buildTecla('4'),
+        _buildTecla('5'),
+        _buildTecla('6'),
+        _buildTecla('1'),
+        _buildTecla('2'),
+        _buildTecla('3'),
+        _buildTecla('C', cor: Colors.orange),
+        _buildTecla('0'),
+        _buildTecla('.'),
+      ],
+    );
+  }
+
+  Widget _buildTecla(String tecla, {Color? cor}) {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          _processTecla(tecla);
+        });
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: cor ?? Colors.red[700],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      ),
+      child: Text(
+        tecla,
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
     );
   }

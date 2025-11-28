@@ -1,151 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/database/database_service.dart';
 import 'controllers/admin_controller.dart';
-import 'views/familias_tab.dart';
-import 'views/produtos_tab.dart';
-import 'views/empresa_tab.dart';
-import 'views/formas_pagamento_tab.dart';
-import 'views/setores_tab.dart';
-import 'views/areas_tab.dart';
-import 'views/clientes_tab.dart';
-import 'views/despesas_tab.dart';
-import 'views/relatorios_tab.dart';
-import 'views/margens_tab.dart';
-import 'views/acerto_stock_tab.dart';
-import 'views/fornecedores_tab.dart';
-import 'views/faturas_entrada_tab.dart';
-import 'views/relatorio_stock_tab.dart';
-import 'views/mesas_tab.dart';
-import 'views/perfis_usuario_tab.dart';
-import 'views/usuarios_tab.dart';
-import 'views/configurar_permissoes_tab.dart';
-import '../definicoes/definicoes_page.dart';
 
 // ==========================================
 // NOVA INTERFACE DE ADMINISTRAÇÃO
 // Design moderno, touch-friendly, organizado
 // ==========================================
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
+class AdminPageNovo extends StatefulWidget {
+  const AdminPageNovo({Key? key}) : super(key: key);
 
   @override
-  State<AdminPage> createState() => _AdminPageState();
+  State<AdminPageNovo> createState() => _AdminPageNovoState();
 }
 
-class _AdminPageState extends State<AdminPage> {
+class _AdminPageNovoState extends State<AdminPageNovo> {
   final AdminController controller = Get.put(AdminController());
   final AuthService authService = Get.find<AuthService>();
   final RxString searchQuery = ''.obs;
   final Rxn<AdminMenuItem> selectedItem = Rxn<AdminMenuItem>();
   final RxList<String> breadcrumb = <String>['Dashboard'].obs;
 
-  // Estatísticas
-  final RxInt totalProdutos = 0.obs;
-  final RxInt totalClientes = 0.obs;
-  final RxString mesasInfo = '---'.obs;
-  final RxInt totalUsuarios = 0.obs;
-
-  @override
-  void initState() {
-    super.initState();
-    _carregarEstatisticas();
-  }
-
-  Future<void> _carregarEstatisticas() async {
-    try {
-      final db = Get.find<DatabaseService>();
-
-      // Total produtos
-      final prodResult = await db.query('SELECT COUNT(*) as total FROM produtos');
-      totalProdutos.value = prodResult.first['total'] as int;
-
-      // Total clientes
-      final clientesResult = await db.query('SELECT COUNT(*) as total FROM clientes');
-      totalClientes.value = clientesResult.first['total'] as int;
-
-      // Mesas (total e ocupadas)
-      final mesasResult = await db.query('''
-        SELECT
-          COUNT(*) as total,
-          COUNT(CASE WHEN status = 'ocupada' THEN 1 END) as ocupadas
-        FROM mesas
-      ''');
-      if (mesasResult.isNotEmpty) {
-        final total = mesasResult.first['total'] as int;
-        final ocupadas = mesasResult.first['ocupadas'] as int;
-        mesasInfo.value = '$ocupadas/$total';
-      }
-
-      // Total usuários
-      final userResult = await db.query('SELECT COUNT(*) as total FROM usuarios');
-      totalUsuarios.value = userResult.first['total'] as int;
-    } catch (e) {
-      print('Erro ao carregar estatísticas: $e');
-    }
-  }
-
-  Future<bool> _confirmarSaida() async {
-    final result = await Get.dialog<bool>(
-      AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 32),
-            SizedBox(width: 12),
-            Text('Confirmar Saída'),
-          ],
-        ),
-        content: Text(
-          'Tem certeza que deseja sair da administração?',
-          style: TextStyle(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: Text(
-              'CANCELAR',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              'SIM, SAIR',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // Se estiver visualizando um item, volta ao dashboard
-        if (selectedItem.value != null) {
-          selectedItem.value = null;
-          breadcrumb.value = ['Dashboard'];
-          return false;
-        }
-        // Se estiver no dashboard, pede confirmação para sair
-        return await _confirmarSaida();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.grey[100],
-        appBar: _buildAppBar(),
-        body: Obx(() => selectedItem.value == null
-            ? _buildDashboard()
-            : _buildConteudo()),
-      ),
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      appBar: _buildAppBar(),
+      body: Obx(() => selectedItem.value == null
+          ? _buildDashboard()
+          : _buildConteudo()),
     );
   }
 
@@ -192,19 +76,7 @@ class _AdminPageState extends State<AdminPage> {
         // Botão voltar
         IconButton(
           icon: Icon(Icons.arrow_back, size: 24),
-          onPressed: () async {
-            // Se estiver em um item, volta ao dashboard
-            if (selectedItem.value != null) {
-              selectedItem.value = null;
-              breadcrumb.value = ['Dashboard'];
-            } else {
-              // Se estiver no dashboard, pede confirmação para sair
-              final confirmar = await _confirmarSaida();
-              if (confirmar) {
-                Get.back();
-              }
-            }
-          },
+          onPressed: () => Get.back(),
           tooltip: 'Voltar',
         ),
         SizedBox(width: 8),
@@ -225,22 +97,22 @@ class _AdminPageState extends State<AdminPage> {
           _buildBreadcrumb(),
           SizedBox(height: 24),
 
-          // Estatísticas rápidas (placeholder - implementar queries reais depois)
+          // Estatísticas rápidas
           _buildEstatisticasRapidas(),
           SizedBox(height: 32),
 
           // Categorias de menu
           _buildCategoria(
-            'PRODUTOS',
+            'CADASTROS BÁSICOS',
             Colors.blue,
             _getCadastrosBasicos(),
           ),
           SizedBox(height: 24),
 
           _buildCategoria(
-            'STOCK',
+            'OPERAÇÕES',
             Colors.green,
-            _getStock(),
+            _getOperacoes(),
           ),
           SizedBox(height: 24),
 
@@ -304,12 +176,12 @@ class _AdminPageState extends State<AdminPage> {
   // Estatísticas rápidas
   // ==========================================
   Widget _buildEstatisticasRapidas() {
-    return Obx(() => Row(
+    return Row(
       children: [
         Expanded(
           child: _buildStatCard(
             'Total Produtos',
-            totalProdutos.value.toString(),
+            '1.234',
             Icons.inventory,
             Colors.blue,
           ),
@@ -318,7 +190,7 @@ class _AdminPageState extends State<AdminPage> {
         Expanded(
           child: _buildStatCard(
             'Clientes Ativos',
-            totalClientes.value.toString(),
+            '567',
             Icons.people,
             Colors.green,
           ),
@@ -326,8 +198,8 @@ class _AdminPageState extends State<AdminPage> {
         SizedBox(width: 16),
         Expanded(
           child: _buildStatCard(
-            'Mesas',
-            mesasInfo.value,
+            'Mesas Ocupadas',
+            '12/25',
             Icons.table_restaurant,
             Colors.orange,
           ),
@@ -336,13 +208,13 @@ class _AdminPageState extends State<AdminPage> {
         Expanded(
           child: _buildStatCard(
             'Usuários',
-            totalUsuarios.value.toString(),
+            '8',
             Icons.person,
             Colors.purple,
           ),
         ),
       ],
-    ));
+    );
   }
 
   Widget _buildStatCard(String label, String valor, IconData icon, Color cor) {
@@ -438,28 +310,18 @@ class _AdminPageState extends State<AdminPage> {
           ],
         ),
         SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            // Responsividade: ajustar colunas baseado na largura
-            int crossAxisCount = 5;
-            if (constraints.maxWidth < 1400) crossAxisCount = 4;
-            if (constraints.maxWidth < 1100) crossAxisCount = 3;
-            if (constraints.maxWidth < 800) crossAxisCount = 2;
-
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.3, // Cards retangulares
-              ),
-              itemCount: itensFiltrados.length,
-              itemBuilder: (context, index) {
-                return _buildMenuCard(itensFiltrados[index], cor);
-              },
-            );
+        GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5, // 5 colunas em desktop
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.3, // Cards retangulares
+          ),
+          itemCount: itensFiltrados.length,
+          itemBuilder: (context, index) {
+            return _buildMenuCard(itensFiltrados[index], cor);
           },
         ),
       ],
@@ -519,18 +381,13 @@ class _AdminPageState extends State<AdminPage> {
               ),
             ),
             SizedBox(height: 12),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                item.titulo,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+            Text(
+              item.titulo,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
             if (item.descricao != null) ...[
@@ -590,7 +447,6 @@ class _AdminPageState extends State<AdminPage> {
         // Conteúdo da tab
         Expanded(
           child: Container(
-            color: Colors.white,
             padding: EdgeInsets.all(24),
             child: selectedItem.value!.widget,
           ),
@@ -606,64 +462,78 @@ class _AdminPageState extends State<AdminPage> {
   List<AdminMenuItem> _getCadastrosBasicos() {
     return [
       AdminMenuItem(
+        titulo: 'Empresa',
+        icone: Icons.business,
+        widget: Container(child: Text('Empresa Tab')), // Substituir pelos widgets reais
+        permissoes: ['gestao_empresa'],
+        descricao: 'Dados da empresa',
+      ),
+      AdminMenuItem(
         titulo: 'Produtos',
         icone: Icons.inventory,
-        widget: ProdutosTab(),
-        permissoes: ['registar_produtos'],
+        widget: Container(child: Text('Produtos Tab')),
+        permissoes: ['gestao_produtos'],
         descricao: 'Catálogo de produtos',
       ),
       AdminMenuItem(
         titulo: 'Famílias',
         icone: Icons.category,
-        widget: FamiliasTab(),
-        permissoes: ['registar_familias'],
+        widget: Container(child: Text('Famílias Tab')),
+        permissoes: ['gestao_produtos'],
         descricao: 'Categorias de produtos',
       ),
       AdminMenuItem(
         titulo: 'Clientes',
         icone: Icons.people,
-        widget: ClientesTab(),
-        permissoes: ['registar_clientes'],
+        widget: Container(child: Text('Clientes Tab')),
+        permissoes: ['gestao_clientes'],
         descricao: 'Cadastro de clientes',
       ),
       AdminMenuItem(
         titulo: 'Fornecedores',
         icone: Icons.local_shipping,
-        widget: FornecedoresTab(),
-        permissoes: ['registar_fornecedores'],
+        widget: Container(child: Text('Fornecedores Tab')),
+        permissoes: ['gestao_fornecedores'],
         descricao: 'Gestão de fornecedores',
+      ),
+      AdminMenuItem(
+        titulo: 'Mesas',
+        icone: Icons.table_restaurant,
+        widget: Container(child: Text('Mesas Tab')),
+        permissoes: ['gestao_mesas'],
+        descricao: 'Configuração de mesas',
       ),
     ];
   }
 
-  List<AdminMenuItem> _getStock() {
+  List<AdminMenuItem> _getOperacoes() {
     return [
       AdminMenuItem(
         titulo: 'Faturas Entrada',
         icone: Icons.receipt_long,
-        widget: FaturasEntradaTab(),
-        permissoes: ['entrada_stock'],
+        widget: Container(child: Text('Faturas Tab')),
+        permissoes: ['gestao_faturas'],
         descricao: 'Registro de compras',
       ),
       AdminMenuItem(
         titulo: 'Acerto Stock',
         icone: Icons.inventory_2,
-        widget: AcertoStockTab(),
+        widget: Container(child: Text('Acerto Stock Tab')),
         permissoes: ['acerto_stock'],
         descricao: 'Ajustes de estoque',
       ),
       AdminMenuItem(
         titulo: 'Despesas',
         icone: Icons.money_off,
-        widget: DespesasTab(),
-        permissoes: ['registar_despesas'],
+        widget: Container(child: Text('Despesas Tab')),
+        permissoes: ['gestao_despesas'],
         descricao: 'Controle de despesas',
       ),
       AdminMenuItem(
         titulo: 'Pagamentos',
         icone: Icons.payment,
-        widget: FormasPagamentoTab(),
-        permissoes: ['acesso_admin'],
+        widget: Container(child: Text('Formas Pagamento Tab')),
+        permissoes: ['gestao_pagamentos'],
         descricao: 'Formas de pagamento',
       ),
     ];
@@ -674,22 +544,22 @@ class _AdminPageState extends State<AdminPage> {
       AdminMenuItem(
         titulo: 'Relatórios',
         icone: Icons.analytics,
-        widget: RelatoriosTab(),
-        permissoes: ['relatorios'],
+        widget: Container(child: Text('Relatórios Tab')),
+        permissoes: ['visualizar_relatorios'],
         descricao: 'Relatórios gerais',
       ),
       AdminMenuItem(
         titulo: 'Margens/Lucros',
         icone: Icons.trending_up,
-        widget: MargensTab(),
-        permissoes: ['relatorios'],
+        widget: Container(child: Text('Margens Tab')),
+        permissoes: ['visualizar_margens'],
         descricao: 'Análise de margens',
       ),
       AdminMenuItem(
         titulo: 'Stock',
         icone: Icons.warehouse,
-        widget: RelatorioStockTab(),
-        permissoes: ['relatorios'],
+        widget: Container(child: Text('Stock Tab')),
+        permissoes: ['visualizar_stock'],
         descricao: 'Relatório de estoque',
       ),
     ];
@@ -698,59 +568,45 @@ class _AdminPageState extends State<AdminPage> {
   List<AdminMenuItem> _getSistema() {
     return [
       AdminMenuItem(
-        titulo: 'Empresa',
-        icone: Icons.business,
-        widget: EmpresaTab(),
-        permissoes: ['configuracoes_sistema'],
-        descricao: 'Dados da empresa',
-      ),
-      AdminMenuItem(
-        titulo: 'Mesas',
-        icone: Icons.table_restaurant,
-        widget: MesasTab(),
-        permissoes: ['acesso_admin'],
-        descricao: 'Configuração de mesas',
-      ),
-      AdminMenuItem(
         titulo: 'Usuários',
         icone: Icons.person,
-        widget: UsuariosTab(),
+        widget: Container(child: Text('Usuários Tab')),
         permissoes: ['gestao_usuarios'],
         descricao: 'Gerenciar usuários',
       ),
       AdminMenuItem(
         titulo: 'Perfis',
         icone: Icons.badge,
-        widget: PerfisUsuarioTab(),
+        widget: Container(child: Text('Perfis Tab')),
         permissoes: ['gestao_perfis'],
         descricao: 'Perfis de acesso',
       ),
       AdminMenuItem(
         titulo: 'Permissões',
         icone: Icons.security,
-        widget: ConfigurarPermissoesTab(),
+        widget: Container(child: Text('Permissões Tab')),
         permissoes: ['gestao_permissoes'],
         descricao: 'Configurar permissões',
       ),
       AdminMenuItem(
         titulo: 'Configurações',
         icone: Icons.settings,
-        widget: DefinicoesPage(),
+        widget: Container(child: Text('Config Tab')),
         permissoes: ['configuracoes_sistema'],
         descricao: 'Configurações gerais',
       ),
       AdminMenuItem(
         titulo: 'Setores',
         icone: Icons.store,
-        widget: SetoresTab(),
-        permissoes: ['registar_setores'],
+        widget: Container(child: Text('Setores Tab')),
+        permissoes: ['gestao_setores'],
         descricao: 'Setores da empresa',
       ),
       AdminMenuItem(
         titulo: 'Áreas',
         icone: Icons.location_on,
-        widget: AreasTab(),
-        permissoes: ['acesso_admin'],
+        widget: Container(child: Text('Áreas Tab')),
+        permissoes: ['gestao_areas'],
         descricao: 'Áreas de venda',
       ),
     ];

@@ -45,9 +45,18 @@ class _VendasPageState extends State<VendasPage> {
   }
 
   Future<void> _carregarConfiguracoes() async {
-    _timeoutAtivo = await _configRepo.buscarBoolean('vendas_timeout_ativo', defaultValue: true);
-    _timeoutSegundos = await _configRepo.buscarInt('vendas_timeout_segundos', defaultValue: 30);
-    _mostrarPedidos = await _configRepo.buscarBoolean('vendas_mostrar_pedidos', defaultValue: true);
+    _timeoutAtivo = await _configRepo.buscarBoolean(
+      'vendas_timeout_ativo',
+      defaultValue: true,
+    );
+    _timeoutSegundos = await _configRepo.buscarInt(
+      'vendas_timeout_segundos',
+      defaultValue: 30,
+    );
+    _mostrarPedidos = await _configRepo.buscarBoolean(
+      'vendas_mostrar_pedidos',
+      defaultValue: true,
+    );
 
     if (_timeoutAtivo) {
       _resetarTimer();
@@ -136,139 +145,156 @@ class _VendasPageState extends State<VendasPage> {
           return KeyEventResult.ignored;
         },
         child: Scaffold(
-        appBar: AppBar(
-        actions: [
-          // Botão DESPESAS
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: controller.abrirDialogDespesas,
-              icon: Icon(Icons.money_off, size: 24),
-              label: Text('DESPESAS (F4)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          appBar: AppBar(
+            actions: [
+              // Botão DESPESAS
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: ElevatedButton.icon(
+                  onPressed: controller.abrirDialogDespesas,
+                  icon: Icon(Icons.money_off, size: 24),
+                  label: Text(
+                    'DESPESAS (F4)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[700],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                ),
               ),
-            ),
-          ),
-          // Botão FECHO DE CAIXA
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                await _fecharCaixa();
-              },
-              icon: Icon(Icons.point_of_sale, size: 24),
-              label: Text('FECHO CAIXA (F5)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              // Botão FECHO DE CAIXA
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await _fecharCaixa();
+                  },
+                  icon: Icon(Icons.point_of_sale, size: 24),
+                  label: Text(
+                    'FECHO CAIXA (F5)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple[700],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                ),
               ),
-            ),
-          ),
-          // Botão CLIENTES - Abre tela de devedores
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Get.to(() => TelaDevedores());
-              },
-              icon: Icon(Icons.people, size: 24),
-              label: Text('CLIENTES (F6)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              // Botão CLIENTES - Abre tela de devedores
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Get.to(() => TelaDevedores());
+                  },
+                  icon: Icon(Icons.people, size: 24),
+                  label: Text(
+                    'CLIENTES (F6)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                ),
               ),
-            ),
-          ),
-          // Botão de Pesquisa
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: _abrirPesquisa,
-              icon: Icon(Icons.search, size: 24),
-              label: Text('PESQUISAR (F1)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              // Botão de Pesquisa
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: ElevatedButton.icon(
+                  onPressed: _abrirPesquisa,
+                  icon: Icon(Icons.search, size: 24),
+                  label: Text(
+                    'PESQUISAR (F1)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[700],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                ),
               ),
-            ),
-          ),
-          // Botão ATUALIZAR
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: controller.carregarDados,
-              icon: Icon(Icons.refresh, size: 24),
-              label: Text('ATUALIZAR (F7)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              // Botão ATUALIZAR
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: ElevatedButton.icon(
+                  onPressed: controller.carregarDados,
+                  icon: Icon(Icons.refresh, size: 24),
+                  label: Text(
+                    'ATUALIZAR (F7)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal[700],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                ),
               ),
-            ),
-          ),
-          // Botão LIMPAR
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
-            child: ElevatedButton.icon(
-              onPressed: controller.limparCarrinho,
-              icon: Icon(Icons.delete_sweep, size: 24),
-              label: Text('LIMPAR (F8)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[700],
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              // Botão LIMPAR
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: ElevatedButton.icon(
+                  onPressed: controller.limparCarrinho,
+                  icon: Icon(Icons.delete_sweep, size: 24),
+                  label: Text(
+                    'LIMPAR (F8)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[700],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                ),
               ),
-            ),
+              SizedBox(width: 8),
+            ],
           ),
-          SizedBox(width: 8),
-        ],
-      ),
-      body: Row(
-        children: [
-          // LADO ESQUERDO: Produtos
-          Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                // Filtro por área
-                _buildFiltroAreas(),
-                Divider(height: 1),
-                // Filtro por família
-                _buildFiltroFamilias(),
-                Divider(height: 1),
-                // Grid de produtos
-                Expanded(child: _buildGridProdutos()),
-              ],
-            ),
-          ),
+          body: Row(
+            children: [
+              // LADO ESQUERDO: Produtos
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    // Filtro por área
+                    _buildFiltroAreas(),
+                    Divider(height: 1),
+                    // Filtro por família
+                    _buildFiltroFamilias(),
+                    Divider(height: 1),
+                    // Grid de produtos
+                    Expanded(child: _buildGridProdutos()),
+                  ],
+                ),
+              ),
 
-          // LADO DIREITO: Carrinho
-          Container(
-            width: 380,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(left: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Column(
-              children: [
-                _buildHeaderCarrinho(),
-                Expanded(child: _buildListaCarrinho()),
-                _buildTotalCarrinho(),
-                _buildBotoesAcao(),
-              ],
-            ),
+              // LADO DIREITO: Carrinho
+              Container(
+                width: 380,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(left: BorderSide(color: Colors.grey.shade300)),
+                ),
+                child: Column(
+                  children: [
+                    _buildHeaderCarrinho(),
+                    Expanded(child: _buildListaCarrinho()),
+                    _buildTotalCarrinho(),
+                    _buildBotoesAcao(),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
-    ),
-    ),
     );
   }
 
@@ -303,7 +329,8 @@ class _VendasPageState extends State<VendasPage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               selected: isSelected,
-              onSelected: (_) => controller.selecionarArea(isSelected ? null : area['id']),
+              onSelected: (_) =>
+                  controller.selecionarArea(isSelected ? null : area['id']),
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               selectedColor: Colors.blue,
               labelStyle: TextStyle(
@@ -331,8 +358,8 @@ class _VendasPageState extends State<VendasPage> {
                 SizedBox(height: 8),
                 Text(
                   controller.areaSelecionadaId == null
-                    ? 'Selecione uma área acima para ver as famílias'
-                    : 'Nenhuma família cadastrada nesta área',
+                      ? 'Selecione uma área acima para ver as famílias'
+                      : 'Nenhuma família cadastrada nesta área',
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
@@ -361,7 +388,8 @@ class _VendasPageState extends State<VendasPage> {
                 textAlign: TextAlign.center,
               ),
               selected: isSelected,
-              onSelected: (_) => controller.selecionarFamilia(isSelected ? null : familia),
+              onSelected: (_) =>
+                  controller.selecionarFamilia(isSelected ? null : familia),
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               selectedColor: Get.theme.primaryColor,
               labelStyle: TextStyle(
@@ -403,7 +431,8 @@ class _VendasPageState extends State<VendasPage> {
         padding: EdgeInsets.all(12),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 5,
-          childAspectRatio: 1.2,  // Aumentado para cards mais largos e baixos (sem ícone)
+          childAspectRatio:
+              1.2, // Aumentado para cards mais largos e baixos (sem ícone)
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
@@ -431,10 +460,7 @@ class _VendasPageState extends State<VendasPage> {
               // Nome
               Text(
                 produto.nome,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -452,10 +478,7 @@ class _VendasPageState extends State<VendasPage> {
               // Estoque
               Text(
                 'Estoque: ${produto.estoque}',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 10,
-                ),
+                style: TextStyle(color: Colors.grey, fontSize: 10),
               ),
             ],
           ),
@@ -484,20 +507,22 @@ class _VendasPageState extends State<VendasPage> {
             ),
           ),
           Spacer(),
-          Obx(() => Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+          Obx(
+            () => Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${controller.carrinho.length}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Get.theme.primaryColor,
                 ),
-                child: Text(
-                  '${controller.carrinho.length}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Get.theme.primaryColor,
-                  ),
-                ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -614,33 +639,32 @@ class _VendasPageState extends State<VendasPage> {
   }
 
   Widget _buildTotalCarrinho() {
-    return Obx(() => Container(
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            border: Border(top: BorderSide(color: Colors.grey.shade300)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'TOTAL:',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+    return Obx(
+      () => Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'TOTAL:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              Formatters.formatarMoeda(controller.totalCarrinho),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Get.theme.primaryColor,
               ),
-              Text(
-                Formatters.formatarMoeda(controller.totalCarrinho),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Get.theme.primaryColor,
-                ),
-              ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBotoesAcao() {
@@ -650,26 +674,32 @@ class _VendasPageState extends State<VendasPage> {
         children: [
           // Botão de Pedidos/Mesas - Condicional
           if (_mostrarPedidos) ...[
-            Obx(() => SizedBox(
-              width: double.infinity,
-              height: 70,
-              child: ElevatedButton.icon(
-                onPressed: controller.abrirSelecaoMesa,
-                icon: Icon(
-                  controller.temProdutosNoCarrinho ? Icons.table_restaurant : Icons.receipt_long,
-                  size: 28,
-                ),
-                label: Text(
-                  controller.textoBotaoPedido,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: controller.temProdutosNoCarrinho ? Colors.orange[700] : Colors.blue[700],
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.all(18),
+            Obx(
+              () => SizedBox(
+                width: double.infinity,
+                height: 70,
+                child: ElevatedButton.icon(
+                  onPressed: controller.abrirSelecaoMesa,
+                  icon: Icon(
+                    controller.temProdutosNoCarrinho
+                        ? Icons.table_restaurant
+                        : Icons.receipt_long,
+                    size: 28,
+                  ),
+                  label: Text(
+                    controller.textoBotaoPedido,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: controller.temProdutosNoCarrinho
+                        ? Colors.orange[700]
+                        : Colors.blue[700],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.all(18),
+                  ),
                 ),
               ),
-            )),
+            ),
             SizedBox(height: 12),
           ],
           SizedBox(
@@ -678,7 +708,10 @@ class _VendasPageState extends State<VendasPage> {
             child: ElevatedButton.icon(
               onPressed: controller.finalizarVenda,
               icon: Icon(Icons.payment, size: 32),
-              label: Text('FINALIZAR VENDA (F2)', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              label: Text(
+                'FINALIZAR VENDA (F2)',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
@@ -714,7 +747,8 @@ class _VendasPageState extends State<VendasPage> {
       barrierDismissible: false,
     );
 
-    if (resultadoConferencia == null || resultadoConferencia['conferido'] != true) {
+    if (resultadoConferencia == null ||
+        resultadoConferencia['conferido'] != true) {
       return;
     }
 

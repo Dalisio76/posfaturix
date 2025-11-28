@@ -7,33 +7,22 @@ environment:
   sdk: ^3.9.2
 
 dependencies:
+  cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-
-  # Estado e Navegação
-  get: ^4.6.6
-
-  # Banco de Dados
-  postgres: ^3.0.0
-
-  # Impressão Windows
-  printing: ^5.13.4
-  pdf: ^3.11.1
-
-  # UI
   flutter_svg: ^2.0.9
+  get: ^4.6.6
   google_fonts: ^6.1.0
   intl: ^0.20.2
-  cupertino_icons: ^1.0.8
-
-  # Armazenamento local
+  msix: ^3.16.12
+  pdf: ^3.11.1
+  postgres: ^3.0.0
+  printing: ^5.13.4
   shared_preferences: ^2.3.3
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -41,10 +30,11 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
 # The following section is specific to Flutter packages.
 flutter:
 
@@ -52,18 +42,14 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
-
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
-
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
-
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a

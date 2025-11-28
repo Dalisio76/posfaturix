@@ -9,7 +9,7 @@ class ConfiguracaoRepository {
     try {
       final result = await _db.query('''
         SELECT valor FROM configuracoes WHERE chave = @chave LIMIT 1
-      ''', substitutionValues: {'chave': chave});
+      ''', parameters: {'chave': chave});
 
       if (result.isEmpty) return null;
       return result.first['valor'] as String?;
@@ -62,7 +62,7 @@ class ConfiguracaoRepository {
         UPDATE configuracoes
         SET valor = @valor
         WHERE chave = @chave
-      ''', substitutionValues: {
+      ''', parameters: {
         'chave': chave,
         'valor': valor,
       });
@@ -84,7 +84,7 @@ class ConfiguracaoRepository {
       final result = await _db.query('''
         SELECT chave, valor FROM configuracoes
         WHERE categoria = @categoria
-      ''', substitutionValues: {'categoria': categoria});
+      ''', parameters: {'categoria': categoria});
 
       final configs = <String, String>{};
       for (final row in result) {

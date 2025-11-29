@@ -25,12 +25,24 @@ class DefinicoesService {
       final json = prefs.getString(_keyDefinicoes);
 
       if (json == null) {
-        // Retornar definições padrão
-        return DefinicaoModel();
+        // Retornar definições padrão e salvá-las
+        final defPadrao = DefinicaoModel();
+        await salvar(defPadrao);
+        return defPadrao;
       }
 
       final Map<String, dynamic> data = jsonDecode(json);
-      return DefinicaoModel.fromJson(data);
+      final definicoes = DefinicaoModel.fromJson(data);
+
+      // Migração: Se algum campo novo não existir no JSON, salvar novamente com todos os campos
+      if (!data.containsKey('timeoutAtivo') ||
+          !data.containsKey('timeoutSegundos') ||
+          !data.containsKey('mostrarBotaoPedidos')) {
+        print('Migrando definições para incluir novos campos...');
+        await salvar(definicoes);
+      }
+
+      return definicoes;
     } catch (e) {
       print('Erro ao carregar definições: $e');
       // Retornar definições padrão em caso de erro

@@ -436,13 +436,13 @@ class _ConfigurarPermissoesTabState extends State<ConfigurarPermissoesTab> {
           // Lista de permissões
           Padding(
             padding: const EdgeInsets.all(8),
-            child: Obx(() => Wrap(
+            child: Wrap(
               spacing: 8,
               runSpacing: 8,
               children: permissoesCategoria.map((permissao) {
                 return _buildPermissaoChip(permissao, cor);
               }).toList(),
-            )),
+            ),
           ),
         ],
       ),

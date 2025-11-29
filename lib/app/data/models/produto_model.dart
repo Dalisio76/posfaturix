@@ -2,6 +2,7 @@ class ProdutoModel {
   final int? id;
   final String codigo;
   final String nome;
+  final String? codigoBarras;
   final int familiaId;
   final double preco;
   final double precoCompra;
@@ -27,6 +28,7 @@ class ProdutoModel {
     this.id,
     this.codigo = '',
     required this.nome,
+    this.codigoBarras,
     required this.familiaId,
     required this.preco,
     this.precoCompra = 0,
@@ -50,6 +52,7 @@ class ProdutoModel {
       id: map['id'],
       codigo: map['codigo']?.toString() ?? '',
       nome: map['nome'],
+      codigoBarras: map['codigo_barras']?.toString(),
       familiaId: map['familia_id'],
       preco: double.parse(map['preco'].toString()),
       precoCompra: map['preco_compra'] != null
@@ -89,6 +92,7 @@ class ProdutoModel {
       'iva': iva,
       'setor_id': setorId,
       'area_id': areaId,
+      'codigo_barras': codigoBarras,
     };
 
     // Só adiciona código se solicitado e não for vazio

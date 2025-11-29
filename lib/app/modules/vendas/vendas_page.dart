@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/caixa_printer_service.dart';
+import '../../../core/services/definicoes_service.dart';
 import '../../data/repositories/empresa_repository.dart';
-import '../../data/repositories/configuracao_repository.dart';
 import 'controllers/vendas_controller.dart';
 import 'widgets/dialog_pesquisa_produto.dart';
 import 'views/tela_devedores.dart';
@@ -25,7 +25,6 @@ class _VendasPageState extends State<VendasPage> {
   final VendasController controller = Get.put(VendasController());
   final CaixaController caixaController = Get.put(CaixaController());
   final EmpresaRepository _empresaRepo = EmpresaRepository();
-  final ConfiguracaoRepository _configRepo = ConfiguracaoRepository();
 
   Timer? _inactivityTimer;
   bool _timeoutAtivo = true;
@@ -45,24 +44,26 @@ class _VendasPageState extends State<VendasPage> {
   }
 
   Future<void> _carregarConfiguracoes() async {
-    _timeoutAtivo = await _configRepo.buscarBoolean(
-      'vendas_timeout_ativo',
-      defaultValue: true,
-    );
-    _timeoutSegundos = await _configRepo.buscarInt(
-      'vendas_timeout_segundos',
-      defaultValue: 30,
-    );
-    _mostrarPedidos = await _configRepo.buscarBoolean(
-      'vendas_mostrar_pedidos',
-      defaultValue: true,
-    );
+    try {
+      final definicoes = await DefinicoesService.carregar();
+      setState(() {
+        _timeoutAtivo = definicoes.timeoutAtivo;
+        _timeoutSegundos = definicoes.timeoutSegundos;
+        _mostrarPedidos = definicoes.mostrarBotaoPedidos;
+      });
 
-    if (_timeoutAtivo) {
-      _resetarTimer();
+      if (_timeoutAtivo) {
+        _resetarTimer();
+      }
+    } catch (e) {
+      print('Erro ao carregar configurações: $e');
+      // Usar valores padrão em caso de erro
+      setState(() {
+        _timeoutAtivo = true;
+        _timeoutSegundos = 30;
+        _mostrarPedidos = true;
+      });
     }
-
-    setState(() {}); // Atualizar UI com as configurações
   }
 
   void _resetarTimer() {

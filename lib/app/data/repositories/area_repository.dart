@@ -7,9 +7,11 @@ class AreaRepository {
 
   Future<List<AreaModel>> listarTodas() async {
     final result = await _db.query('''
-      SELECT * FROM areas
-      WHERE ativo = true
-      ORDER BY nome
+      SELECT a.*, i.nome as impressora_nome
+      FROM areas a
+      LEFT JOIN impressoras i ON i.id = a.impressora_id
+      WHERE a.ativo = true
+      ORDER BY a.nome
     ''');
 
     return result.map((map) => AreaModel.fromMap(map)).toList();
@@ -17,7 +19,10 @@ class AreaRepository {
 
   Future<AreaModel?> buscarPorId(int id) async {
     final result = await _db.query('''
-      SELECT * FROM areas WHERE id = @id
+      SELECT a.*, i.nome as impressora_nome
+      FROM areas a
+      LEFT JOIN impressoras i ON i.id = a.impressora_id
+      WHERE a.id = @id
     ''', parameters: {'id': id});
 
     if (result.isEmpty) return null;
@@ -26,8 +31,8 @@ class AreaRepository {
 
   Future<int> inserir(AreaModel area) async {
     return await _db.insert('''
-      INSERT INTO areas (nome, descricao, ativo)
-      VALUES (@nome, @descricao, @ativo)
+      INSERT INTO areas (nome, descricao, ativo, impressora_id)
+      VALUES (@nome, @descricao, @ativo, @impressora_id)
     ''', parameters: area.toMap());
   }
 
@@ -36,7 +41,8 @@ class AreaRepository {
       UPDATE areas
       SET nome = @nome,
           descricao = @descricao,
-          ativo = @ativo
+          ativo = @ativo,
+          impressora_id = @impressora_id
       WHERE id = @id
     ''', parameters: {
       ...area.toMap(),

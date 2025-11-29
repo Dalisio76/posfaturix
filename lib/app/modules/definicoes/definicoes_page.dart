@@ -22,11 +22,13 @@ class _DefinicoesPageState extends State<DefinicoesPage> {
     setState(() => _isLoading = true);
     try {
       final definicoes = await DefinicoesService.carregar();
+      print('Definições carregadas: timeoutAtivo=${definicoes.timeoutAtivo}, timeoutSegundos=${definicoes.timeoutSegundos}, mostrarBotaoPedidos=${definicoes.mostrarBotaoPedidos}');
       setState(() {
         _definicoes = definicoes;
         _isLoading = false;
       });
     } catch (e) {
+      print('Erro ao carregar definições: $e');
       setState(() => _isLoading = false);
       Get.snackbar('Erro', 'Erro ao carregar definições: $e');
     }
@@ -34,6 +36,7 @@ class _DefinicoesPageState extends State<DefinicoesPage> {
 
   Future<void> _salvarDefinicoes(DefinicaoModel novasDefinicoes) async {
     try {
+      print('Salvando definições: ${novasDefinicoes.toJson()}');
       await DefinicoesService.salvar(novasDefinicoes);
       setState(() => _definicoes = novasDefinicoes);
       Get.snackbar(
@@ -44,6 +47,7 @@ class _DefinicoesPageState extends State<DefinicoesPage> {
         duration: Duration(seconds: 2),
       );
     } catch (e) {
+      print('Erro ao salvar: $e');
       Get.snackbar(
         'Erro',
         'Erro ao salvar definições: $e',
@@ -101,6 +105,128 @@ class _DefinicoesPageState extends State<DefinicoesPage> {
 
                     SizedBox(height: 30),
 
+                    // Seção: Segurança
+                    _buildSecaoTitulo('SEGURANÇA'),
+                    SizedBox(height: 10),
+
+                    // Opção: Timeout de inatividade
+                    Card(
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            title: Text(
+                              'Timeout de inatividade',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            subtitle: Text(
+                              _definicoes!.timeoutAtivo
+                                  ? 'Sistema fará logout automático após inatividade'
+                                  : 'Timeout de inatividade desativado',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                            value: _definicoes!.timeoutAtivo,
+                            activeColor: Colors.blue,
+                            onChanged: (valor) {
+                              final novasDefinicoes = _definicoes!.copyWith(
+                                timeoutAtivo: valor,
+                              );
+                              _salvarDefinicoes(novasDefinicoes);
+                            },
+                          ),
+                          if (_definicoes!.timeoutAtivo) ...[
+                            Divider(height: 1),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Tempo de inatividade (segundos)',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: TextField(
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      controller: TextEditingController(
+                                        text: _definicoes!.timeoutSegundos.toString(),
+                                      )..selection = TextSelection.collapsed(
+                                          offset: _definicoes!.timeoutSegundos
+                                              .toString()
+                                              .length,
+                                        ),
+                                      onSubmitted: (valor) {
+                                        final segundos = int.tryParse(valor) ?? 30;
+                                        if (segundos < 10) {
+                                          Get.snackbar(
+                                            'Atenção',
+                                            'O timeout mínimo é de 10 segundos',
+                                            backgroundColor: Colors.orange,
+                                            colorText: Colors.white,
+                                          );
+                                          return;
+                                        }
+                                        final novasDefinicoes = _definicoes!.copyWith(
+                                          timeoutSegundos: segundos,
+                                        );
+                                        _salvarDefinicoes(novasDefinicoes);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 30),
+
+                    // Seção: Vendas
+                    _buildSecaoTitulo('VENDAS'),
+                    SizedBox(height: 10),
+
+                    // Opção: Botão de Pedidos/Mesas
+                    Card(
+                      child: SwitchListTile(
+                        title: Text(
+                          'Mostrar botão PEDIDOS/MESAS',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          _definicoes!.mostrarBotaoPedidos
+                              ? 'Botão de pedidos e mesas visível na tela de vendas'
+                              : 'Botão de pedidos/mesas oculto (modo supermercado)',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        value: _definicoes!.mostrarBotaoPedidos,
+                        activeColor: Colors.blue,
+                        onChanged: (valor) {
+                          final novasDefinicoes = _definicoes!.copyWith(
+                            mostrarBotaoPedidos: valor,
+                          );
+                          _salvarDefinicoes(novasDefinicoes);
+                        },
+                      ),
+                    ),
+
+                    SizedBox(height: 30),
+
                     // Botão de resetar
                     OutlinedButton.icon(
                       onPressed: () async {
@@ -128,7 +254,10 @@ class _DefinicoesPageState extends State<DefinicoesPage> {
 
                         if (confirmar == true) {
                           await DefinicoesService.limpar();
-                          _carregarDefinicoes();
+                          // Salvar explicitamente as definições padrão
+                          final definicoespadrao = DefinicaoModel();
+                          await DefinicoesService.salvar(definicoespadrao);
+                          await _carregarDefinicoes();
                           Get.snackbar(
                             'Sucesso',
                             'Definições resetadas para padrão',

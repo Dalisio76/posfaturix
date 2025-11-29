@@ -21,6 +21,8 @@ import 'views/mesas_tab.dart';
 import 'views/perfis_usuario_tab.dart';
 import 'views/usuarios_tab.dart';
 import 'views/configurar_permissoes_tab.dart';
+import 'views/impressoras_tab.dart';
+import 'views/mapeamento_impressoras_tab.dart';
 import '../definicoes/definicoes_page.dart';
 
 // ==========================================
@@ -69,9 +71,10 @@ class _AdminPageState extends State<AdminPage> {
       // Mesas (total e ocupadas)
       final mesasResult = await db.query('''
         SELECT
-          COUNT(*) as total,
-          COUNT(CASE WHEN status = 'ocupada' THEN 1 END) as ocupadas
-        FROM mesas
+          COUNT(DISTINCT m.id) as total,
+          COUNT(DISTINCT CASE WHEN p.status = 'aberto' THEN m.id END) as ocupadas
+        FROM mesas m
+        LEFT JOIN pedidos p ON p.mesa_id = m.id AND p.status = 'aberto'
       ''');
       if (mesasResult.isNotEmpty) {
         final total = mesasResult.first['total'] as int;
@@ -731,6 +734,20 @@ class _AdminPageState extends State<AdminPage> {
         widget: ConfigurarPermissoesTab(),
         permissoes: ['gestao_permissoes'],
         descricao: 'Configurar permissões',
+      ),
+      AdminMenuItem(
+        titulo: 'Impressoras',
+        icone: Icons.print,
+        widget: ImpressorasTab(),
+        permissoes: ['acesso_admin'],
+        descricao: 'Gestão de impressoras',
+      ),
+      AdminMenuItem(
+        titulo: 'Mapeamento Impressão',
+        icone: Icons.settings_ethernet,
+        widget: MapeamentoImpressorasTab(),
+        permissoes: ['acesso_admin'],
+        descricao: 'Documentos e impressoras',
       ),
       AdminMenuItem(
         titulo: 'Configurações',

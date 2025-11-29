@@ -153,9 +153,13 @@ class AdminController extends GetxController {
   }
 
   // ===== ÁREA =====
-  Future<void> adicionarArea(String nome, String? descricao) async {
+  Future<void> adicionarArea(String nome, String? descricao, int? impressoraId) async {
     try {
-      final area = AreaModel(nome: nome, descricao: descricao);
+      final area = AreaModel(
+        nome: nome,
+        descricao: descricao,
+        impressoraId: impressoraId,
+      );
       await _areaRepo.inserir(area);
       await carregarDados();
       Get.back();
@@ -165,9 +169,13 @@ class AdminController extends GetxController {
     }
   }
 
-  Future<void> editarArea(int id, String nome, String? descricao) async {
+  Future<void> editarArea(int id, String nome, String? descricao, int? impressoraId) async {
     try {
-      final area = AreaModel(nome: nome, descricao: descricao);
+      final area = AreaModel(
+        nome: nome,
+        descricao: descricao,
+        impressoraId: impressoraId,
+      );
       await _areaRepo.atualizar(id, area);
       await carregarDados();
       Get.back();

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../../app/data/repositories/impressora_repository.dart';
 import '../../app/data/models/impressora_model.dart';
+import '../utils/windows_printer_service.dart';
 
 /// Serviço centralizado para gerenciar impressão automática
 class ImpressaoService {
@@ -12,39 +13,58 @@ class ImpressaoService {
   /// ```dart
   /// await ImpressaoService.imprimirPedidoArea(
   ///   areaId: 1,
-  ///   conteudo: 'PEDIDO #123\n\n2x Hamburguer\n1x Coca-Cola',
+  ///   nomeMesa: 'Mesa 5',
+  ///   nomeArea: 'Bar',
+  ///   itens: [{'quantidade': 2, 'nome': 'Coca-Cola', 'observacoes': ''}],
+  ///   nomeUsuario: 'João Silva',
   /// );
   /// ```
   static Future<bool> imprimirPedidoArea({
     required int areaId,
-    required String conteudo,
+    required String nomeMesa,
+    required String nomeArea,
+    required List<Map<String, dynamic>> itens,
+    String? nomeUsuario,
+    String? observacoes,
   }) async {
     try {
+      print('🔍 Buscando impressora para área $areaId...');
+
       // Buscar impressora da área
       final impressora = await _repo.buscarImpressoraPorArea(areaId);
 
       if (impressora == null) {
-        print('Área $areaId não possui impressora configurada');
+        print('⚠️ Área $areaId não possui impressora configurada');
         return false;
       }
 
       if (!impressora.ativo) {
-        print('Impressora ${impressora.nome} está inativa');
+        print('⚠️ Impressora ${impressora.nome} está inativa');
         return false;
       }
 
-      // Imprimir
-      print('📄 Imprimindo na impressora: ${impressora.nome}');
-      print('Largura: ${impressora.larguraPapel}mm');
-      print('Tipo: ${impressora.tipo}');
-      print('Conteúdo:\n$conteudo');
+      // Usar caminhoRede se existir, senão usar nome
+      final nomeImpressora = impressora.caminhoRede ?? impressora.nome;
 
-      // TODO: Integrar com biblioteca de impressão real (esc_pos_printer, esc_pos_utils, etc)
-      // Por enquanto apenas loga
+      print('✅ Impressora encontrada: $nomeImpressora');
+      print('📝 Imprimindo ${itens.length} itens para $nomeArea');
+      if (nomeUsuario != null) {
+        print('👤 Usuario: $nomeUsuario');
+      }
 
-      return true;
+      // Imprimir usando WindowsPrinterService
+      final sucesso = await WindowsPrinterService.imprimirPedidoArea(
+        nomeImpressora: nomeImpressora,
+        nomeMesa: nomeMesa,
+        nomeArea: nomeArea,
+        itens: itens,
+        nomeUsuario: nomeUsuario,
+        observacoes: observacoes,
+      );
+
+      return sucesso;
     } catch (e) {
-      print('Erro ao imprimir pedido na área $areaId: $e');
+      print('❌ Erro ao imprimir pedido na área $areaId: $e');
       return false;
     }
   }

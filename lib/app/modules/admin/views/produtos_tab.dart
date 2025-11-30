@@ -420,6 +420,7 @@ class ProdutosTab extends GetView<AdminController> {
   void _mostrarDialogProduto(ProdutoModel? produto) async {
     // Não precisa mais do campo código - será gerado automaticamente
     final nomeController = TextEditingController(text: produto?.nome ?? '');
+    final codigoBarrasController = TextEditingController(text: produto?.codigoBarras ?? '');
     final precoController = TextEditingController(
       text: produto?.preco.toString() ?? '',
     );
@@ -483,6 +484,18 @@ class ProdutosTab extends GetView<AdminController> {
                     labelText: 'Nome *',
                     border: OutlineInputBorder(),
                   ),
+                ),
+                const SizedBox(height: 15),
+
+                TextField(
+                  controller: codigoBarrasController,
+                  decoration: const InputDecoration(
+                    labelText: 'Código de Barras',
+                    hintText: 'EAN-13, EAN-8, UPC-A ou UPC-E',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.qr_code_scanner),
+                  ),
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 15),
 
@@ -717,6 +730,7 @@ class ProdutosTab extends GetView<AdminController> {
               final novoProduto = ProdutoModel(
                 codigo: produto?.codigo ?? '', // Será gerado automaticamente se vazio
                 nome: nomeController.text,
+                codigoBarras: codigoBarrasController.text.isEmpty ? null : codigoBarrasController.text,
                 familiaId: familiaIdSelecionada.value!,
                 preco: double.tryParse(precoController.text) ?? 0,
                 precoCompra: double.tryParse(precoCompraController.text) ?? 0,

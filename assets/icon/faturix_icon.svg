@@ -1,0 +1,74 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Definições de gradientes -->
+  <defs>
+    <!-- Gradiente de fundo -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0D47A1;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1976D2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00C853;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gradiente para letra F -->
+    <linearGradient id="fGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E3F2FD;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Sombra suave -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo arredondado com gradiente -->
+  <rect width="512" height="512" rx="100" ry="100" fill="url(#bgGradient)"/>
+
+  <!-- Elementos decorativos (pontos brilhantes) -->
+  <circle cx="100" cy="100" r="4" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="420" cy="80" r="6" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="450" cy="400" r="5" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="80" cy="380" r="3" fill="#FFFFFF" opacity="0.4"/>
+
+  <!-- Container central -->
+  <g filter="url(#shadow)">
+    <!-- Letra F estilizada com barras integradas -->
+    <g fill="url(#fGradient)">
+      <!-- Haste vertical do F -->
+      <rect x="140" y="120" width="60" height="280" rx="8"/>
+
+      <!-- Barra superior do F -->
+      <rect x="140" y="120" width="200" height="60" rx="8"/>
+
+      <!-- Barra do meio do F (menor) -->
+      <rect x="140" y="240" width="150" height="50" rx="8"/>
+
+      <!-- Barras do gráfico integradas (3 barras crescentes) -->
+      <!-- Barra 1 (pequena) -->
+      <rect x="220" y="280" width="35" height="80" rx="6" opacity="0.9"/>
+
+      <!-- Barra 2 (média) -->
+      <rect x="265" y="240" width="35" height="120" rx="6" opacity="0.95"/>
+
+      <!-- Barra 3 (grande) -->
+      <rect x="310" y="200" width="35" height="160" rx="6" opacity="1"/>
+    </g>
+
+    <!-- Seta de crescimento -->
+    <g fill="#4CAF50" opacity="0.9">
+      <path d="M 340 160 L 380 120 L 420 160 L 400 160 L 400 200 L 360 200 L 360 160 Z"/>
+      <!-- Ponta da seta -->
+      <circle cx="380" cy="115" r="8" fill="#66BB6A"/>
+    </g>
+  </g>
+
+  <!-- Brilho sutil no topo -->
+  <ellipse cx="256" cy="100" rx="180" ry="40" fill="#FFFFFF" opacity="0.1"/>
+</svg>

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../data/models/mesa_model.dart';
 import '../../../data/models/local_mesa_model.dart';
 import '../../../data/models/pedido_model.dart';
@@ -883,38 +884,73 @@ class _DialogGerenciarPedidosState extends State<DialogGerenciarPedidos> {
 
     final pdf = pw.Document();
 
+    // Carregar fonte com suporte Unicode
+    final ttf = await PdfGoogleFonts.robotoRegular();
+
+    // Calcular altura necessária
+    final numItens = itensAgrupados.length;
+    final alturaEstimada = 150.0 + (numItens * 20.0) + 80.0;
+
+    final formatoCustomizado = PdfPageFormat(
+      80 * PdfPageFormat.mm,
+      alturaEstimada * PdfPageFormat.mm,
+      marginAll: 5 * PdfPageFormat.mm,
+    );
+
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.roll80,
+        pageFormat: formatoCustomizado,
+        theme: pw.ThemeData.withFont(base: ttf),
         build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // Cabeçalho
+              // Cabeçalho com nome da empresa
               pw.Center(
                 child: pw.Text(
                   nomeEmpresa.toUpperCase(),
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
                 ),
               ),
-              pw.SizedBox(height: 10),
-              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 8)),
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: 3),
+
+              // CONTA DO CLIENTE - Centralizado e em destaque
+              pw.Center(
+                child: pw.Text(
+                  '================================',
+                  style: pw.TextStyle(fontSize: 7),
+                ),
+              ),
+              pw.Center(
+                child: pw.Text(
+                  'CONTA DO CLIENTE',
+                  style: pw.TextStyle(
+                    fontSize: 8,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              pw.Center(
+                child: pw.Text(
+                  '================================',
+                  style: pw.TextStyle(fontSize: 7),
+                ),
+              ),
+              pw.SizedBox(height: 3),
 
               // Informações da mesa
-              pw.Text('MESA: ${mesa.numero}', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 5),
-              pw.Text('PEDIDO: ${pedido.numero}', style: pw.TextStyle(fontSize: 8)),
-              pw.Text('RESPONSAVEL: ${pedido.usuarioNome ?? ''}', style: pw.TextStyle(fontSize: 8)),
-              pw.Text('DATA: ${pedido.dataAbertura.day.toString().padLeft(2, '0')}/${pedido.dataAbertura.month.toString().padLeft(2, '0')}/${pedido.dataAbertura.year}', style: pw.TextStyle(fontSize: 8)),
-              pw.Text('HORA: ${pedido.dataAbertura.hour.toString().padLeft(2, '0')}:${pedido.dataAbertura.minute.toString().padLeft(2, '0')}', style: pw.TextStyle(fontSize: 8)),
-              pw.SizedBox(height: 10),
+              pw.Text('Mesa: ${mesa.numero}', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 1),
+              pw.Text('Pedido: ${pedido.numero}', style: pw.TextStyle(fontSize: 7)),
+              pw.Text('Responsavel: ${pedido.usuarioNome ?? ''}', style: pw.TextStyle(fontSize: 7)),
+              pw.Text('Data: ${pedido.dataAbertura.day.toString().padLeft(2, '0')}/${pedido.dataAbertura.month.toString().padLeft(2, '0')}/${pedido.dataAbertura.year} ${pedido.dataAbertura.hour.toString().padLeft(2, '0')}:${pedido.dataAbertura.minute.toString().padLeft(2, '0')}', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 4),
 
-              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 8)),
-              pw.SizedBox(height: 5),
-              pw.Text('CONSUMO:', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
-              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 8)),
-              pw.SizedBox(height: 5),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 2),
+              pw.Text('CONSUMO:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 2),
 
               // Itens
               ...itensAgrupados.values.map((item) {
@@ -926,34 +962,51 @@ class _DialogGerenciarPedidosState extends State<DialogGerenciarPedidos> {
                 return pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text(nomeProduto.toUpperCase(), style: pw.TextStyle(fontSize: 9)),
+                    pw.Text(
+                      nomeProduto.toUpperCase(),
+                      style: pw.TextStyle(fontSize: 8),
+                    ),
                     pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
-                        pw.Text('$quantidade x ${precoUnitario.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 8)),
-                        pw.Text(subtotal.toStringAsFixed(2), style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                        pw.Text(
+                          '$quantidade x ${precoUnitario.toStringAsFixed(2)}',
+                          style: pw.TextStyle(fontSize: 7),
+                        ),
+                        pw.Text(
+                          subtotal.toStringAsFixed(2),
+                          style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                        ),
                       ],
                     ),
-                    pw.SizedBox(height: 5),
+                    pw.SizedBox(height: 2),
                   ],
                 );
               }).toList(),
 
-              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 8)),
-              pw.SizedBox(height: 10),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 4),
 
               // Total
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('TOTAL:', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                  pw.Text(pedido.total.toStringAsFixed(2), style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('TOTAL:', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(
+                    pedido.total.toStringAsFixed(2),
+                    style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+                  ),
                 ],
               ),
-              pw.SizedBox(height: 10),
+              pw.SizedBox(height: 4),
 
-              pw.Text('================================================', style: pw.TextStyle(fontSize: 8)),
-              pw.SizedBox(height: 20),
+              pw.Center(
+                child: pw.Text(
+                  '================================',
+                  style: pw.TextStyle(fontSize: 7),
+                ),
+              ),
+              pw.SizedBox(height: 10),
             ],
           );
         },

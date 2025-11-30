@@ -1,0 +1,53 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Versão ADAPTATIVA - Android adaptive icon safe zone (66% do canvas) -->
+  <defs>
+    <!-- Gradiente radial para fundo -->
+    <radialGradient id="bgRadial">
+      <stop offset="0%" style="stop-color:#1976D2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0D47A1;stop-opacity:1" />
+    </radialGradient>
+
+    <!-- Gradiente para elementos -->
+    <linearGradient id="elementGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E676;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00C853;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background layer (camada de fundo) -->
+  <rect width="512" height="512" fill="url(#bgRadial)"/>
+
+  <!-- Safe zone: 336x336px centered (66% de 512) -->
+  <!-- Offset: (512-336)/2 = 88 -->
+
+  <!-- Foreground layer (camada de frente) -->
+  <g transform="translate(88, 88)">
+    <!-- Container 336x336 -->
+
+    <!-- F estilizado centralizado -->
+    <g fill="#FFFFFF">
+      <!-- Haste -->
+      <rect x="80" y="40" width="50" height="220" rx="8"/>
+
+      <!-- Barra superior -->
+      <rect x="80" y="40" width="160" height="50" rx="8"/>
+
+      <!-- Barra meio -->
+      <rect x="80" y="140" width="120" height="45" rx="8"/>
+    </g>
+
+    <!-- Barras gráfico (verde) -->
+    <g fill="url(#elementGradient)">
+      <rect x="160" y="180" width="30" height="50" rx="5"/>
+      <rect x="195" y="150" width="30" height="80" rx="5"/>
+      <rect x="230" y="120" width="30" height="110" rx="5"/>
+    </g>
+
+    <!-- Seta -->
+    <path d="M 245 75 L 270 50 L 295 75 L 283 75 L 283 100 L 257 100 L 257 75 Z"
+          fill="url(#elementGradient)"/>
+  </g>
+
+  <!-- Border decorativo (opcional) -->
+  <rect width="512" height="512" fill="none" stroke="#00E676" stroke-width="3" opacity="0.3"/>
+</svg>

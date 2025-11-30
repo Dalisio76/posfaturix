@@ -1,0 +1,146 @@
+========================================================
+  POSFATURIX - INÍCIO RÁPIDO
+========================================================
+
+🚀 CRIAR INSTALADOR (3 PASSOS)
+========================================================
+
+1. PREPARAR BUILD
+   --------------------------------------------------
+   Execute:
+   > cd C:\Users\Frentex\source\posfaturix\installer
+   > preparar_build.bat
+
+2. COMPILAR INSTALADOR
+   --------------------------------------------------
+   - Inno Setup abrirá automaticamente
+   - Pressione F9 (Build → Compile)
+   - Aguarde 1-2 minutos
+
+3. INSTALADOR PRONTO!
+   --------------------------------------------------
+   Arquivo gerado em:
+   installer\Output\PosFaturix_Setup_1.0.0.exe
+
+   Tamanho aproximado: 100-150 MB
+
+========================================================
+💻 INSTALAR EM PRODUÇÃO
+========================================================
+
+1. INSTALAR POSTGRESQL (se necessário)
+   https://www.postgresql.org/download/windows/
+
+2. EXECUTAR INSTALADOR
+   Clique direito → Executar como Administrador
+
+3. CONFIGURAR DATABASE
+   Menu Iniciar → PosFaturix → Configurar Base de Dados
+
+4. INICIAR APLICAÇÃO
+   Código padrão: 0000
+
+========================================================
+🌐 CONFIGURAR REDE (OPCIONAL)
+========================================================
+
+SERVIDOR:
+1. Descobrir IP: cmd > ipconfig
+2. Editar: postgresql.conf
+   listen_addresses = '*'
+3. Editar: pg_hba.conf
+   host all all 192.168.1.0/24 md5
+4. Reiniciar PostgreSQL
+5. Liberar firewall porta 5432
+
+TERMINAIS:
+1. Instalar PosFaturix
+2. Na configuração, usar IP do servidor
+   Ex: 192.168.1.10
+
+========================================================
+📁 ARQUIVOS CRIADOS
+========================================================
+
+installer/
+├── installer.iss ................. Script Inno Setup
+├── database_inicial.sql .......... Database inicial
+├── configurar_database.bat ....... Configurador auto
+├── preparar_build.bat ............ Preparar build
+├── README_INSTALACAO.txt ......... Manual usuário
+├── COMO_CRIAR_INSTALADOR.md ...... Guia criação
+├── GUIA_COMPLETO.md .............. Guia completo
+├── extrair_database_limpa.bat .... Extrair DB
+└── INICIO_RAPIDO.txt ............. Este arquivo
+
+========================================================
+🔧 PROBLEMAS COMUNS
+========================================================
+
+❌ "VCRUNTIME140.dll não encontrado"
+   ✅ Instale: https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+❌ "Não conecta à base de dados"
+   ✅ PostgreSQL rodando?
+   ✅ Senha correta?
+   ✅ Database criada?
+
+❌ "Erro ao compilar instalador"
+   ✅ flutter build windows --release
+   ✅ Verifique: build\windows\x64\runner\Release\posfaturix.exe
+
+========================================================
+📊 INFORMAÇÕES TÉCNICAS
+========================================================
+
+Usuário Admin Padrão:
+- Nome: Admin
+- Código: 0000
+- Perfil: Super Administrador
+
+Base de Dados:
+- Nome: pdv_system
+- Porta: 5432
+- Usuário: postgres
+
+Instalação Padrão:
+- Pasta: C:\Program Files\PosFaturix
+- Atalhos: Desktop + Menu Iniciar
+
+========================================================
+✅ CHECKLIST PRÉ-DISTRIBUIÇÃO
+========================================================
+
+Antes de distribuir, teste:
+
+[ ] Instalador abre sem erros
+[ ] Database é criada automaticamente
+[ ] Login funciona (código 0000)
+[ ] Adicionar produtos funciona
+[ ] Fazer venda funciona
+[ ] Impressão funciona
+[ ] Fecho de caixa funciona
+[ ] Testado em PC limpo (sem Flutter)
+[ ] Manual README_INSTALACAO.txt atualizado
+
+========================================================
+📞 SUPORTE
+========================================================
+
+Documentação Completa:
+> GUIA_COMPLETO.md
+
+Criar Instalador:
+> COMO_CRIAR_INSTALADOR.md
+
+Manual do Usuário:
+> README_INSTALACAO.txt
+
+========================================================
+
+Pronto para produção! 🎉
+
+Para começar agora:
+> preparar_build.bat
+
+========================================================

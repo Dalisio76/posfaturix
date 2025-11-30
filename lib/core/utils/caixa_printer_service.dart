@@ -2,6 +2,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../app/data/models/caixa_model.dart';
 import '../../app/data/models/caixa_detalhe_model.dart';
 import '../../app/data/models/empresa_model.dart';
@@ -439,7 +440,7 @@ class CaixaPrinterService {
     );
   }
 
-  /// Gerar PDF do relatório de fecho de caixa (Layout compacto - baseado em fecho.pdf)
+  /// Gerar PDF do relatório de fecho de caixa COMPLETO
   static Future<pw.Document> _gerarRelatorioPDF(
     CaixaModel caixa,
     EmpresaModel? empresa,
@@ -449,58 +450,124 @@ class CaixaPrinterService {
   ) async {
     final pdf = pw.Document();
 
+    // Carregar fonte com suporte Unicode
+    final ttf = await PdfGoogleFonts.robotoRegular();
+
+    // Calcular altura necessária
+    final numItens = produtosVendidos.length + despesas.length + pagamentosDividas.length;
+    final alturaEstimada = 200.0 + (numItens * 15.0) + 100.0;
+
+    final formatoCustomizado = PdfPageFormat(
+      80 * PdfPageFormat.mm,
+      alturaEstimada * PdfPageFormat.mm,
+      marginAll: 5 * PdfPageFormat.mm,
+    );
+
     pdf.addPage(
       pw.Page(
-        pageFormat: PrintLayoutConfig.formatoPapel,
+        pageFormat: formatoCustomizado,
+        theme: pw.ThemeData.withFont(base: ttf),
         build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               // ========== CABEÇALHO ==========
-              pw.Text(
-                empresa?.nome.toUpperCase() ?? 'RESTAURANTE',
-                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              pw.Center(
+                child: pw.Text(
+                  empresa?.nome.toUpperCase() ?? 'RESTAURANTE',
+                  style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+                ),
               ),
-              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.SizedBox(height: 3),
 
-              pw.Text(
-                'RELATÓRIO DE VENDAS',
-                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              pw.Center(
+                child: pw.Text(
+                  '================================',
+                  style: pw.TextStyle(fontSize: 7),
+                ),
               ),
-              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
-
-              pw.Text(
-                'OPERADOR',
-                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              pw.Center(
+                child: pw.Text(
+                  'FECHO DE CAIXA',
+                  style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+                ),
               ),
-              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Center(
+                child: pw.Text(
+                  '================================',
+                  style: pw.TextStyle(fontSize: 7),
+                ),
+              ),
+              pw.SizedBox(height: 3),
 
               // ========== DATAS ==========
-              _buildLinhaDadosCompacta('ABERTURA', DateFormat('dd-MM-yyyy HH:mm:ss').format(caixa.dataAbertura)),
+              pw.Text(
+                'Abertura: ${DateFormat('dd/MM/yyyy HH:mm').format(caixa.dataAbertura)}',
+                style: pw.TextStyle(fontSize: 7),
+              ),
               if (caixa.dataFechamento != null)
-                _buildLinhaDadosCompacta('FECHO', DateFormat('dd-MM-yyyy HH:mm:ss').format(caixa.dataFechamento!)),
+                pw.Text(
+                  'Fecho: ${DateFormat('dd/MM/yyyy HH:mm').format(caixa.dataFechamento!)}',
+                  style: pw.TextStyle(fontSize: 7),
+                ),
+              pw.SizedBox(height: 4),
 
-              _buildLinhaDadosCompacta('EM DIVIDA', _formatarValorSimples(caixa.totalVendasCredito)),
-              _buildLinhaDadosCompacta('PAGTO. DIVIDA', _formatarValorSimples(caixa.totalVendasCredito)),
-
-              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
-
-              // ========== LINHA SÓLIDA ==========
-              _buildLinhaSolida(),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 2),
+              pw.Text('FORMAS DE PAGAMENTO:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 2),
 
               // ========== FORMAS DE PAGAMENTO ==========
-              ..._buildFormasPagamentoCompacto(caixa, empresa?.nome ?? 'CAIXA'),
+              ..._buildFormasPagamentoDetalhado(caixa),
 
-              _buildLinhaSolida(),
-              pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 4),
 
               // ========== TOTAIS ==========
-              _buildLinhaDadosCompacta('TOTAL PAGO', _formatarValorComVirgula(caixa.totalVendasPagas)),
-              _buildLinhaDadosCompacta('DESPESAS', _formatarValorComVirgula(caixa.totalDespesas)),
-              _buildLinhaDadosCompacta('EM CAIXA', _formatarValorComVirgula(caixa.saldoFinal)),
-              _buildLinhaDadosCompacta('DIFERENÇA', _formatarValorComVirgula(caixa.totalEntradas - caixa.totalVendasPagas)),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('TOTAL VENDAS:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(_formatarValorComVirgula(caixa.totalVendasPagas), style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Vendas a Credito:', style: pw.TextStyle(fontSize: 7)),
+                  pw.Text(_formatarValorComVirgula(caixa.totalVendasCredito), style: pw.TextStyle(fontSize: 7)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Pagtos. Dividas:', style: pw.TextStyle(fontSize: 7)),
+                  pw.Text(_formatarValorComVirgula(caixa.totalDividasPagas), style: pw.TextStyle(fontSize: 7)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Despesas:', style: pw.TextStyle(fontSize: 7)),
+                  pw.Text(_formatarValorComVirgula(caixa.totalDespesas), style: pw.TextStyle(fontSize: 7)),
+                ],
+              ),
+              pw.SizedBox(height: 2),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('SALDO FINAL:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(_formatarValorComVirgula(caixa.saldoFinal), style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
 
-              pw.SizedBox(height: PrintLayoutConfig.espacoMedio),
+              pw.SizedBox(height: 4),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 2),
+              pw.Text('PRODUTOS VENDIDOS:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 2),
 
               // ========== CABEÇALHO TABELA PRODUTOS ==========
               pw.Row(
@@ -508,36 +575,132 @@ class CaixaPrinterService {
                 children: [
                   pw.Expanded(
                     flex: 4,
-                    child: pw.Text('PRODUTO', style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena)),
+                    child: pw.Text('PRODUTO', style: pw.TextStyle(fontSize: 7)),
+                  ),
+                  pw.Container(
+                    width: 40,
+                    child: pw.Text('QUANT', style: pw.TextStyle(fontSize: 7), textAlign: pw.TextAlign.right),
                   ),
                   pw.Container(
                     width: 50,
-                    child: pw.Text('QUANT', style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena), textAlign: pw.TextAlign.right),
-                  ),
-                  pw.Container(
-                    width: 60,
-                    child: pw.Text('SUBTOTAL', style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena), textAlign: pw.TextAlign.right),
+                    child: pw.Text('TOTAL', style: pw.TextStyle(fontSize: 7), textAlign: pw.TextAlign.right),
                   ),
                 ],
               ),
+              pw.SizedBox(height: 2),
 
               // ========== PRODUTOS VENDIDOS ==========
-              ...produtosVendidos.map((produto) => _buildLinhaProdutoCompacto(
-                produto.produtoNome,
-                produto.quantidadeTotal.toDouble(),
-                produto.subtotalTotal,
+              ...produtosVendidos.map((produto) => pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Expanded(
+                    flex: 4,
+                    child: pw.Text(
+                      produto.produtoNome.toUpperCase(),
+                      style: pw.TextStyle(fontSize: 7),
+                    ),
+                  ),
+                  pw.Container(
+                    width: 40,
+                    child: pw.Text(
+                      produto.quantidadeTotal.toStringAsFixed(0),
+                      style: pw.TextStyle(fontSize: 7),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                  pw.Container(
+                    width: 50,
+                    child: pw.Text(
+                      produto.subtotalTotal.toStringAsFixed(2),
+                      style: pw.TextStyle(fontSize: 7),
+                      textAlign: pw.TextAlign.right,
+                    ),
+                  ),
+                ],
               )).toList(),
 
-              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
-              _buildLinhaSolida(),
-              pw.SizedBox(height: PrintLayoutConfig.espacoAntesRodape),
+              // ========== DESPESAS DETALHADAS ==========
+              if (despesas.isNotEmpty) ...[
+                pw.SizedBox(height: 4),
+                pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+                pw.SizedBox(height: 2),
+                pw.Text('DESPESAS:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+                pw.SizedBox(height: 2),
+                ...despesas.map((desp) => pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Expanded(
+                          child: pw.Text(
+                            desp.descricao,
+                            style: pw.TextStyle(fontSize: 7),
+                          ),
+                        ),
+                        pw.Text(
+                          _formatarValorComVirgula(desp.valor),
+                          style: pw.TextStyle(fontSize: 7),
+                        ),
+                      ],
+                    ),
+                    pw.Text(
+                      '  ${DateFormat('dd/MM HH:mm').format(desp.dataDespesa)}',
+                      style: pw.TextStyle(fontSize: 6, color: PdfColors.grey700),
+                    ),
+                    pw.SizedBox(height: 2),
+                  ],
+                )).toList(),
+              ],
+
+              // ========== PAGAMENTOS DE DÍVIDAS DETALHADOS ==========
+              if (pagamentosDividas.isNotEmpty) ...[
+                pw.SizedBox(height: 4),
+                pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+                pw.SizedBox(height: 2),
+                pw.Text('PAGAMENTOS DE DIVIDAS:', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+                pw.SizedBox(height: 2),
+                ...pagamentosDividas.map((pag) => pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Expanded(
+                          child: pw.Text(
+                            pag.clienteNome,
+                            style: pw.TextStyle(fontSize: 7),
+                          ),
+                        ),
+                        pw.Text(
+                          _formatarValorComVirgula(pag.valor),
+                          style: pw.TextStyle(fontSize: 7),
+                        ),
+                      ],
+                    ),
+                    pw.Text(
+                      '  ${pag.formaPagamento} • ${DateFormat('dd/MM HH:mm').format(pag.dataPagamento)}',
+                      style: pw.TextStyle(fontSize: 6, color: PdfColors.grey700),
+                    ),
+                    pw.SizedBox(height: 2),
+                  ],
+                )).toList(),
+              ],
+
+              pw.SizedBox(height: 4),
+              pw.Text('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', style: pw.TextStyle(fontSize: 7)),
+              pw.SizedBox(height: 4),
 
               // ========== RODAPÉ ==========
-              pw.Text(
-                '/*${empresa?.nome.toUpperCase() ?? 'SISTEMA PDV'}*/',
-                style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
+              pw.Center(
+                child: pw.Text(
+                  '${empresa?.nome.toUpperCase() ?? 'SISTEMA PDV'}',
+                  style: pw.TextStyle(fontSize: 7),
+                ),
               ),
-              pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
+              pw.SizedBox(height: 10),
             ],
           );
         },
@@ -545,6 +708,50 @@ class CaixaPrinterService {
     );
 
     return pdf;
+  }
+
+  /// Construir formas de pagamento detalhado
+  static List<pw.Widget> _buildFormasPagamentoDetalhado(CaixaModel caixa) {
+    final List<pw.Widget> widgets = [];
+
+    if (caixa.totalCash > 0) {
+      widgets.add(pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('Cash:', style: pw.TextStyle(fontSize: 7)),
+          pw.Text(_formatarValorComVirgula(caixa.totalCash), style: pw.TextStyle(fontSize: 7)),
+        ],
+      ));
+    }
+    if (caixa.totalEmola > 0) {
+      widgets.add(pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('E-Mola:', style: pw.TextStyle(fontSize: 7)),
+          pw.Text(_formatarValorComVirgula(caixa.totalEmola), style: pw.TextStyle(fontSize: 7)),
+        ],
+      ));
+    }
+    if (caixa.totalMpesa > 0) {
+      widgets.add(pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('M-Pesa:', style: pw.TextStyle(fontSize: 7)),
+          pw.Text(_formatarValorComVirgula(caixa.totalMpesa), style: pw.TextStyle(fontSize: 7)),
+        ],
+      ));
+    }
+    if (caixa.totalPos > 0) {
+      widgets.add(pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('POS/Cartao:', style: pw.TextStyle(fontSize: 7)),
+          pw.Text(_formatarValorComVirgula(caixa.totalPos), style: pw.TextStyle(fontSize: 7)),
+        ],
+      ));
+    }
+
+    return widgets;
   }
 
   /// Construir linha de dados (chave: valor)

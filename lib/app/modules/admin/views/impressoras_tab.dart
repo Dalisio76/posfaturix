@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/impressora_model.dart';
 import '../../../data/repositories/impressora_repository.dart';
+import '../../../../core/utils/windows_printer_service.dart';
 
 class ImpressorasTab extends StatefulWidget {
   const ImpressorasTab({Key? key}) : super(key: key);
@@ -120,6 +121,17 @@ class _ImpressorasTabState extends State<ImpressorasTab> {
             ),
           ),
           const Spacer(),
+          ElevatedButton.icon(
+            onPressed: _listarImpressorasWindows,
+            icon: const Icon(Icons.computer, size: 18),
+            label: const Text('VER IMPRESSORAS DO WINDOWS'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple[600],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          const SizedBox(width: 12),
           Obx(() => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
@@ -593,6 +605,208 @@ class _ImpressorasTabState extends State<ImpressorasTab> {
           colorText: Colors.white,
         );
       }
+    }
+  }
+
+  Future<void> _listarImpressorasWindows() async {
+    try {
+      // Mostrar loading
+      Get.dialog(
+        const Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Buscando impressoras do Windows...'),
+                ],
+              ),
+            ),
+          ),
+        ),
+        barrierDismissible: false,
+      );
+
+      // Buscar impressoras usando o WindowsPrinterService
+      final impressorasWindows = await WindowsPrinterService.listarImpressorasDisponiveis();
+
+      Get.back(); // Fechar loading
+
+      if (impressorasWindows.isEmpty) {
+        Get.dialog(
+          AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 32),
+                SizedBox(width: 12),
+                Text('Nenhuma Impressora'),
+              ],
+            ),
+            content: const Text(
+              'Nenhuma impressora foi encontrada no Windows.\n\n'
+              'Verifique se há impressoras instaladas e ativas no sistema.',
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Get.back(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      // Mostrar lista de impressoras
+      Get.dialog(
+        AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.computer, color: Colors.blue, size: 32),
+              SizedBox(width: 12),
+              Text('Impressoras do Windows'),
+            ],
+          ),
+          content: SizedBox(
+            width: 600,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Encontradas ${impressorasWindows.length} impressoras instaladas:',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                ...impressorasWindows.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final printer = entry.value;
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: printer.isDefault ? Colors.green : Colors.blue,
+                      child: Text(
+                        '${index + 1}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    title: Text(
+                      printer.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: printer.isDefault ? const Text('Impressora Padrão') : null,
+                    trailing: ElevatedButton.icon(
+                      onPressed: () => _testarImpressora(printer.name),
+                      icon: const Icon(Icons.print, size: 16),
+                      label: const Text('TESTAR'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[600],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  );
+                }).toList(),
+                const Divider(),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange[200]!),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'A impressora configurada atualmente é: "balcao"\n'
+                          'Use o botão TESTAR para verificar se a impressão funciona.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Get.back(),
+              child: const Text('FECHAR'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      Get.back(); // Fechar loading se estiver aberto
+      Get.snackbar(
+        'Erro',
+        'Erro ao listar impressoras: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> _testarImpressora(String nomeImpressora) async {
+    try {
+      // Mostrar loading
+      Get.dialog(
+        Center(
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text('Testando impressora: $nomeImpressora'),
+                ],
+              ),
+            ),
+          ),
+        ),
+        barrierDismissible: false,
+      );
+
+      // Testar impressão
+      final sucesso = await WindowsPrinterService.testarImpressoraEspecifica(nomeImpressora);
+
+      Get.back(); // Fechar loading
+
+      if (sucesso) {
+        Get.snackbar(
+          'Sucesso',
+          'Teste de impressão enviado para: $nomeImpressora\n\nVerifique se a página foi impressa.',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+      } else {
+        Get.snackbar(
+          'Erro',
+          'Falha ao testar impressora: $nomeImpressora',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      Get.back(); // Fechar loading se estiver aberto
+      Get.snackbar(
+        'Erro',
+        'Erro ao testar impressora: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 }

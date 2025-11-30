@@ -23,6 +23,7 @@ import 'views/usuarios_tab.dart';
 import 'views/configurar_permissoes_tab.dart';
 import 'views/impressoras_tab.dart';
 import 'views/mapeamento_impressoras_tab.dart';
+import 'views/auditoria_tab.dart';
 import '../definicoes/definicoes_page.dart';
 
 // ==========================================
@@ -734,6 +735,13 @@ class _AdminPageState extends State<AdminPage> {
         widget: ConfigurarPermissoesTab(),
         permissoes: ['gestao_permissoes'],
         descricao: 'Configurar permissões',
+      ),
+      AdminMenuItem(
+        titulo: 'Auditoria e Logs',
+        icone: Icons.history,
+        widget: AuditoriaTab(),
+        permissoes: ['acesso_admin'],
+        descricao: 'Histórico de operações',
       ),
       AdminMenuItem(
         titulo: 'Impressoras',

@@ -25,6 +25,7 @@ class _VendasPageState extends State<VendasPage> {
   final VendasController controller = Get.put(VendasController());
   final CaixaController caixaController = Get.put(CaixaController());
   final EmpresaRepository _empresaRepo = EmpresaRepository();
+  final TextEditingController _barcodeController = TextEditingController();
 
   Timer? _inactivityTimer;
   bool _timeoutAtivo = true;
@@ -40,6 +41,7 @@ class _VendasPageState extends State<VendasPage> {
   @override
   void dispose() {
     _inactivityTimer?.cancel();
+    _barcodeController.dispose();
     super.dispose();
   }
 
@@ -73,13 +75,7 @@ class _VendasPageState extends State<VendasPage> {
     _inactivityTimer = Timer(Duration(seconds: _timeoutSegundos), () {
       // Voltar para login
       Get.offAll(() => LoginPage());
-      Get.snackbar(
-        'Sessão Expirada',
-        'Você foi desconectado por inatividade',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        duration: Duration(seconds: 3),
-      );
+      // Nota: Snackbar removido pois contexto não existe após navegação
     });
   }
 
@@ -147,6 +143,13 @@ class _VendasPageState extends State<VendasPage> {
         },
         child: Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                Get.offAll(() => LoginPage());
+              },
+              tooltip: 'Voltar ao Login',
+            ),
             actions: [
               // Botão DESPESAS
               Padding(
@@ -267,6 +270,9 @@ class _VendasPageState extends State<VendasPage> {
                     // Filtro por área
                     _buildFiltroAreas(),
                     Divider(height: 1),
+                    // Campo de scan de código de barras
+                    _buildBarcodeScannerField(),
+                    Divider(height: 1),
                     // Filtro por família
                     _buildFiltroFamilias(),
                     Divider(height: 1),
@@ -310,6 +316,140 @@ class _VendasPageState extends State<VendasPage> {
     );
   }
 
+  void _processarCodigoBarras(String codigo) {
+    if (codigo.isEmpty) return;
+
+    // Buscar produto por código ou código de barras
+    final produto = controller.produtos.firstWhereOrNull(
+      (p) => p.codigo == codigo || p.codigoBarras == codigo,
+    );
+
+    if (produto != null) {
+      controller.adicionarAoCarrinho(produto);
+      _barcodeController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Produto Adicionado',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '${produto.nome} - ${Formatters.formatarMoeda(produto.preco)}',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } else {
+      _barcodeController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Produto Não Encontrado',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Código "$codigo" não encontrado',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
+
+  Widget _buildBarcodeScannerField() {
+    return Container(
+      height: 60,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.blue[50],
+      child: Row(
+        children: [
+          Icon(Icons.qr_code_scanner, color: Colors.blue[700], size: 28),
+          SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _barcodeController,
+              decoration: InputDecoration(
+                hintText: 'Escanear código de barras ou digitar código...',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.blue[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.blue[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.blue[600]!, width: 2),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              style: TextStyle(fontSize: 16),
+              onSubmitted: _processarCodigoBarras,
+              textInputAction: TextInputAction.search,
+            ),
+          ),
+          SizedBox(width: 8),
+          ElevatedButton.icon(
+            onPressed: () => _processarCodigoBarras(_barcodeController.text),
+            icon: Icon(Icons.add_shopping_cart),
+            label: Text('ADICIONAR'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[700],
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFiltroAreas() {
     return Container(
       height: 80,
@@ -346,22 +486,27 @@ class _VendasPageState extends State<VendasPage> {
 
   Widget _buildFiltroFamilias() {
     return Container(
-      height: 150,
-      padding: EdgeInsets.all(12),
-      color: Colors.grey[100],
+      height: 160,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[400]!, width: 2),
+        ),
+      ),
       child: Obx(() {
         if (controller.familiasFiltradas.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.info_outline, size: 32, color: Colors.grey),
-                SizedBox(height: 8),
+                Icon(Icons.category_outlined, size: 28, color: Colors.grey[400]),
+                SizedBox(height: 6),
                 Text(
                   controller.areaSelecionadaId == null
-                      ? 'Selecione uma área acima para ver as famílias'
-                      : 'Nenhuma família cadastrada nesta área',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ? 'Selecione uma área para ver categorias'
+                      : 'Nenhuma categoria nesta área',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -369,33 +514,67 @@ class _VendasPageState extends State<VendasPage> {
           );
         }
 
-        return GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 6,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 3.0,
-          ),
-          itemCount: controller.familiasFiltradas.length,
-          itemBuilder: (context, index) {
-            final familia = controller.familiasFiltradas[index];
-            final isSelected = controller.familiaSelecionada?.id == familia.id;
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Responsivo: ajusta quantidade de colunas baseado na largura
+            int crossAxisCount = constraints.maxWidth > 1200 ? 8 :
+                                 constraints.maxWidth > 900 ? 6 :
+                                 constraints.maxWidth > 600 ? 4 : 3;
 
-            return FilterChip(
-              label: Text(
-                familia.nome,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                maxLines: 2,
-                textAlign: TextAlign.center,
+            return GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 2.5,
               ),
-              selected: isSelected,
-              onSelected: (_) =>
-                  controller.selecionarFamilia(isSelected ? null : familia),
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              selectedColor: Get.theme.primaryColor,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-              ),
+              itemCount: controller.familiasFiltradas.length,
+              itemBuilder: (context, index) {
+                final familia = controller.familiasFiltradas[index];
+                final isSelected = controller.familiaSelecionada?.id == familia.id;
+
+                return InkWell(
+                  onTap: () => controller.selecionarFamilia(isSelected ? null : familia),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: isSelected
+                          ? LinearGradient(
+                              colors: [Colors.blue[700]!, Colors.blue[500]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : LinearGradient(
+                              colors: [Colors.white, Colors.grey[100]!],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? Colors.blue[700]! : Colors.grey[300]!,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 8, offset: Offset(0, 4))]
+                          : [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+                    ),
+                    child: Center(
+                      child: Text(
+                        familia.nome,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : Colors.grey[800],
+                        ),
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                );
+              },
             );
           },
         );
@@ -414,76 +593,214 @@ class _VendasPageState extends State<VendasPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.inbox, size: 64, color: Colors.grey),
+              Icon(Icons.shopping_basket_outlined, size: 64, color: Colors.grey[300]),
               SizedBox(height: 16),
-              Text('Nenhum produto encontrado', style: TextStyle(fontSize: 16)),
-              SizedBox(height: 8),
+              Text('Nenhum produto encontrado', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+              SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: _abrirPesquisa,
-                icon: Icon(Icons.search),
+                icon: Icon(Icons.search, size: 22),
                 label: Text('PESQUISAR'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                ),
               ),
             ],
           ),
         );
       }
 
-      return GridView.builder(
-        padding: EdgeInsets.all(12),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
-          childAspectRatio:
-              1.2, // Aumentado para cards mais largos e baixos (sem ícone)
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
+      return Container(
+        color: Colors.grey[100],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Responsivo: ajusta quantidade de colunas baseado na largura
+            int crossAxisCount = constraints.maxWidth > 1400 ? 6 :
+                                 constraints.maxWidth > 1100 ? 5 :
+                                 constraints.maxWidth > 800 ? 4 :
+                                 constraints.maxWidth > 500 ? 3 : 2;
+
+            return GridView.builder(
+              padding: EdgeInsets.all(12),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: 1.15,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: controller.produtosFiltrados.length,
+              itemBuilder: (context, index) {
+                final produto = controller.produtosFiltrados[index];
+                return _buildCardProduto(produto);
+              },
+            );
+          },
         ),
-        itemCount: controller.produtosFiltrados.length,
-        itemBuilder: (context, index) {
-          final produto = controller.produtosFiltrados[index];
-          return _buildCardProduto(produto);
-        },
       );
     });
   }
 
   Widget _buildCardProduto(produto) {
-    return InkWell(
-      onTap: () => controller.adicionarAoCarrinho(produto),
-      borderRadius: BorderRadius.circular(8),
-      child: Card(
-        elevation: 2,
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Nome
-              Text(
-                produto.nome,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 6),
-              // Preço
-              Text(
-                Formatters.formatarMoeda(produto.preco),
-                style: TextStyle(
-                  color: Get.theme.primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(height: 2),
-              // Estoque
-              Text(
-                'Estoque: ${produto.estoque}',
-                style: TextStyle(color: Colors.grey, fontSize: 10),
+    // Definir cor baseada no estoque
+    Color corEstoque = produto.estoque > 10 ? Colors.green[600]! :
+                       produto.estoque > 0 ? Colors.orange[600]! : Colors.red[600]!;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => controller.adicionarAoCarrinho(produto),
+        onLongPress: () => _mostrarDialogQuantidade(produto),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 6,
+                offset: Offset(0, 2),
               ),
             ],
           ),
+          child: Padding(
+            padding: EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Nome do Produto
+                Text(
+                  produto.nome,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: Colors.grey[900],
+                    height: 1.1,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Spacer(),
+                // Preço
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green[600],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    Formatters.formatarMoeda(produto.preco),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(height: 4),
+                // Estoque
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: corEstoque,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        'Est: ${produto.estoque}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  void _mostrarDialogQuantidade(produto) {
+    final quantidadeController = TextEditingController(text: '1');
+
+    Get.dialog(
+      AlertDialog(
+        title: Text('Adicionar ${produto.nome}', style: TextStyle(fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Quantidade:', style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.remove_circle, size: 32, color: Colors.red),
+                  onPressed: () {
+                    int valor = int.tryParse(quantidadeController.text) ?? 1;
+                    if (valor > 1) {
+                      quantidadeController.text = (valor - 1).toString();
+                    }
+                  },
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: quantidadeController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add_circle, size: 32, color: Colors.green),
+                  onPressed: () {
+                    int valor = int.tryParse(quantidadeController.text) ?? 1;
+                    quantidadeController.text = (valor + 1).toString();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              int quantidade = int.tryParse(quantidadeController.text) ?? 1;
+              if (quantidade > 0) {
+                for (int i = 0; i < quantidade; i++) {
+                  controller.adicionarAoCarrinho(produto);
+                }
+              }
+              Get.back();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: Text('ADICIONAR', style: TextStyle(fontSize: 16)),
+          ),
+        ],
       ),
     );
   }
@@ -705,18 +1022,47 @@ class _VendasPageState extends State<VendasPage> {
           ],
           SizedBox(
             width: double.infinity,
-            height: 80,
-            child: ElevatedButton.icon(
-              onPressed: controller.finalizarVenda,
-              icon: Icon(Icons.payment, size: 32),
-              label: Text(
-                'FINALIZAR VENDA (F2)',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            height: 100,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.green[600]!, Colors.green[500]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: Offset(0, 6),
+                  ),
+                ],
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.all(20),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: controller.finalizarVenda,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.payment, size: 42, color: Colors.white),
+                        SizedBox(width: 16),
+                        Text(
+                          'FINALIZAR VENDA (F2)',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -731,11 +1077,20 @@ class _VendasPageState extends State<VendasPage> {
     await caixaController.verificarCaixaAtual();
 
     if (caixaController.caixaAtual.value == null) {
-      Get.snackbar(
-        'Atenção',
-        'Não há caixa aberto.',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.warning_amber, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Text('Não há caixa aberto.', style: TextStyle(fontSize: 16)),
+            ],
+          ),
+          backgroundColor: Colors.orange[700],
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
       return;
     }
@@ -779,11 +1134,22 @@ class _VendasPageState extends State<VendasPage> {
         Get.back();
       }
 
-      Get.snackbar(
-        'Erro',
-        'Erro ao fechar caixa: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text('Erro ao fechar caixa: $e', style: TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
     }
   }
@@ -850,11 +1216,22 @@ class _VendasPageState extends State<VendasPage> {
     } catch (e) {
       Get.back(); // Fechar dialog
 
-      Get.snackbar(
-        'Erro',
-        'Erro ao imprimir relatório: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text('Erro ao imprimir relatório: $e', style: TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       );
 
       // Mesmo com erro na impressão, perguntar se quer fechar o sistema

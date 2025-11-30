@@ -21,9 +21,11 @@ import '../../../data/repositories/mesa_repository.dart';
 import '../../../data/models/pedido_model.dart';
 import '../../../data/models/item_pedido_model.dart';
 import '../../../data/models/mesa_model.dart';
+import '../../../data/models/area_model.dart';
 import '../../../../core/utils/windows_printer_service.dart';
 import '../../../../core/services/definicoes_service.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/impressao_service.dart';
 import '../widgets/dialog_pagamento.dart';
 import '../widgets/dialog_despesas.dart';
 import '../widgets/dialog_selecao_mesa.dart';
@@ -386,7 +388,7 @@ class VendasController extends GetxController {
       barrierDismissible: false,
     );
 
-    // Tentar imprimir
+    // Tentar imprimir direto
     final sucesso = await WindowsPrinterService.imprimirCupom(
       venda,
       itens,
@@ -395,6 +397,27 @@ class VendasController extends GetxController {
     );
 
     Get.back(); // Fechar loading
+
+    // Mostrar resultado da impressão
+    if (sucesso) {
+      Get.snackbar(
+        'Sucesso',
+        'Recibo impresso com sucesso!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        duration: Duration(seconds: 2),
+      );
+    } else {
+      Get.snackbar(
+        'Aviso',
+        'Venda finalizada, mas não foi possível imprimir o recibo. Verifique se a impressora "balcao" está configurada.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: Duration(seconds: 4),
+      );
+    }
 
     _finalizarSemImprimir();
   }
@@ -555,6 +578,9 @@ class VendasController extends GetxController {
 
       await _pedidoRepo.adicionarItens(itens);
 
+      // IMPRESSÃO AUTOMÁTICA POR ÁREA
+      await _imprimirPedidoPorArea(itens, mesa);
+
       // Limpar carrinho
       carrinho.clear();
 
@@ -641,6 +667,15 @@ class VendasController extends GetxController {
         );
       }
 
+      // Criar venda completa com ID para impressão
+      final vendaCompleta = VendaModel(
+        id: vendaId,
+        numero: numeroVenda,
+        total: pedido.total,
+        dataVenda: DateTime.now(),
+        terminal: 'CAIXA-01',
+      );
+
       // Fechar pedido
       await _pedidoRepo.fechar(pedido.id!);
 
@@ -651,6 +686,44 @@ class VendasController extends GetxController {
         colorText: Colors.white,
       );
 
+      // Verificar configuração de impressão
+      final definicoes = await DefinicoesService.carregar();
+
+      if (definicoes.perguntarAntesDeImprimir) {
+        // Perguntar se deseja imprimir
+        final resultado = await Get.dialog<bool>(
+          AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.print, color: Colors.blue),
+                SizedBox(width: 10),
+                Text('Imprimir Recibo?'),
+              ],
+            ),
+            content: Text('Deseja imprimir o recibo desta venda?'),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(result: false),
+                child: Text('NÃO'),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => Get.back(result: true),
+                icon: Icon(Icons.print),
+                label: Text('SIM, IMPRIMIR'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              ),
+            ],
+          ),
+        );
+
+        if (resultado == true) {
+          await _imprimirEFinalizar(vendaCompleta, itensVenda, pagamentos);
+        }
+      } else {
+        // Imprimir automaticamente
+        await _imprimirEFinalizar(vendaCompleta, itensVenda, pagamentos);
+      }
+
       // Recarregar dados
       await carregarDados();
     } catch (e) {
@@ -660,6 +733,81 @@ class VendasController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    }
+  }
+
+  /// Imprime pedido automaticamente nas impressoras por área
+  Future<void> _imprimirPedidoPorArea(
+    List<ItemPedidoModel> itens,
+    MesaModel mesa,
+  ) async {
+    try {
+      print('🖨️ Iniciando impressão automática por área...');
+
+      // Obter nome do usuário logado
+      final nomeUsuario = _authService.usuarioLogado.value?.nome ?? 'Sistema';
+
+      // Agrupar itens por área
+      final Map<int, List<ItemPedidoModel>> itensPorArea = {};
+
+      for (final item in itens) {
+        // Buscar o produto no carrinho para pegar areaId
+        final produtoNoCarrinho = carrinho.firstWhereOrNull(
+          (c) => c.produto.id == item.produtoId,
+        );
+
+        if (produtoNoCarrinho != null && produtoNoCarrinho.produto.areaId != null) {
+          final areaId = produtoNoCarrinho.produto.areaId!;
+
+          if (!itensPorArea.containsKey(areaId)) {
+            itensPorArea[areaId] = [];
+          }
+
+          itensPorArea[areaId]!.add(item);
+        }
+      }
+
+      print('📊 Itens agrupados em ${itensPorArea.length} áreas diferentes');
+
+      // Imprimir para cada área
+      for (final entry in itensPorArea.entries) {
+        final areaId = entry.key;
+        final itensArea = entry.value;
+
+        print('📄 Imprimindo ${itensArea.length} itens para área ID: $areaId');
+
+        // Buscar nome da área
+        final area = await _areaRepo.buscarPorId(areaId);
+        final nomeArea = area?.nome ?? 'Área $areaId';
+
+        // Preparar dados dos itens
+        final itensMap = itensArea.map((item) => {
+          'quantidade': item.quantidade,
+          'nome': item.produtoNome,
+          'observacoes': item.observacoes ?? '',
+        }).toList();
+
+        // Imprimir na impressora da área
+        final sucesso = await ImpressaoService.imprimirPedidoArea(
+          areaId: areaId,
+          nomeMesa: 'Mesa ${mesa.numero}',
+          nomeArea: nomeArea,
+          itens: itensMap,
+          nomeUsuario: nomeUsuario,
+        );
+
+        if (sucesso) {
+          print('✅ Pedido impresso com sucesso na impressora da área: $nomeArea');
+        } else {
+          print('⚠️ Falha ao imprimir na área: $nomeArea (área pode não ter impressora configurada)');
+        }
+      }
+
+      print('🖨️ Impressão automática concluída!');
+    } catch (e) {
+      print('❌ Erro na impressão automática: $e');
+      // Não mostrar erro ao usuário para não interromper fluxo
+      // O pedido foi criado com sucesso mesmo se impressão falhar
     }
   }
 }

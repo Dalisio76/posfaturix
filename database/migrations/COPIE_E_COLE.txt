@@ -1,0 +1,88 @@
+========================================================
+  COPIE E COLE ESTE CÓDIGO NO PGADMIN
+========================================================
+
+1. Abra pgAdmin 4
+2. Conecte ao banco pdv_system
+3. Abra uma NOVA Query Tool
+4. COPIE TODO o código abaixo
+5. COLE no Query Tool
+6. Pressione F5 (Execute)
+7. Veja a mensagem "SUCESSO! Migração aplicada."
+
+========================================================
+  CÓDIGO PARA COPIAR (COMECE AQUI ↓)
+========================================================
+
+-- Limpar transação anterior
+ROLLBACK;
+
+-- Começar nova transação
+BEGIN;
+
+-- Adicionar coluna status
+DO $$ BEGIN
+    ALTER TABLE vendas ADD COLUMN status VARCHAR(20) DEFAULT 'finalizada';
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+-- Adicionar coluna cliente_id
+DO $$ BEGIN
+    ALTER TABLE vendas ADD COLUMN cliente_id INTEGER;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+-- Adicionar coluna usuario_id
+DO $$ BEGIN
+    ALTER TABLE vendas ADD COLUMN usuario_id INTEGER;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+-- Adicionar coluna observacoes
+DO $$ BEGIN
+    ALTER TABLE vendas ADD COLUMN observacoes TEXT;
+EXCEPTION WHEN duplicate_column THEN NULL;
+END $$;
+
+-- Atualizar vendas existentes
+UPDATE vendas SET status = 'finalizada' WHERE status IS NULL OR status = '';
+
+-- Adicionar constraint
+DO $$ BEGIN
+    ALTER TABLE vendas ADD CONSTRAINT chk_vendas_status
+        CHECK (status IN ('finalizada', 'cancelada'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Criar índices
+CREATE INDEX IF NOT EXISTS idx_vendas_status ON vendas(status);
+CREATE INDEX IF NOT EXISTS idx_vendas_cliente ON vendas(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_vendas_usuario ON vendas(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_vendas_data ON vendas(data_venda);
+
+-- Confirmar
+COMMIT;
+
+-- Verificar resultado
+SELECT 'SUCESSO! Migração aplicada.' AS resultado;
+
+SELECT column_name, data_type, column_default
+FROM information_schema.columns
+WHERE table_name = 'vendas'
+  AND column_name IN ('status', 'cliente_id', 'usuario_id', 'observacoes')
+ORDER BY column_name;
+
+========================================================
+  FIM DO CÓDIGO PARA COPIAR (TERMINE AQUI ↑)
+========================================================
+
+RESULTADO ESPERADO:
+- Mensagem: "SUCESSO! Migração aplicada."
+- Tabela com 4 linhas mostrando as colunas criadas
+
+SE DER CERTO:
+✓ Migração completa!
+✓ Funcionalidade "Todas Vendas" disponível!
+✓ Acesse: Admin → Relatórios e Análises → Todas Vendas
+
+========================================================

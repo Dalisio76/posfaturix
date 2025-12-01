@@ -56,8 +56,6 @@ PrivilegesRequiredOverridesAllowed=dialog
 
 ; Interface moderna
 WizardStyle=modern
-WizardImageFile=compiler:WizModernImage-IS.bmp
-WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
 ; Configurações de desinstalação
 UninstallDisplayName={#MyAppName}
@@ -176,13 +174,11 @@ begin
   ConfiguracaoPage := CreateOutputMsgPage(UsuarioAdminPage.ID,
     'Configuração Completa',
     'Próximos passos após a instalação',
-    'Após concluir a instalação:' + #13#10 +
-    #13#10 +
+    'Após concluir a instalação:' + #13#10 + #13#10 +
     '1. Execute "Configurar Base de Dados" no Menu Iniciar' + #13#10 +
     '2. Ou execute manualmente o script: database\database_inicial.sql' + #13#10 +
     '3. Configure a impressora padrão no Admin > Configurações' + #13#10 +
-    '4. Faça login com o código configurado' + #13#10 +
-    #13#10 +
+    '4. Faça login com o código configurado' + #13#10 + #13#10 +
     'IMPORTANTE: PostgreSQL 12+ deve estar instalado!');
 end;
 
@@ -222,10 +218,10 @@ begin
       MsgBox('O código deve ter exatamente 4 dígitos!', mbError, MB_OK);
       Result := False;
     end
-    else if not (Codigo[1] in ['0'..'9']) or
-            not (Codigo[2] in ['0'..'9']) or
-            not (Codigo[3] in ['0'..'9']) or
-            not (Codigo[4] in ['0'..'9']) then
+    else if (Pos(Codigo[1], '0123456789') = 0) or
+            (Pos(Codigo[2], '0123456789') = 0) or
+            (Pos(Codigo[3], '0123456789') = 0) or
+            (Pos(Codigo[4], '0123456789') = 0) then
     begin
       MsgBox('O código deve conter apenas números!', mbError, MB_OK);
       Result := False;

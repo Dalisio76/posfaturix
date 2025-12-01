@@ -268,12 +268,16 @@ CREATE TABLE IF NOT EXISTS vendas (
     total DECIMAL(10,2) NOT NULL,
     data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     terminal VARCHAR(50),
-    observacoes TEXT
+    observacoes TEXT,
+    status VARCHAR(20) DEFAULT 'finalizada' CHECK (status IN ('finalizada', 'cancelada'))
 );
+
+COMMENT ON COLUMN vendas.status IS 'Status da venda: finalizada, cancelada';
 
 CREATE INDEX IF NOT EXISTS idx_vendas_data ON vendas(data_venda);
 CREATE INDEX IF NOT EXISTS idx_vendas_cliente ON vendas(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_vendas_usuario ON vendas(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_vendas_status ON vendas(status);
 
 -- =====================================================
 -- 13. ITENS DE VENDA

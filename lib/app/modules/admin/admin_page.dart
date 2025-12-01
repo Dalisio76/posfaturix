@@ -24,6 +24,7 @@ import 'views/configurar_permissoes_tab.dart';
 import 'views/impressoras_tab.dart';
 import 'views/mapeamento_impressoras_tab.dart';
 import 'views/auditoria_tab.dart';
+import 'views/todas_vendas_tab.dart';
 import '../definicoes/definicoes_page.dart';
 
 // ==========================================
@@ -676,24 +677,31 @@ class _AdminPageState extends State<AdminPage> {
   List<AdminMenuItem> _getRelatorios() {
     return [
       AdminMenuItem(
+        titulo: 'Todas Vendas',
+        icone: Icons.receipt_long,
+        widget: TodasVendasTab(),
+        permissoes: ['visualizar_relatorios'],
+        descricao: 'Ver e cancelar vendas',
+      ),
+      AdminMenuItem(
         titulo: 'Relatórios',
         icone: Icons.analytics,
         widget: RelatoriosTab(),
-        permissoes: ['relatorios'],
+        permissoes: ['visualizar_relatorios'],
         descricao: 'Relatórios gerais',
       ),
       AdminMenuItem(
         titulo: 'Margens/Lucros',
         icone: Icons.trending_up,
         widget: MargensTab(),
-        permissoes: ['relatorios'],
+        permissoes: ['visualizar_margens'],
         descricao: 'Análise de margens',
       ),
       AdminMenuItem(
         titulo: 'Stock',
         icone: Icons.warehouse,
         widget: RelatorioStockTab(),
-        permissoes: ['relatorios'],
+        permissoes: ['visualizar_stock'],
         descricao: 'Relatório de estoque',
       ),
     ];

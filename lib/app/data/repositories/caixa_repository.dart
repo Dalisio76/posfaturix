@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:postgres/postgres.dart';
 import '../../../core/database/database_service.dart';
 import '../models/caixa_model.dart';
 import '../models/caixa_detalhe_model.dart';

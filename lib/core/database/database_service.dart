@@ -3,8 +3,11 @@ import 'package:get/get.dart';
 import 'database_config.dart';
 
 class DatabaseService extends GetxService {
-  late Connection _connection;
+  Connection? _connection;
   final RxBool isConnected = false.obs;
+  final RxString connectionError = ''.obs;
+  int _retryCount = 0;
+  static const int maxRetries = 3;
 
   Future<DatabaseService> init() async {
     await _connect();
@@ -28,15 +31,54 @@ class DatabaseService extends GetxService {
       );
 
       isConnected.value = true;
+      connectionError.value = '';
+      _retryCount = 0;
       print('✅ Conectado ao PostgreSQL em ${DatabaseConfig.host}:${DatabaseConfig.port}');
     } catch (e) {
       isConnected.value = false;
-      print('❌ Erro ao conectar ao PostgreSQL: $e');
+      _retryCount++;
 
-      // Tentar reconectar após 5 segundos
-      await Future.delayed(Duration(seconds: 5));
-      await _connect();
+      final errorMsg = '''
+❌ Erro ao conectar ao PostgreSQL:
+   Servidor: ${DatabaseConfig.host}:${DatabaseConfig.port}
+   Database: ${DatabaseConfig.database}
+   Tentativa: $_retryCount de $maxRetries
+   Erro: $e
+      ''';
+
+      print(errorMsg);
+      connectionError.value = errorMsg;
+
+      // Tentar reconectar se ainda houver tentativas
+      if (_retryCount < maxRetries) {
+        print('⏳ Tentando reconectar em 3 segundos...');
+        await Future.delayed(Duration(seconds: 3));
+        await _connect();
+      } else {
+        print('''
+╔════════════════════════════════════════════════════════════════╗
+║  FALHA NA CONEXÃO COM O BANCO DE DADOS                        ║
+╟────────────────────────────────────────────────────────────────╢
+║  A aplicação não conseguiu conectar ao PostgreSQL.             ║
+║                                                                 ║
+║  Verifique:                                                     ║
+║  1. PostgreSQL está instalado e rodando?                       ║
+║  2. O servidor está acessível em ${DatabaseConfig.host}:${DatabaseConfig.port}?        ║
+║  3. O banco "${DatabaseConfig.database}" existe?                        ║
+║  4. Usuário e senha estão corretos?                            ║
+║                                                                 ║
+║  Configure em: lib/core/database/database_config.dart          ║
+╚════════════════════════════════════════════════════════════════╝
+        ''');
+        // Não lançar exceção para permitir que a app mostre erro na UI
+      }
     }
+  }
+
+  /// Reconectar manualmente
+  Future<void> reconnect() async {
+    _retryCount = 0;
+    await _connect();
   }
 
   /// Executar query SELECT - retorna lista de mapas
@@ -44,8 +86,12 @@ class DatabaseService extends GetxService {
     String sql, {
     Map<String, dynamic>? parameters,
   }) async {
+    if (_connection == null || !isConnected.value) {
+      throw Exception('Não conectado ao banco de dados. Configure a conexão primeiro.');
+    }
+
     try {
-      final result = await _connection.execute(
+      final result = await _connection!.execute(
         Sql.named(sql),
         parameters: parameters,
       );
@@ -63,8 +109,12 @@ class DatabaseService extends GetxService {
     String sql, {
     Map<String, dynamic>? parameters,
   }) async {
+    if (_connection == null || !isConnected.value) {
+      throw Exception('Não conectado ao banco de dados. Configure a conexão primeiro.');
+    }
+
     try {
-      await _connection.execute(
+      await _connection!.execute(
         Sql.named(sql),
         parameters: parameters,
       );
@@ -80,8 +130,12 @@ class DatabaseService extends GetxService {
     String sql, {
     Map<String, dynamic>? parameters,
   }) async {
+    if (_connection == null || !isConnected.value) {
+      throw Exception('Não conectado ao banco de dados. Configure a conexão primeiro.');
+    }
+
     try {
-      final result = await _connection.execute(
+      final result = await _connection!.execute(
         Sql.named(sql + ' RETURNING id'),
         parameters: parameters,
       );
@@ -102,13 +156,19 @@ class DatabaseService extends GetxService {
   Future<T> transaction<T>(
     Future<T> Function(TxSession ctx) action,
   ) async {
-    return await _connection.runTx((ctx) async {
+    if (_connection == null || !isConnected.value) {
+      throw Exception('Não conectado ao banco de dados. Configure a conexão primeiro.');
+    }
+
+    return await _connection!.runTx((ctx) async {
       return await action(ctx);
     });
   }
 
   Future<void> close() async {
-    await _connection.close();
+    if (_connection != null) {
+      await _connection!.close();
+    }
     isConnected.value = false;
   }
 }

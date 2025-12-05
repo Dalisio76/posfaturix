@@ -11,6 +11,11 @@ class DefinicaoModel {
 
   // Vendas
   final bool mostrarBotaoPedidos;
+  final bool mostrarStockEmVendas;
+
+  // Empresa (bloqueado após primeira configuração)
+  final String? nomeEmpresa;
+  final bool empresaBloqueada;
 
   DefinicaoModel({
     this.perguntarAntesDeImprimir = true,
@@ -19,6 +24,9 @@ class DefinicaoModel {
     this.timeoutAtivo = true,
     this.timeoutSegundos = 30,
     this.mostrarBotaoPedidos = true,
+    this.mostrarStockEmVendas = true,
+    this.nomeEmpresa,
+    this.empresaBloqueada = false,
   });
 
   factory DefinicaoModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +37,9 @@ class DefinicaoModel {
       timeoutAtivo: json['timeoutAtivo'] ?? true,
       timeoutSegundos: json['timeoutSegundos'] ?? 30,
       mostrarBotaoPedidos: json['mostrarBotaoPedidos'] ?? true,
+      mostrarStockEmVendas: json['mostrarStockEmVendas'] ?? true,
+      nomeEmpresa: json['nomeEmpresa'],
+      empresaBloqueada: json['empresaBloqueada'] ?? false,
     );
   }
 
@@ -40,6 +51,9 @@ class DefinicaoModel {
       'timeoutAtivo': timeoutAtivo,
       'timeoutSegundos': timeoutSegundos,
       'mostrarBotaoPedidos': mostrarBotaoPedidos,
+      'mostrarStockEmVendas': mostrarStockEmVendas,
+      'nomeEmpresa': nomeEmpresa,
+      'empresaBloqueada': empresaBloqueada,
     };
   }
 
@@ -50,6 +64,9 @@ class DefinicaoModel {
     bool? timeoutAtivo,
     int? timeoutSegundos,
     bool? mostrarBotaoPedidos,
+    bool? mostrarStockEmVendas,
+    String? nomeEmpresa,
+    bool? empresaBloqueada,
   }) {
     return DefinicaoModel(
       perguntarAntesDeImprimir: perguntarAntesDeImprimir ?? this.perguntarAntesDeImprimir,
@@ -58,6 +75,9 @@ class DefinicaoModel {
       timeoutAtivo: timeoutAtivo ?? this.timeoutAtivo,
       timeoutSegundos: timeoutSegundos ?? this.timeoutSegundos,
       mostrarBotaoPedidos: mostrarBotaoPedidos ?? this.mostrarBotaoPedidos,
+      mostrarStockEmVendas: mostrarStockEmVendas ?? this.mostrarStockEmVendas,
+      nomeEmpresa: nomeEmpresa ?? this.nomeEmpresa,
+      empresaBloqueada: empresaBloqueada ?? this.empresaBloqueada,
     );
   }
 }

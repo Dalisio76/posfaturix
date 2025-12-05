@@ -8,6 +8,12 @@ import '../models/pagamento_venda_model.dart';
 class VendaRepository {
   final DatabaseService _db = Get.find<DatabaseService>();
 
+  /// Obter próximo número sequencial de venda (1, 2, 3...)
+  Future<int> obterProximoNumeroVenda() async {
+    final result = await _db.query('SELECT obter_proximo_numero_venda() as proximo');
+    return result.first['proximo'] as int;
+  }
+
   Future<List<ItemVendaModel>> buscarItensPorVenda(int vendaId) async {
     final result = await _db.query('''
       SELECT iv.*, p.nome as produto_nome
@@ -26,15 +32,19 @@ class VendaRepository {
     List<PagamentoVendaModel> pagamentos,
   ) async {
     return await _db.transaction((conn) async {
+      // 0. Obter próximo número sequencial
+      final proximoNumero = await obterProximoNumeroVenda();
+
       // 1. Inserir venda
       final vendaResult = await conn.execute(
         Sql.named('''
-          INSERT INTO vendas (numero, total, terminal)
-          VALUES (@numero, @total, @terminal)
+          INSERT INTO vendas (numero, numero_venda, total, terminal)
+          VALUES (@numero, @numero_venda, @total, @terminal)
           RETURNING id
         '''),
         parameters: {
           'numero': venda.numero,
+          'numero_venda': proximoNumero,
           'total': venda.total,
           'terminal': venda.terminal,
         },
@@ -285,5 +295,92 @@ class VendaRepository {
         print('Aviso: Não foi possível registrar auditoria: $e');
       }
     });
+  }
+
+  Future<List<dynamic>> buscarEstatisticasVendedores(DateTime inicio, DateTime fim) async {
+    final result = await _db.query('''
+      SELECT
+        u.id as usuario_id,
+        u.nome,
+        u.email,
+        COUNT(v.id) as quantidade_vendas,
+        COALESCE(SUM(v.total), 0) as valor_total,
+        COALESCE(AVG(v.total), 0) as ticket_medio
+      FROM usuarios u
+      LEFT JOIN vendas v ON v.usuario_id = u.id
+        AND v.status = 'finalizada'
+        AND v.data_venda >= @data_inicio
+        AND v.data_venda <= @data_fim
+      WHERE u.ativo = true
+      GROUP BY u.id, u.nome, u.email
+      HAVING COUNT(v.id) > 0
+      ORDER BY valor_total DESC
+    ''', parameters: {
+      'data_inicio': inicio.toIso8601String(),
+      'data_fim': fim.toIso8601String(),
+    });
+
+    return result.map((row) {
+      return {
+        'usuario_id': row['usuario_id'] as int,
+        'nome': row['nome'] as String,
+        'email': row['email'] as String,
+        'quantidade_vendas': row['quantidade_vendas'] as int,
+        'valor_total': (row['valor_total'] as num).toDouble(),
+        'ticket_medio': (row['ticket_medio'] as num).toDouble(),
+      };
+    }).toList();
+  }
+
+  /// Buscar produtos pedidos (itens de vendas) com filtros
+  Future<List<Map<String, dynamic>>> buscarProdutosPedidos({
+    int? produtoId,
+    int? operadorId,
+    DateTime? dataInicio,
+    DateTime? dataFim,
+  }) async {
+    String sql = '''
+      SELECT
+        iv.id as item_id,
+        v.id as venda_id,
+        v.numero as venda_numero,
+        p.nome as produto_nome,
+        iv.quantidade,
+        iv.preco_unitario,
+        u.nome as operador_nome,
+        v.data_venda as data_hora
+      FROM itens_venda iv
+      JOIN vendas v ON iv.venda_id = v.id
+      JOIN produtos p ON iv.produto_id = p.id
+      JOIN usuarios u ON v.usuario_id = u.id
+      WHERE 1=1
+    ''';
+
+    Map<String, dynamic> params = {};
+
+    if (produtoId != null) {
+      sql += ' AND iv.produto_id = @produto_id';
+      params['produto_id'] = produtoId;
+    }
+
+    if (operadorId != null) {
+      sql += ' AND v.usuario_id = @operador_id';
+      params['operador_id'] = operadorId;
+    }
+
+    if (dataInicio != null) {
+      sql += ' AND v.data_venda >= @data_inicio';
+      params['data_inicio'] = dataInicio.toIso8601String();
+    }
+
+    if (dataFim != null) {
+      sql += ' AND v.data_venda <= @data_fim';
+      params['data_fim'] = dataFim.toIso8601String();
+    }
+
+    sql += ' ORDER BY v.data_venda DESC, iv.id DESC';
+
+    final result = await _db.query(sql, parameters: params);
+    return result;
   }
 }

@@ -241,6 +241,7 @@ class _MargensTabState extends State<MargensTab> {
                   ? const Center(
                       child: Text(
                         'Nenhum dado para exibir. Use os filtros acima para pesquisar.',
+                        style: TextStyle(fontSize: 11),
                       ),
                     )
                   : _buildTabela(),
@@ -254,7 +255,7 @@ class _MargensTabState extends State<MargensTab> {
 
   Widget _buildFiltros() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: Colors.grey[100],
       child: Column(
         children: [
@@ -264,35 +265,46 @@ class _MargensTabState extends State<MargensTab> {
                 flex: 3,
                 child: TextField(
                   controller: produtoController,
+                  style: const TextStyle(fontSize: 11),
                   decoration: const InputDecoration(
                     labelText: 'PRODUTO',
+                    labelStyle: TextStyle(fontSize: 11),
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 8,
+                      vertical: 4,
                     ),
+                    isDense: true,
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
               Expanded(
                 flex: 2,
                 child: Obx(
                   () => DropdownButtonFormField<SetorModel>(
                     value: setorSelecionado.value,
+                    style: const TextStyle(fontSize: 11, color: Colors.black),
                     decoration: const InputDecoration(
                       labelText: 'SECTOR',
+                      labelStyle: TextStyle(fontSize: 11),
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
+                      isDense: true,
                     ),
                     items: setores
                         .map(
                           (setor) => DropdownMenuItem(
                             value: setor,
-                            child: Text(setor.nome),
+                            child: Text(
+                              setor.nome,
+                              style: const TextStyle(fontSize: 11),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         )
                         .toList(),
@@ -302,20 +314,23 @@ class _MargensTabState extends State<MargensTab> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: Obx(
                   () => DropdownButtonFormField<DateTime>(
                     value: dataAberturaSelecionada.value,
+                    style: const TextStyle(fontSize: 11, color: Colors.black),
                     decoration: const InputDecoration(
                       labelText: 'VENDAS DE',
+                      labelStyle: TextStyle(fontSize: 11),
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
+                      isDense: true,
                     ),
                     items: datasAberturas
                         .map(
@@ -323,6 +338,9 @@ class _MargensTabState extends State<MargensTab> {
                             value: data,
                             child: Text(
                               DateFormat('M/d/yyyy h:mm a').format(data),
+                              style: const TextStyle(fontSize: 11),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         )
@@ -331,18 +349,21 @@ class _MargensTabState extends State<MargensTab> {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
               Expanded(
                 child: Obx(
                   () => DropdownButtonFormField<DateTime>(
                     value: dataFechoSelecionado.value,
+                    style: const TextStyle(fontSize: 11, color: Colors.black),
                     decoration: const InputDecoration(
                       labelText: 'ATÉ',
+                      labelStyle: TextStyle(fontSize: 11),
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
+                      isDense: true,
                     ),
                     items: datasFechos
                         .map(
@@ -350,6 +371,9 @@ class _MargensTabState extends State<MargensTab> {
                             value: data,
                             child: Text(
                               DateFormat('M/d/yyyy h:mm a').format(data),
+                              style: const TextStyle(fontSize: 11),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         )
@@ -358,18 +382,19 @@ class _MargensTabState extends State<MargensTab> {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
               ElevatedButton(
                 onPressed: pesquisarMargens,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green[700],
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 20,
+                    horizontal: 12,
+                    vertical: 8,
                   ),
+                  visualDensity: VisualDensity.compact,
                 ),
-                child: const Text('PESQUISAR', style: TextStyle(fontSize: 16)),
+                child: const Text('PESQUISAR', style: TextStyle(fontSize: 12)),
               ),
             ],
           ),
@@ -384,16 +409,18 @@ class _MargensTabState extends State<MargensTab> {
         // Cabeçalho
         Container(
           color: Colors.grey[300],
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
           child: Row(
             children: [
               SizedBox(
-                width: 40,
+                width: 32,
                 child: Obx(
                   () => Checkbox(
                     value: selecionarTodos.value,
                     onChanged: (_) => toggleSelecionarTodos(),
                     tristate: false,
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),
@@ -426,11 +453,13 @@ class _MargensTabState extends State<MargensTab> {
     return Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Text(
           texto,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
@@ -454,14 +483,16 @@ class _MargensTabState extends State<MargensTab> {
         color: produtosSelecionados.contains(produtoId)
             ? Colors.blue[50]
             : corFundo,
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: Row(
           children: [
             SizedBox(
-              width: 40,
+              width: 32,
               child: Checkbox(
                 value: produtosSelecionados.contains(produtoId),
                 onChanged: (_) => toggleProduto(produtoId),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
             _buildCelula(margem['produto_id'].toString(), flex: 1),
@@ -495,11 +526,12 @@ class _MargensTabState extends State<MargensTab> {
     return Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Text(
           texto,
           style: TextStyle(fontSize: 11, color: cor),
           textAlign: align,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -526,10 +558,10 @@ class _MargensTabState extends State<MargensTab> {
           0.0;
 
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.grey[100],
-          border: Border(top: BorderSide(color: Colors.grey[400]!, width: 2)),
+          border: Border(top: BorderSide(color: Colors.grey[400]!, width: 1)),
         ),
         child: Row(
           children: [
@@ -542,29 +574,33 @@ class _MargensTabState extends State<MargensTab> {
                       backgroundColor: Colors.green[700],
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+                        horizontal: 12,
+                        vertical: 8,
                       ),
+                      visualDensity: VisualDensity.compact,
                     ),
                     child: const Text(
                       'IMPRIMIR\nRELATORIO',
                       textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 11),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: margens.isEmpty ? null : imprimirResumo,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[700],
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+                        horizontal: 12,
+                        vertical: 8,
                       ),
+                      visualDensity: VisualDensity.compact,
                     ),
                     child: const Text(
                       'IMPRIMIR\nRESUMO',
                       textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 11),
                     ),
                   ),
                 ],
@@ -572,32 +608,34 @@ class _MargensTabState extends State<MargensTab> {
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 _buildResumoLinha('VENDAS', totalVendas),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 _buildResumoLinha('COMPRA', totalCompra),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 _buildResumoLinha(
                   'LUCRO',
                   totalLucro,
                   cor: totalLucro >= 0 ? Colors.black : Colors.red,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 _buildResumoLinha('%', percentagemTotal, isSufixo: false),
               ],
             ),
-            const SizedBox(width: 32),
+            const SizedBox(width: 8),
             ElevatedButton(
               onPressed: () => Get.back(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 24,
+                  horizontal: 12,
+                  vertical: 8,
                 ),
+                visualDensity: VisualDensity.compact,
               ),
-              child: const Text('VOLTAR', style: TextStyle(fontSize: 16)),
+              child: const Text('VOLTAR', style: TextStyle(fontSize: 12)),
             ),
           ],
         ),
@@ -612,27 +650,32 @@ class _MargensTabState extends State<MargensTab> {
     bool isSufixo = true,
   }) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 80,
+          width: 60,
           child: Text(
             label,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 4),
         SizedBox(
-          width: 120,
+          width: 100,
           child: Text(
             isSufixo
                 ? Formatters.formatarMoeda(valor)
                 : valor.toStringAsFixed(2),
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: cor,
             ),
             textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

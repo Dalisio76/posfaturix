@@ -348,11 +348,11 @@ class TodasVendasTab extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Número
+            // Número (exibe numero_venda se disponível, senão numero)
             Expanded(
               flex: 2,
               child: Text(
-                venda.numero,
+                venda.numeroExibicao,
                 style: TextStyle(fontWeight: FontWeight.w500),
               ),
             ),

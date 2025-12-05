@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import '../modules/home/home_page.dart';
 import '../modules/admin/admin_page.dart';
 import '../modules/vendas/vendas_page.dart';
+import '../modules/database_config/database_config_page.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -17,6 +18,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.vendas,
       page: () => VendasPage(),
+    ),
+    GetPage(
+      name: AppRoutes.databaseConfig,
+      page: () => const DatabaseConfigPage(),
     ),
   ];
 }

@@ -160,16 +160,24 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
   void zerarQuantidades() {
     Get.dialog(
       AlertDialog(
-        title: const Text('Confirmar'),
+        title: const Text('Confirmar', style: TextStyle(fontSize: 13)),
         content: Text(
           produtosSelecionados.isEmpty
               ? 'Deseja zerar as quantidades de TODOS os produtos?'
               : 'Deseja zerar as quantidades dos ${produtosSelecionados.length} produtos selecionados?',
+          style: const TextStyle(fontSize: 11),
         ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('CANCELAR'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text('CANCELAR', style: TextStyle(fontSize: 11)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -191,8 +199,13 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
                 '${produtosParaZerar.length} produtos marcados para zerar',
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('ZERAR'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text('ZERAR', style: TextStyle(fontSize: 11)),
           ),
         ],
       ),
@@ -224,26 +237,29 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
 
   Widget _buildFiltros() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: Colors.grey[100],
       child: Row(
         children: [
           // Campo PRODUTO
           SizedBox(
-            width: 250,
+            width: 200,
             child: TextField(
               controller: produtoController,
               decoration: const InputDecoration(
                 labelText: 'PRODUTO',
+                labelStyle: TextStyle(fontSize: 11),
                 border: OutlineInputBorder(),
+                isDense: true,
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: 8,
+                  vertical: 6,
                 ),
               ),
+              style: const TextStyle(fontSize: 11),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
 
           // Dropdown FAMÍLIA
           Expanded(
@@ -252,17 +268,25 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
                 value: familiaSelecionada.value,
                 decoration: const InputDecoration(
                   labelText: 'FAMÍLIA',
+                  labelStyle: TextStyle(fontSize: 11),
                   border: OutlineInputBorder(),
+                  isDense: true,
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                    horizontal: 8,
+                    vertical: 6,
                   ),
                 ),
+                style: const TextStyle(fontSize: 11, color: Colors.black),
                 items: familias
                     .map(
                       (familia) => DropdownMenuItem(
                         value: familia,
-                        child: Text(familia.nome),
+                        child: Text(
+                          familia.nome,
+                          style: const TextStyle(fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     )
                     .toList(),
@@ -276,7 +300,7 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
 
           // Dropdown SECTOR
           Expanded(
@@ -285,17 +309,25 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
                 value: setorSelecionado.value,
                 decoration: const InputDecoration(
                   labelText: 'SECTOR',
+                  labelStyle: TextStyle(fontSize: 11),
                   border: OutlineInputBorder(),
+                  isDense: true,
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                    horizontal: 8,
+                    vertical: 6,
                   ),
                 ),
+                style: const TextStyle(fontSize: 11, color: Colors.black),
                 items: setores
                     .map(
                       (setor) => DropdownMenuItem(
                         value: setor,
-                        child: Text(setor.nome),
+                        child: Text(
+                          setor.nome,
+                          style: const TextStyle(fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     )
                     .toList(),
@@ -309,7 +341,7 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
 
           // Botão PESQUISAR
           ElevatedButton(
@@ -317,11 +349,13 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green[700],
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('PESQUISAR', style: TextStyle(fontSize: 16)),
+            child: const Text('PESQUISAR', style: TextStyle(fontSize: 12)),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
 
           // Botão GUARDAR
           Obx(
@@ -331,15 +365,18 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
                 backgroundColor: Colors.green[700],
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 20,
+                  horizontal: 12,
+                  vertical: 8,
                 ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 disabledBackgroundColor: Colors.grey,
               ),
               child: Text(
-                'GUARDAR\nALTERAÇÕES\nINTRODUZIDAS',
-                style: const TextStyle(fontSize: 12),
+                'GUARDAR\nALTERAÇÕES',
+                style: const TextStyle(fontSize: 11),
                 textAlign: TextAlign.center,
+                maxLines: 2,
               ),
             ),
           ),
@@ -354,16 +391,18 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
         // Cabeçalho
         Container(
           color: Colors.grey[300],
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
           child: Row(
             children: [
               SizedBox(
-                width: 40,
+                width: 32,
                 child: Obx(
                   () => Checkbox(
                     value: selecionarTodos.value,
                     onChanged: (_) => toggleSelecionarTodos(),
                     tristate: false,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                   ),
                 ),
               ),
@@ -398,11 +437,13 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
     return Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Text(
           texto,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
@@ -424,14 +465,16 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
     return Obx(
       () => Container(
         color: corFundo,
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: Row(
           children: [
             SizedBox(
-              width: 40,
+              width: 32,
               child: Checkbox(
                 value: produtosSelecionados.contains(produtoId),
                 onChanged: (_) => toggleProduto(produtoId),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
               ),
             ),
             _buildCelula(produto.id.toString(), flex: 1),
@@ -441,8 +484,8 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
             Expanded(
               flex: 1,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.all(8),
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.yellow[200],
                   border: Border.all(color: Colors.grey),
@@ -450,10 +493,11 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
                 child: Text(
                   produto.estoque.toString(),
                   style: const TextStyle(
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 1,
                 ),
               ),
             ),
@@ -461,18 +505,19 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
             Expanded(
               flex: 1,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: TextField(
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
+                    isDense: true,
                     contentPadding: EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 4,
+                      vertical: 2,
                     ),
                   ),
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 10),
+                  style: const TextStyle(fontSize: 11),
                   onChanged: (value) {
                     final novoEstoque = int.tryParse(value);
                     if (novoEstoque != null) {
@@ -492,24 +537,27 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Obx(
                   () => DropdownButtonFormField<String>(
                     value: motivos[produtoId] ?? '-',
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
+                      isDense: true,
                       contentPadding: EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 4,
+                        vertical: 2,
                       ),
                     ),
-                    style: const TextStyle(fontSize: 10, color: Colors.black),
+                    style: const TextStyle(fontSize: 11, color: Colors.black),
                     items: motivosDisponiveis
                         .map(
                           (motivo) => DropdownMenuItem(
                             value: motivo,
                             child: Text(
                               motivo,
+                              style: const TextStyle(fontSize: 11),
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -532,6 +580,8 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
                 child: Checkbox(
                   value: alteracoes.containsKey(produtoId),
                   onChanged: null, // Somente leitura
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
                 ),
               ),
             ),
@@ -549,11 +599,12 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
     return Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Text(
           texto,
-          style: const TextStyle(fontSize: 10),
+          style: const TextStyle(fontSize: 11),
           textAlign: align,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -562,10 +613,10 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
 
   Widget _buildRodape() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        border: Border(top: BorderSide(color: Colors.grey[400]!, width: 2)),
+        border: Border(top: BorderSide(color: Colors.grey[400]!, width: 1)),
       ),
       child: Row(
         children: [
@@ -576,43 +627,52 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green[700],
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: const Text(
-              'CONSULTAR\nACERTOS DE STOCK',
+              'CONSULTAR\nACERTOS',
+              style: TextStyle(fontSize: 11),
               textAlign: TextAlign.center,
+              maxLines: 2,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           ElevatedButton(
             onPressed: zerarQuantidades,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green[700],
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: const Text(
               'ZERAR\nQUANTIDADES',
+              style: TextStyle(fontSize: 11),
               textAlign: TextAlign.center,
+              maxLines: 2,
             ),
           ),
           const Spacer(),
           Obx(
             () => Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Total de produtos: ${produtos.length}',
+                  'Total: ${produtos.length}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 11,
                   ),
                 ),
                 if (alteracoes.isNotEmpty)
                   Text(
-                    'Alterações pendentes: ${alteracoes.length}',
+                    'Pendentes: ${alteracoes.length}',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: Colors.orange[700],
                       fontWeight: FontWeight.bold,
                     ),
@@ -620,15 +680,17 @@ class _AcertoStockTabState extends State<AcertoStockTab> {
               ],
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           ElevatedButton(
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red[700],
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('VOLTAR', style: TextStyle(fontSize: 16)),
+            child: const Text('VOLTAR', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),

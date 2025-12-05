@@ -25,6 +25,9 @@ import 'views/impressoras_tab.dart';
 import 'views/mapeamento_impressoras_tab.dart';
 import 'views/auditoria_tab.dart';
 import 'views/todas_vendas_tab.dart';
+import 'views/produtos_pedidos_tab.dart';
+import 'views/vendedor_operador_tab.dart';
+import 'views/stock_baixo_tab.dart';
 import '../definicoes/definicoes_page.dart';
 
 // ==========================================
@@ -478,16 +481,24 @@ class _AdminPageState extends State<AdminPage> {
     return InkWell(
       onTap: () async {
         // Verificar permissões
+        // NOTA: O AuthService já faz bypass para perfis Administrador
+        // mas mantemos verificação por segurança
         if (item.permissoes.isNotEmpty) {
-          final temPermissao = await authService.temAlgumaPermissao(item.permissoes);
-          if (!temPermissao) {
-            Get.snackbar(
-              'Acesso Negado',
-              'Você não tem permissão para acessar ${item.titulo}',
-              backgroundColor: Colors.red[700],
-              colorText: Colors.white,
-            );
-            return;
+          final perfilNome = authService.perfilUsuario.toLowerCase();
+          final isAdmin = perfilNome.contains('administrador');
+
+          // Se não é admin, verificar permissões
+          if (!isAdmin) {
+            final temPermissao = await authService.temAlgumaPermissao(item.permissoes);
+            if (!temPermissao) {
+              Get.snackbar(
+                'Acesso Negado',
+                'Você não tem permissão para acessar ${item.titulo}',
+                backgroundColor: Colors.red[700],
+                colorText: Colors.white,
+              );
+              return;
+            }
           }
         }
 
@@ -684,6 +695,13 @@ class _AdminPageState extends State<AdminPage> {
         descricao: 'Ver e cancelar vendas',
       ),
       AdminMenuItem(
+        titulo: 'Produtos Pedidos',
+        icone: Icons.shopping_cart,
+        widget: ProdutosPedidosTab(),
+        permissoes: ['visualizar_relatorios'],
+        descricao: 'Ver produtos pedidos por mesa e operador',
+      ),
+      AdminMenuItem(
         titulo: 'Relatórios',
         icone: Icons.analytics,
         widget: RelatoriosTab(),
@@ -703,6 +721,20 @@ class _AdminPageState extends State<AdminPage> {
         widget: RelatorioStockTab(),
         permissoes: ['visualizar_stock'],
         descricao: 'Relatório de estoque',
+      ),
+      AdminMenuItem(
+        titulo: 'Stock Baixo',
+        icone: Icons.warning_amber,
+        widget: const StockBaixoTab(),
+        permissoes: ['visualizar_stock'],
+        descricao: 'Produtos com stock baixo',
+      ),
+      AdminMenuItem(
+        titulo: 'Vendedor/Operador',
+        icone: Icons.person_search,
+        widget: VendedorOperadorTab(),
+        permissoes: ['visualizar_relatorios'],
+        descricao: 'Performance de vendedores',
       ),
     ];
   }

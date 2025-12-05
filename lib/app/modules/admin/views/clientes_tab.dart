@@ -20,43 +20,55 @@ class ClientesTab extends GetView<AdminController> {
         }
 
         return ListView.builder(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           itemCount: controller.clientes.length,
           itemBuilder: (context, index) {
             final cliente = controller.clientes[index];
             return Card(
+              margin: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
               child: ListTile(
+                dense: true,
+                visualDensity: VisualDensity.compact,
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 leading: CircleAvatar(
+                  radius: 16,
                   child: Text(
                     cliente.nome.substring(0, 1).toUpperCase(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                   backgroundColor: Colors.blue,
                 ),
                 title: Text(
                   cliente.nome,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (cliente.contacto != null)
-                      Text('Contacto: ${cliente.contacto}'),
-                    if (cliente.email != null) Text('Email: ${cliente.email}'),
-                    if (cliente.endereco != null)
-                      Text('Endereço: ${cliente.endereco}'),
-                  ],
+                subtitle: Text(
+                  [
+                    if (cliente.contacto != null) cliente.contacto,
+                    if (cliente.email != null) cliente.email,
+                  ].join(' • '),
+                  style: TextStyle(fontSize: 11),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue, size: 20),
+                      icon: Icon(Icons.edit, color: Colors.blue, size: 16),
                       onPressed: () => _mostrarDialogCliente(cliente),
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(minWidth: 28, minHeight: 28),
+                      tooltip: 'Editar',
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red, size: 20),
+                      icon: Icon(Icons.delete, color: Colors.red, size: 16),
                       onPressed: () => _confirmarDelete(cliente.id!),
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(minWidth: 28, minHeight: 28),
+                      tooltip: 'Excluir',
                     ),
                   ],
                 ),

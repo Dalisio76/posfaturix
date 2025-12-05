@@ -186,10 +186,10 @@ class WindowsPrinterService {
 
             pw.SizedBox(height: PrintLayoutConfig.espacoAposTitulo),
 
-            // NÚMERO DA VENDA (centralizado)
+            // NÚMERO DA VENDA (centralizado) - Exibe numero_venda se disponível
             pw.Center(
               child: pw.Text(
-                'VENDA Nº: ${venda.numero}',
+                'VENDA Nº: ${venda.numeroExibicao}',
                 style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
               ),
             ),

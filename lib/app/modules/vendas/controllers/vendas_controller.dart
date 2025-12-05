@@ -189,6 +189,13 @@ class VendasController extends GetxController {
     }
   }
 
+  void atualizarQuantidade(int index, int novaQuantidade) {
+    if (novaQuantidade > 0) {
+      carrinho[index].quantidade = novaQuantidade;
+      carrinho.refresh();
+    }
+  }
+
   double get totalCarrinho {
     return carrinho.fold(0, (sum, item) => sum + item.subtotal);
   }
@@ -271,10 +278,10 @@ class VendasController extends GetxController {
       final ClienteModel? cliente = resultado['cliente'];
       final double valorRestante = resultado['valorRestante'] ?? 0;
 
-      // Gerar número da venda
+      // Gerar número técnico da venda (mantido para compatibilidade)
       final numero = 'VD${DateTime.now().millisecondsSinceEpoch}';
 
-      // Criar venda
+      // Criar venda (numero_venda será gerado automaticamente pelo banco)
       final vendaData = VendaModel(
         numero: numero,
         total: totalCarrinho,
@@ -628,10 +635,10 @@ class VendasController extends GetxController {
       final ClienteModel? cliente = resultadoPagamento['cliente'];
       final double valorRestante = resultadoPagamento['valorRestante'] ?? 0;
 
-      // Gerar número da venda
+      // Gerar número técnico da venda (mantido para compatibilidade)
       final numeroVenda = 'VD${DateTime.now().millisecondsSinceEpoch}';
 
-      // Criar venda
+      // Criar venda (numero_venda será gerado automaticamente pelo banco)
       final vendaData = VendaModel(
         numero: numeroVenda,
         total: pedido.total,

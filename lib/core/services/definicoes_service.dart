@@ -37,7 +37,8 @@ class DefinicoesService {
       // Migração: Se algum campo novo não existir no JSON, salvar novamente com todos os campos
       if (!data.containsKey('timeoutAtivo') ||
           !data.containsKey('timeoutSegundos') ||
-          !data.containsKey('mostrarBotaoPedidos')) {
+          !data.containsKey('mostrarBotaoPedidos') ||
+          !data.containsKey('mostrarStockEmVendas')) {
         print('Migrando definições para incluir novos campos...');
         await salvar(definicoes);
       }

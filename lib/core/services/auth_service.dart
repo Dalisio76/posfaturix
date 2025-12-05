@@ -35,6 +35,12 @@ class AuthService extends GetxService {
     if (usuarioLogado.value == null) return false;
     if (usuarioLogado.value!.id == null) return false;
 
+    // BYPASS: Administradores e Super Administradores têm acesso total
+    final perfilNome = usuarioLogado.value!.perfilNome?.toLowerCase() ?? '';
+    if (perfilNome.contains('administrador')) {
+      return true;
+    }
+
     return await _permissaoRepo.usuarioTemPermissao(
       usuarioLogado.value!.id!,
       codigoPermissao,

@@ -16,7 +16,7 @@
 ; =====================================================
 
 #define MyAppName "PosFaturix"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "2.5.0"
 #define MyAppPublisher "Faturix Solutions"
 #define MyAppURL "https://faturix.com"
 #define MyAppExeName "posfaturix.exe"

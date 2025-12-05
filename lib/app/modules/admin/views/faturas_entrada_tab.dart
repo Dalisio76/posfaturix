@@ -62,7 +62,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
 
     Get.dialog(
       AlertDialog(
-        title: const Text('Adicionar Produto'),
+        title: const Text('Adicionar Produto', style: TextStyle(fontSize: 13)),
         content: SizedBox(
           width: 600,
           height: 500,
@@ -73,8 +73,11 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                 decoration: const InputDecoration(
                   labelText: 'Pesquisar produto',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search, size: 18),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  isDense: true,
                 ),
+                style: const TextStyle(fontSize: 11),
                 onChanged: (value) {
                   if (value.isEmpty) {
                     produtosFiltrados.value = produtos;
@@ -93,7 +96,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                   }
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               Expanded(
                 child: Obx(
                   () => ListView.builder(
@@ -101,11 +104,22 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                     itemBuilder: (context, index) {
                       final produto = produtosFiltrados[index];
                       return ListTile(
-                        title: Text(produto.nome),
-                        subtitle: Text('Código: ${produto.codigo}'),
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        title: Text(
+                          produto.nome,
+                          style: const TextStyle(fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          'Código: ${produto.codigo}',
+                          style: const TextStyle(fontSize: 10),
+                        ),
                         trailing: Text(
                           'Estoque: ${produto.estoque}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                         ),
                         onTap: () {
                           Get.back();
@@ -122,7 +136,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('CANCELAR'),
+            child: const Text('CANCELAR', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
@@ -139,7 +153,12 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
 
     Get.dialog(
       AlertDialog(
-        title: Text('Adicionar: ${produto.nome}'),
+        title: Text(
+          'Adicionar: ${produto.nome}',
+          style: const TextStyle(fontSize: 13),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -148,17 +167,23 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
               decoration: const InputDecoration(
                 labelText: 'Quantidade',
                 border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                isDense: true,
               ),
+              style: const TextStyle(fontSize: 11),
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             TextField(
               controller: precoController,
               decoration: const InputDecoration(
                 labelText: 'Preço de Compra Unitário',
                 border: OutlineInputBorder(),
                 prefixText: 'MT ',
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                isDense: true,
               ),
+              style: const TextStyle(fontSize: 11),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
@@ -168,7 +193,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('CANCELAR'),
+            child: const Text('CANCELAR', style: TextStyle(fontSize: 12)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -215,7 +240,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
               calcularTotal();
               Get.back();
             },
-            child: const Text('ADICIONAR'),
+            child: const Text('ADICIONAR', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
@@ -301,7 +326,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -316,28 +341,39 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                       decoration: const InputDecoration(
                         labelText: 'Fornecedor *',
                         border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        isDense: true,
                       ),
+                      style: const TextStyle(fontSize: 11),
                       items: fornecedores.map((fornecedor) {
                         return DropdownMenuItem(
                           value: fornecedor,
-                          child: Text(fornecedor.nome),
+                          child: Text(
+                            fornecedor.nome,
+                            style: const TextStyle(fontSize: 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) => fornecedorSelecionado.value = value,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: numeroFaturaController,
                     decoration: const InputDecoration(
                       labelText: 'Nº Fatura *',
                       border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      isDense: true,
                     ),
+                    style: const TextStyle(fontSize: 11),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Obx(
                     () => InkWell(
@@ -346,9 +382,12 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                         decoration: const InputDecoration(
                           labelText: 'Data da Fatura',
                           border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          isDense: true,
                         ),
                         child: Text(
                           DateFormat('dd/MM/yyyy').format(dataFatura.value!),
+                          style: const TextStyle(fontSize: 11),
                         ),
                       ),
                     ),
@@ -356,21 +395,21 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             // Botão adicionar produto
             ElevatedButton.icon(
               onPressed: adicionarProduto,
-              icon: const Icon(Icons.add),
-              label: const Text('ADICIONAR PRODUTO'),
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('ADICIONAR PRODUTO', style: TextStyle(fontSize: 12)),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
+                  horizontal: 12,
+                  vertical: 8,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             // Tabela de produtos
             Expanded(
@@ -388,52 +427,52 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                       2: FlexColumnWidth(1),
                       3: FlexColumnWidth(1.5),
                       4: FlexColumnWidth(1.5),
-                      5: FixedColumnWidth(60),
+                      5: FixedColumnWidth(40),
                     },
                     children: [
                       TableRow(
                         decoration: BoxDecoration(color: Colors.grey[200]),
                         children: const [
                           Padding(
-                            padding: EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                             child: Text(
                               'CÓDIGO',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                             child: Text(
                               'PRODUTO',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                             child: Text(
                               'QUANT',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                             child: Text(
                               'PREÇO UNI.',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                             child: Text(
                               'SUBTOTAL',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                             child: Text(
                               '',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
                             ),
                           ),
                         ],
@@ -444,40 +483,57 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                         return TableRow(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(item['produto_codigo']),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(item['produto_nome']),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(item['quantidade'].toString()),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                               child: Text(
-                                'MT ${item['preco_unitario'].toStringAsFixed(2)}',
+                                item['produto_codigo'],
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                              child: Text(
+                                item['produto_nome'],
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                              child: Text(
+                                item['quantidade'].toString(),
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                              child: Text(
+                                'MT ${item['preco_unitario'].toStringAsFixed(2)}',
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                               child: Text(
                                 'MT ${item['subtotal'].toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 11,
                                 ),
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(2.0),
                               child: IconButton(
                                 icon: const Icon(
                                   Icons.delete,
                                   color: Colors.red,
-                                  size: 20,
+                                  size: 16,
                                 ),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
                                 onPressed: () => removerItem(index),
                               ),
                             ),
@@ -489,7 +545,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                 );
               }),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             // Observações
             TextField(
@@ -497,10 +553,13 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
               decoration: const InputDecoration(
                 labelText: 'Observações',
                 border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                isDense: true,
               ),
-              maxLines: 2,
+              style: const TextStyle(fontSize: 11),
+              maxLines: 1,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             // Rodapé: Total e Botões
             Row(
@@ -509,7 +568,7 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                   () => Text(
                     'TOTAL: MT ${totalFatura.value.toStringAsFixed(2)}',
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.green,
                     ),
@@ -520,40 +579,40 @@ class _FaturasEntradaTabState extends State<FaturasEntradaTab> {
                   onPressed: () {
                     Get.to(() => const RelatorioFaturasTab());
                   },
-                  icon: const Icon(Icons.list),
-                  label: const Text('VER RELATÓRIO'),
+                  icon: const Icon(Icons.list, size: 16),
+                  label: const Text('VER RELATÓRIO', style: TextStyle(fontSize: 12)),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 20,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: limparFormulario,
-                  icon: const Icon(Icons.clear),
-                  label: const Text('LIMPAR'),
+                  icon: const Icon(Icons.clear, size: 16),
+                  label: const Text('LIMPAR', style: TextStyle(fontSize: 12)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 20,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: salvarFatura,
-                  icon: const Icon(Icons.save),
-                  label: const Text('SALVAR FATURA'),
+                  icon: const Icon(Icons.save, size: 16),
+                  label: const Text('SALVAR FATURA', style: TextStyle(fontSize: 12)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 20,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                   ),
                 ),

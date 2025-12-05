@@ -20,21 +20,8 @@ class _ConfigurarPermissoesTabState extends State<ConfigurarPermissoesTab> {
   final RxList<PermissaoModel> permissoes = <PermissaoModel>[].obs;
   final RxList<PerfilUsuarioModel> perfis = <PerfilUsuarioModel>[].obs;
   final RxBool carregando = false.obs;
-  final RxString modoVisualizacao = 'perfil'.obs; // 'perfil' ou 'permissao'
   final Rxn<PerfilUsuarioModel> perfilSelecionado = Rxn<PerfilUsuarioModel>();
   final RxMap<int, bool> permissoesPerfil = <int, bool>{}.obs;
-
-  // Cores das categorias (matching admin dashboard)
-  final Map<String, Color> coresCategorias = {
-    'VENDAS': Colors.blue,
-    'STOCK': Colors.green,
-    'CADASTROS': Colors.blue,
-    'FINANCEIRO': Colors.orange,
-    'RELATORIOS': Colors.orange,
-    'ADMIN': Colors.purple,
-    'NOTIFICACOES': Colors.teal,
-    'DIVERSOS': Colors.grey,
-  };
 
   @override
   void initState() {
@@ -149,10 +136,16 @@ class _ConfigurarPermissoesTabState extends State<ConfigurarPermissoesTab> {
     return grupos;
   }
 
+  void _toggleTodasPermissoes(bool valor) {
+    for (final permissao in permissoes) {
+      permissoesPerfil[permissao.id!] = valor;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF0F0F0),
       body: Obx(() {
         if (carregando.value && permissoes.isEmpty) {
           return const Center(child: CircularProgressIndicator());
@@ -160,191 +153,204 @@ class _ConfigurarPermissoesTabState extends State<ConfigurarPermissoesTab> {
 
         return Column(
           children: [
-            _buildHeader(),
+            _buildWindowsToolbar(),
             Expanded(
-              child: _buildContent(),
+              child: _buildMainContent(),
             ),
-            _buildFooter(),
           ],
         );
       }),
     );
   }
 
-  Widget _buildHeader() {
+  /// Barra de ferramentas estilo Windows
+  Widget _buildWindowsToolbar() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      height: 48,
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border(
+          bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.purple[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.shield_outlined,
-                  color: Colors.purple[700],
-                  size: 28,
-                ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            // Dropdown de Perfil
+            Obx(() => Container(
+              height: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey[400]!),
+                borderRadius: BorderRadius.circular(2),
               ),
-              const SizedBox(width: 16),
-              const Text(
-                'GESTÃO DE PERMISSÕES',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              child: DropdownButton<PerfilUsuarioModel>(
+                value: perfilSelecionado.value,
+                underline: const SizedBox(),
+                isDense: true,
+                icon: Icon(Icons.arrow_drop_down, size: 20, color: Colors.grey[700]),
+                style: const TextStyle(
+                  fontSize: 13,
                   color: Colors.black87,
+                  fontWeight: FontWeight.normal,
                 ),
+                items: perfis.map((perfil) {
+                  return DropdownMenuItem(
+                    value: perfil,
+                    child: Text(perfil.nome),
+                  );
+                }).toList(),
+                onChanged: (perfil) async {
+                  if (perfil != null) {
+                    perfilSelecionado.value = perfil;
+                    await _carregarPermissoesDoPerfil(perfil);
+                  }
+                },
               ),
-              const Spacer(),
-              // Seletor de Perfil
-              Obx(() => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.purple[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.purple[200]!),
+            )),
+            const SizedBox(width: 8),
+            // Separador
+            Container(
+              width: 1,
+              height: 24,
+              color: Colors.grey[300],
+            ),
+            const SizedBox(width: 8),
+            // Botão Selecionar Todas
+            _buildToolbarButton(
+              icon: Icons.check_box,
+              label: 'Selecionar Todas',
+              onPressed: () => _toggleTodasPermissoes(true),
+            ),
+            const SizedBox(width: 4),
+            // Botão Desmarcar Todas
+            _buildToolbarButton(
+              icon: Icons.check_box_outline_blank,
+              label: 'Desmarcar Todas',
+              onPressed: () => _toggleTodasPermissoes(false),
+            ),
+            const Spacer(),
+            // Contador de permissões
+            Obx(() {
+              final total = permissoes.length;
+              final ativas = permissoesPerfil.values.where((v) => v).length;
+              return Text(
+                '$ativas de $total permissões selecionadas',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.person_outline, color: Colors.purple[700], size: 20),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'PERFIL:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    DropdownButton<PerfilUsuarioModel>(
-                      value: perfilSelecionado.value,
-                      underline: const SizedBox(),
-                      items: perfis.map((perfil) {
-                        return DropdownMenuItem(
-                          value: perfil,
-                          child: Text(
-                            perfil.nome.toUpperCase(),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (perfil) async {
-                        if (perfil != null) {
-                          perfilSelecionado.value = perfil;
-                          await _carregarPermissoesDoPerfil(perfil);
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              )),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Obx(() {
-            final total = permissoes.length;
-            final ativas = permissoesPerfil.values.where((v) => v).length;
-            return Row(
-              children: [
-                _buildStatChip(
-                  icon: Icons.check_circle_outline,
-                  label: 'Ativas',
-                  value: '$ativas',
-                  color: Colors.green,
-                ),
-                const SizedBox(width: 12),
-                _buildStatChip(
-                  icon: Icons.cancel_outlined,
-                  label: 'Inativas',
-                  value: '${total - ativas}',
-                  color: Colors.grey,
-                ),
-                const SizedBox(width: 12),
-                _buildStatChip(
-                  icon: Icons.apps,
-                  label: 'Total',
-                  value: '$total',
-                  color: Colors.blue,
-                ),
-              ],
-            );
-          }),
-        ],
+              );
+            }),
+            const SizedBox(width: 12),
+            // Separador
+            Container(
+              width: 1,
+              height: 24,
+              color: Colors.grey[300],
+            ),
+            const SizedBox(width: 12),
+            // Botão Salvar
+            Obx(() => _buildSaveButton()),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatChip({
+  Widget _buildToolbarButton({
     required IconData icon,
     required String label,
-    required String value,
-    required Color color,
+    required VoidCallback onPressed,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(2),
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[400]!),
+          borderRadius: BorderRadius.circular(2),
+          color: Colors.white,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: Colors.grey[700]),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[800],
+              ),
             ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildSaveButton() {
+    return InkWell(
+      onTap: carregando.value ? null : _salvarPermissoes,
+      borderRadius: BorderRadius.circular(2),
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: carregando.value ? Colors.grey[300] : const Color(0xFF0078D4),
+          borderRadius: BorderRadius.circular(2),
+          border: Border.all(
+            color: carregando.value ? Colors.grey[400]! : const Color(0xFF005A9E),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (carregando.value)
+              const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            else
+              const Icon(Icons.save, size: 16, color: Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              carregando.value ? 'Salvando...' : 'Salvar',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Conteúdo principal - Grid de permissões
+  Widget _buildMainContent() {
     return Obx(() {
       if (perfilSelecionado.value == null) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.info_outline, size: 64, color: Colors.grey[400]),
+              Icon(Icons.shield_outlined, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
-                'Selecione um perfil para gerenciar permissões',
+                'Selecione um perfil para configurar permissões',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 13,
                   color: Colors.grey[600],
                 ),
               ),
@@ -355,101 +361,124 @@ class _ConfigurarPermissoesTabState extends State<ConfigurarPermissoesTab> {
 
       final permissoesAgrupadas = _agruparPermissoesPorCategoria();
 
-      return ListView(
-        padding: const EdgeInsets.all(20),
-        children: permissoesAgrupadas.entries.map((entry) {
-          return _buildCategoriaCard(entry.key, entry.value);
-        }).toList(),
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: permissoesAgrupadas.entries.map((entry) {
+            return _buildCategoriaGroup(entry.key, entry.value);
+          }).toList(),
+        ),
       );
     });
   }
 
-  Widget _buildCategoriaCard(String categoria, List<PermissaoModel> permissoesCategoria) {
-    final cor = coresCategorias[categoria] ?? Colors.grey;
-
-    return Card(
+  /// Grupo de categoria estilo Windows (GroupBox)
+  Widget _buildCategoriaGroup(String categoria, List<PermissaoModel> permissoesCategoria) {
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: cor.withOpacity(0.3), width: 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey[400]!),
+        borderRadius: BorderRadius.circular(4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header da categoria
+          // Cabeçalho da categoria
           Container(
-            padding: const EdgeInsets.all(16),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: cor.withOpacity(0.1),
+              color: const Color(0xFFF0F0F0),
+              border: Border(
+                bottom: BorderSide(color: Colors.grey[400]!),
+              ),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
+                topLeft: Radius.circular(3),
+                topRight: Radius.circular(3),
               ),
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: cor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    _getCategoriaIcon(categoria),
-                    color: cor,
-                    size: 24,
-                  ),
+                Icon(
+                  _getCategoriaIcon(categoria),
+                  size: 16,
+                  color: Colors.grey[700],
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Text(
                   categoria,
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: cor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
                   ),
                 ),
                 const Spacer(),
                 Obx(() {
                   final total = permissoesCategoria.length;
                   final ativas = permissoesCategoria.where((p) => permissoesPerfil[p.id!] ?? false).length;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: cor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '$ativas/$total',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                  return Text(
+                    '($ativas/$total)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[600],
                     ),
                   );
                 }),
               ],
             ),
           ),
-          // Lista de permissões
+          // Grid de permissões
           Padding(
-            padding: const EdgeInsets.all(8),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: permissoesCategoria.map((permissao) {
-                return _buildPermissaoChip(permissao, cor);
-              }).toList(),
-            ),
+            padding: const EdgeInsets.all(12),
+            child: _buildPermissoesGrid(permissoesCategoria),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPermissaoChip(PermissaoModel permissao, Color cor) {
+  /// Grid de checkboxes estilo Windows
+  Widget _buildPermissoesGrid(List<PermissaoModel> permissoesCategoria) {
+    // Organiza em 3 colunas
+    final int colunas = 3;
+    final List<List<PermissaoModel>> linhas = [];
+
+    for (int i = 0; i < permissoesCategoria.length; i += colunas) {
+      final end = (i + colunas < permissoesCategoria.length)
+          ? i + colunas
+          : permissoesCategoria.length;
+      linhas.add(permissoesCategoria.sublist(i, end));
+    }
+
+    return Column(
+      children: linhas.map((linha) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: linha.map((permissao) {
+              return Expanded(
+                child: _buildWindowsCheckbox(permissao),
+              );
+            }).toList(),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// Checkbox estilo Windows (compacto)
+  Widget _buildWindowsCheckbox(PermissaoModel permissao) {
     return Obx(() {
       final ativa = permissoesPerfil[permissao.id!] ?? false;
 
@@ -457,53 +486,62 @@ class _ConfigurarPermissoesTabState extends State<ConfigurarPermissoesTab> {
         onTap: () {
           permissoesPerfil[permissao.id!] = !ativa;
         },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          constraints: const BoxConstraints(minWidth: 200, minHeight: 60),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: ativa ? cor.withOpacity(0.1) : Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: ativa ? cor : Colors.grey[300]!,
-              width: ativa ? 2 : 1,
-            ),
-          ),
+        borderRadius: BorderRadius.circular(2),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                ativa ? Icons.check_box : Icons.check_box_outline_blank,
-                color: ativa ? cor : Colors.grey[400],
-                size: 24,
+              Transform.scale(
+                scale: 0.9,
+                child: Checkbox(
+                  value: ativa,
+                  onChanged: (valor) {
+                    if (valor != null) {
+                      permissoesPerfil[permissao.id!] = valor;
+                    }
+                  },
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                  activeColor: const Color(0xFF0078D4),
+                  side: BorderSide(
+                    color: Colors.grey[600]!,
+                    width: 1,
+                  ),
+                ),
               ),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      permissao.nome.toUpperCase(),
-                      style: TextStyle(
-                        fontWeight: ativa ? FontWeight.bold : FontWeight.w600,
-                        color: ativa ? cor : Colors.black87,
-                        fontSize: 13,
-                      ),
-                    ),
-                    if (permissao.descricao != null && permissao.descricao!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        permissao.descricao!,
+                        permissao.nome,
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
+                          fontSize: 12,
+                          color: ativa ? Colors.black87 : Colors.grey[700],
+                          fontWeight: ativa ? FontWeight.w500 : FontWeight.normal,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (permissao.descricao != null && permissao.descricao!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          permissao.descricao!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -532,92 +570,5 @@ class _ConfigurarPermissoesTabState extends State<ConfigurarPermissoesTab> {
       default:
         return Icons.settings;
     }
-  }
-
-  Widget _buildFooter() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          OutlinedButton.icon(
-            onPressed: () {
-              if (perfilSelecionado.value != null) {
-                _carregarPermissoesDoPerfil(perfilSelecionado.value!);
-              }
-            },
-            icon: const Icon(Icons.refresh),
-            label: const Text('RESETAR'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.grey[700],
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              side: BorderSide(color: Colors.grey[300]!),
-            ),
-          ),
-          const SizedBox(width: 12),
-          OutlinedButton.icon(
-            onPressed: () {
-              // Selecionar todas
-              for (final permissao in permissoes) {
-                permissoesPerfil[permissao.id!] = true;
-              }
-            },
-            icon: const Icon(Icons.select_all),
-            label: const Text('SELECIONAR TODAS'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.blue[700],
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              side: BorderSide(color: Colors.blue[300]!),
-            ),
-          ),
-          const SizedBox(width: 12),
-          OutlinedButton.icon(
-            onPressed: () {
-              // Desselecionar todas
-              for (final permissao in permissoes) {
-                permissoesPerfil[permissao.id!] = false;
-              }
-            },
-            icon: const Icon(Icons.deselect),
-            label: const Text('DESMARCAR TODAS'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.orange[700],
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              side: BorderSide(color: Colors.orange[300]!),
-            ),
-          ),
-          const Spacer(),
-          Obx(() => ElevatedButton.icon(
-            onPressed: carregando.value ? null : _salvarPermissoes,
-            icon: carregando.value
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(Icons.save),
-            label: Text(carregando.value ? 'SALVANDO...' : 'SALVAR PERMISSÕES'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[600],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              elevation: 2,
-            ),
-          )),
-        ],
-      ),
-    );
   }
 }

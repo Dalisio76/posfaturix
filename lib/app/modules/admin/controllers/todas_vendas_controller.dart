@@ -149,7 +149,7 @@ class TodasVendasController extends GetxController {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 16),
-            Text('Venda: ${venda.numero}'),
+            Text('Venda: ${venda.numeroExibicao}'),
             Text('Total: ${_formatarMoeda(venda.total)}'),
             Text('Data: ${_formatarData(venda.dataVenda)}'),
             SizedBox(height: 16),
@@ -246,7 +246,7 @@ class TodasVendasController extends GetxController {
 
       Get.snackbar(
         'Sucesso',
-        'Venda ${venda.numero} cancelada com sucesso!',
+        'Venda ${venda.numeroExibicao} cancelada com sucesso!',
         backgroundColor: Colors.green[700],
         colorText: Colors.white,
         icon: Icon(Icons.check_circle, color: Colors.white),
@@ -325,7 +325,7 @@ class _DialogDetalhesVenda extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Venda ${venda.numero}',
+                          'Venda ${venda.numeroExibicao}',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,

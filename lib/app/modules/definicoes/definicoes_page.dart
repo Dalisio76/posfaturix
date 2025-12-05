@@ -225,6 +225,35 @@ class _DefinicoesPageState extends State<DefinicoesPage> {
                       ),
                     ),
 
+                    SizedBox(height: 10),
+
+                    // Opção: Mostrar Stock em Vendas
+                    Card(
+                      child: SwitchListTile(
+                        title: Text(
+                          'Mostrar STOCK nos produtos',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          _definicoes!.mostrarStockEmVendas
+                              ? 'Quantidade em stock visível nos produtos'
+                              : 'Stock oculto nos produtos da tela de vendas',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        value: _definicoes!.mostrarStockEmVendas,
+                        activeColor: Colors.blue,
+                        onChanged: (valor) {
+                          final novasDefinicoes = _definicoes!.copyWith(
+                            mostrarStockEmVendas: valor,
+                          );
+                          _salvarDefinicoes(novasDefinicoes);
+                        },
+                      ),
+                    ),
+
                     SizedBox(height: 30),
 
                     // Botão de resetar

@@ -56,7 +56,7 @@ class _FornecedoresTabState extends State<FornecedoresTab> {
         children: [
           // Barra de pesquisa
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             color: Colors.grey[100],
             child: Row(
               children: [
@@ -66,28 +66,32 @@ class _FornecedoresTabState extends State<FornecedoresTab> {
                     decoration: const InputDecoration(
                       labelText: 'Pesquisar fornecedor',
                       border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      prefixIcon: Icon(Icons.search, size: 18),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      isDense: true,
                     ),
+                    style: const TextStyle(fontSize: 13),
                     onSubmitted: (_) => pesquisar(),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: pesquisar,
-                  icon: const Icon(Icons.search),
-                  label: const Text('PESQUISAR'),
+                  icon: const Icon(Icons.search, size: 16),
+                  label: const Text('PESQUISAR', style: TextStyle(fontSize: 12)),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    visualDensity: VisualDensity.compact,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: carregarFornecedores,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('LIMPAR'),
+                  icon: const Icon(Icons.refresh, size: 16),
+                  label: const Text('LIMPAR', style: TextStyle(fontSize: 12)),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    visualDensity: VisualDensity.compact,
                   ),
                 ),
               ],
@@ -108,44 +112,53 @@ class _FornecedoresTabState extends State<FornecedoresTab> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 itemCount: fornecedores.length,
                 itemBuilder: (context, index) {
                   final fornecedor = fornecedores[index];
                   return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
                     child: ListTile(
+                      dense: true,
+                      visualDensity: VisualDensity.compact,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       leading: CircleAvatar(
+                        radius: 16,
                         backgroundColor: Get.theme.primaryColor,
-                        child: const Icon(Icons.business, color: Colors.white),
+                        child: const Icon(Icons.business, color: Colors.white, size: 16),
                       ),
                       title: Text(
                         fornecedor.nome,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (fornecedor.nif != null)
-                            Text('NIF: ${fornecedor.nif}'),
-                          if (fornecedor.telefone != null)
-                            Text('Tel: ${fornecedor.telefone}'),
-                          if (fornecedor.email != null)
-                            Text('Email: ${fornecedor.email}'),
-                          if (fornecedor.cidade != null)
-                            Text('Cidade: ${fornecedor.cidade}'),
-                        ],
+                      subtitle: Text(
+                        [
+                          if (fornecedor.nif != null) 'NIF: ${fornecedor.nif}',
+                          if (fornecedor.telefone != null) fornecedor.telefone,
+                          if (fornecedor.cidade != null) fornecedor.cidade,
+                        ].join(' • '),
+                        style: const TextStyle(fontSize: 11),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      isThreeLine: true,
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            icon: const Icon(Icons.edit, color: Colors.blue, size: 16),
                             onPressed: () => mostrarDialog(fornecedor),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                            tooltip: 'Editar',
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.delete, color: Colors.red, size: 16),
                             onPressed: () => confirmarDelete(fornecedor.id!),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                            tooltip: 'Excluir',
                           ),
                         ],
                       ),

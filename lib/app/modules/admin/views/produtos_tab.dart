@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/services/stock_printer_service.dart';
 import '../../../data/models/produto_model.dart';
 import '../../../data/models/produto_composicao_model.dart';
 import '../controllers/admin_controller.dart';
@@ -42,7 +43,7 @@ class ProdutosTab extends GetView<AdminController> {
 
   Widget _buildFiltros() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: Colors.grey[100],
       child: Row(
         children: [
@@ -52,20 +53,24 @@ class ProdutosTab extends GetView<AdminController> {
                 labelText: 'PESQUISAR PRODUTO',
                 hintText: 'Digite o código ou nome...',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                prefixIcon: Icon(Icons.search, size: 16),
+                contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                isDense: true,
               ),
+              style: const TextStyle(fontSize: 12),
               onChanged: (value) {
                 // TODO: Implementar filtro de pesquisa
               },
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           Obx(() => Chip(
-                avatar: const Icon(Icons.inventory, size: 16, color: Colors.white),
-                label: Text('${controller.produtos.length} produtos'),
+                avatar: const Icon(Icons.inventory, size: 14, color: Colors.white),
+                label: Text('${controller.produtos.length}'),
                 backgroundColor: Colors.blue[700],
-                labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                labelStyle: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                visualDensity: VisualDensity.compact,
               )),
         ],
       ),
@@ -78,16 +83,20 @@ class ProdutosTab extends GetView<AdminController> {
         // Cabeçalho
         Container(
           color: Colors.grey[300],
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
           child: Row(
             children: [
               SizedBox(
-                width: 40,
+                width: 32,
                 child: Obx(
-                  () => Checkbox(
-                    value: selecionarTodos.value,
-                    onChanged: (_) => toggleSelecionarTodos(),
-                    tristate: false,
+                  () => Transform.scale(
+                    scale: 0.85,
+                    child: Checkbox(
+                      value: selecionarTodos.value,
+                      onChanged: (_) => toggleSelecionarTodos(),
+                      tristate: false,
+                      visualDensity: VisualDensity.compact,
+                    ),
                   ),
                 ),
               ),
@@ -99,7 +108,7 @@ class ProdutosTab extends GetView<AdminController> {
               _buildCabecalho('COMPRA', 'compra', flex: 2),
               _buildCabecalho('VENDA', 'venda', flex: 2),
               _buildCabecalho('ESTOQUE', 'estoque', flex: 1),
-              _buildCabecalhoFixo('AÇÕES', flex: 2),
+              _buildCabecalhoFixo('AÇÕES', flex: 1),
             ],
           ),
         ),
@@ -128,7 +137,7 @@ class ProdutosTab extends GetView<AdminController> {
       child: Obx(() => InkWell(
         onTap: () => ordenarPor(campo),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -137,7 +146,7 @@ class ProdutosTab extends GetView<AdminController> {
                   texto,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 11,
+                    fontSize: 10,
                     color: campoOrdenacao.value == campo ? Colors.blue[700] : Colors.black,
                   ),
                   textAlign: TextAlign.center,
@@ -145,10 +154,10 @@ class ProdutosTab extends GetView<AdminController> {
                 ),
               ),
               if (campoOrdenacao.value == campo) ...[
-                const SizedBox(width: 4),
+                const SizedBox(width: 2),
                 Icon(
                   ordemCrescente.value ? Icons.arrow_upward : Icons.arrow_downward,
-                  size: 14,
+                  size: 12,
                   color: Colors.blue[700],
                 ),
               ],
@@ -163,10 +172,10 @@ class ProdutosTab extends GetView<AdminController> {
     return Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Text(
           texto,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
           textAlign: TextAlign.center,
         ),
       ),
@@ -182,14 +191,18 @@ class ProdutosTab extends GetView<AdminController> {
         color: produtosSelecionados.contains(produtoId)
             ? Colors.blue[50]
             : corFundo,
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: Row(
           children: [
             SizedBox(
-              width: 40,
-              child: Checkbox(
-                value: produtosSelecionados.contains(produtoId),
-                onChanged: (_) => toggleProduto(produtoId),
+              width: 32,
+              child: Transform.scale(
+                scale: 0.85,
+                child: Checkbox(
+                  value: produtosSelecionados.contains(produtoId),
+                  onChanged: (_) => toggleProduto(produtoId),
+                  visualDensity: VisualDensity.compact,
+                ),
               ),
             ),
             _buildCelula(produto.id.toString(), flex: 1),
@@ -201,22 +214,23 @@ class ProdutosTab extends GetView<AdminController> {
             _buildCelula(Formatters.formatarMoeda(produto.preco), flex: 2),
             _buildCelula(produto.estoque.toString(), flex: 1),
             Expanded(
-              flex: 2,
+              flex: 1,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.edit, size: 18, color: Colors.blue),
+                    icon: const Icon(Icons.edit, size: 16, color: Colors.blue),
                     onPressed: () => _mostrarDialogProduto(produto),
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    tooltip: 'Editar',
                   ),
-                  const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                    icon: const Icon(Icons.delete, size: 16, color: Colors.red),
                     onPressed: () => _confirmarDelete(produto.id!),
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    tooltip: 'Excluir',
                   ),
                 ],
               ),
@@ -236,12 +250,13 @@ class ProdutosTab extends GetView<AdminController> {
     return Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Text(
           texto,
-          style: TextStyle(fontSize: 10, color: cor, fontWeight: cor != null ? FontWeight.bold : null),
+          style: TextStyle(fontSize: 11, color: cor, fontWeight: cor != null ? FontWeight.bold : null),
           textAlign: align,
           overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
       ),
     );
@@ -249,55 +264,91 @@ class ProdutosTab extends GetView<AdminController> {
 
   Widget _buildRodape() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        border: Border(top: BorderSide(color: Colors.grey[400]!, width: 2)),
+        border: Border(top: BorderSide(color: Colors.grey[400]!, width: 1)),
       ),
       child: Row(
         children: [
           ElevatedButton.icon(
             onPressed: () => _mostrarDialogProduto(null),
-            icon: const Icon(Icons.add),
-            label: const Text('ADICIONAR PRODUTO'),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('ADICIONAR', style: TextStyle(fontSize: 12)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green[700],
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              visualDensity: VisualDensity.compact,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
+          ElevatedButton.icon(
+            onPressed: () => _mostrarDialogImpressaoStock(),
+            icon: const Icon(Icons.print, size: 18),
+            label: const Text('IMPRIMIR STOCK', style: TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[700],
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+          const SizedBox(width: 8),
           Obx(() {
             if (produtosSelecionados.isEmpty) return const SizedBox.shrink();
             return ElevatedButton.icon(
               onPressed: () => _deletarSelecionados(),
-              icon: const Icon(Icons.delete),
-              label: Text('DELETAR ${produtosSelecionados.length} SELECIONADOS'),
+              icon: const Icon(Icons.delete, size: 18),
+              label: Text('DELETAR (${produtosSelecionados.length})', style: const TextStyle(fontSize: 12)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                visualDensity: VisualDensity.compact,
               ),
             );
           }),
           const Spacer(),
-          Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Total de produtos: ${controller.produtos.length}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          Obx(() {
+            // Calcular totais
+            final totalVenda = controller.produtos.fold(0.0, (sum, p) => sum + (p.preco * p.estoque));
+            final totalCompra = controller.produtos.fold(0.0, (sum, p) => sum + (p.precoCompra * p.estoque));
+            final lucro = totalVenda - totalCompra;
+
+            return Row(
+              children: [
+                Text(
+                  'Total Venda: ${Formatters.formatarMoeda(totalVenda)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '|',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Total Compra: ${Formatters.formatarMoeda(totalCompra)}',
+                  style: const TextStyle(fontSize: 11),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '|',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Lucro: ${Formatters.formatarMoeda(lucro)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                    color: lucro >= 0 ? Colors.green : Colors.red,
                   ),
-                  Text(
-                    'Contáveis: ${controller.produtos.where((p) => p.contavel).length}',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  Text(
-                    'Compostos: ${controller.produtos.where((p) => !p.contavel).length}',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              )),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -945,6 +996,135 @@ class ProdutosTab extends GetView<AdminController> {
           ),
         ],
       ),
+    );
+  }
+
+  void _mostrarDialogImpressaoStock() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Imprimir Lista de Stock', style: TextStyle(fontSize: 14)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Escolha o formato:', style: TextStyle(fontSize: 12)),
+            const SizedBox(height: 16),
+            // Botão A4
+            SizedBox(
+              width: double.infinity,
+              height: 80,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Get.back();
+                  _imprimirStockA4();
+                },
+                icon: const Icon(Icons.description, size: 32),
+                label: const Text(
+                  'A4',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[700],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.all(16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Botão TÉRMICA
+            SizedBox(
+              width: double.infinity,
+              height: 80,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Get.back();
+                  _imprimirStockTermica();
+                },
+                icon: const Icon(Icons.receipt, size: 32),
+                label: const Text(
+                  'TÉRMICA',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[700],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.all(16),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('CANCELAR'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _imprimirStockA4() async {
+    try {
+      // Verificar se há produtos
+      if (controller.produtos.isEmpty) {
+        Get.snackbar(
+          'Aviso',
+          'Não há produtos para imprimir',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // Verificar se há dados da empresa
+      if (controller.empresa.value == null) {
+        Get.snackbar(
+          'Erro',
+          'Dados da empresa não encontrados',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // Mostrar loading
+      Get.snackbar(
+        'Aguarde',
+        'Preparando impressão em formato A4...',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.blue[700],
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+
+      // Chamar o serviço de impressão
+      await StockPrinterService.imprimirStockA4(
+        controller.produtos.toList(),
+        controller.empresa.value!,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Erro',
+        'Erro ao preparar impressão: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  void _imprimirStockTermica() {
+    // TODO: Implementar impressão térmica
+    Get.snackbar(
+      'Sucesso',
+      'Preparando impressão em formato térmico...',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green[700],
+      colorText: Colors.white,
+      duration: const Duration(seconds: 2),
     );
   }
 }

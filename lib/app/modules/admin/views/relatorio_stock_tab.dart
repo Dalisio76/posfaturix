@@ -111,109 +111,107 @@ class _RelatorioStockTabState extends State<RelatorioStockTab> {
         children: [
           // Cabeçalho
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             color: Colors.grey[200],
             child: const Text(
               'RELATORIO DE STOCK',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
             ),
           ),
 
           // Filtros
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             color: Colors.grey[100],
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'SECTOR',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'SECTOR',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Obx(() {
+                        final items = [
+                          const DropdownMenuItem<SetorModel>(
+                            value: null,
+                            child: Text('TODOS', style: TextStyle(fontSize: 11)),
                           ),
-                          const SizedBox(height: 8),
-                          Obx(() {
-                            final items = [
-                              const DropdownMenuItem<SetorModel>(
-                                value: null,
-                                child: Text('TODOS', style: TextStyle(fontSize: 11)),
-                              ),
-                              ...setores.map((setor) {
-                                return DropdownMenuItem(
-                                  value: setor,
-                                  child: Text(setor.nome, style: const TextStyle(fontSize: 11)),
-                                );
-                              }),
-                            ];
-                            return DropdownButtonFormField<SetorModel>(
-                              value: setorSelecionado.value,
-                              style: const TextStyle(fontSize: 11, color: Colors.black),
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                              ),
-                              items: items,
-                              onChanged: (value) => setorSelecionado.value = value,
+                          ...setores.map((setor) {
+                            return DropdownMenuItem(
+                              value: setor,
+                              child: Text(setor.nome, style: const TextStyle(fontSize: 11)),
                             );
                           }),
-                        ],
+                        ];
+                        return DropdownButtonFormField<SetorModel>(
+                          value: setorSelecionado.value,
+                          style: const TextStyle(fontSize: 11, color: Colors.black),
+                          isDense: true,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            isDense: true,
+                          ),
+                          items: items,
+                          onChanged: (value) => setorSelecionado.value = value,
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'PRODUTO',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'PRODUTO',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      const SizedBox(height: 4),
+                      TextField(
+                        controller: produtoController,
+                        style: const TextStyle(fontSize: 11),
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: produtoController,
-                            style: const TextStyle(fontSize: 12),
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      children: [
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: pesquisar,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[800],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 14,
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          child: const Text('PESQUISAR'),
+                          isDense: true,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 18),
+                  child: ElevatedButton(
+                    onPressed: pesquisar,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[800],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ],
+                    child: const Text('PESQUISAR'),
+                  ),
                 ),
               ],
             ),
@@ -230,7 +228,7 @@ class _RelatorioStockTabState extends State<RelatorioStockTab> {
             final totalCompra = double.tryParse(t['total_valor_compra']?.toString() ?? '0') ?? 0;
 
             return Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               color: Colors.blue[50],
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -278,61 +276,109 @@ class _RelatorioStockTabState extends State<RelatorioStockTab> {
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
                     headingRowColor: WidgetStateProperty.all(Colors.grey[300]),
-                    dataRowMinHeight: 30,
-                    dataRowMaxHeight: 35,
+                    headingRowHeight: 24,
+                    dataRowMinHeight: 20,
+                    dataRowMaxHeight: 22,
+                    columnSpacing: 8,
+                    horizontalMargin: 8,
                     columns: const [
                       DataColumn(
-                        label: Text(
-                          'CÓDIGO',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'CÓDIGO',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'PRODUTO',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'PRODUTO',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'FAMILIA',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'FAMILIA',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'SETOR',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'SETOR',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'QUANTIDADE',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'QUANTIDADE',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'PREÇO VENDA',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'PREÇO VENDA',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'PREÇO COMPRA',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'PREÇO COMPRA',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'VALOR VENDA',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'VALOR VENDA',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       DataColumn(
-                        label: Text(
-                          'VALOR COMPRA',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        label: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Text(
+                            'VALOR COMPRA',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                     ],
@@ -356,38 +402,98 @@ class _RelatorioStockTabState extends State<RelatorioStockTab> {
                         color: WidgetStateProperty.all(corLinha),
                         onSelectChanged: (_) => linhaSelecionada.value = index,
                         cells: [
-                          DataCell(Text(item['codigo'] ?? '', style: const TextStyle(fontSize: 11))),
-                          DataCell(Text(item['produto_nome'] ?? '', style: const TextStyle(fontSize: 11))),
-                          DataCell(Text(item['familia_nome'] ?? '', style: const TextStyle(fontSize: 11))),
-                          DataCell(Text(item['setor_nome'] ?? '', style: const TextStyle(fontSize: 11))),
                           DataCell(
-                            Text(
-                              quantidade.toStringAsFixed(2),
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                item['codigo'] ?? '',
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                           DataCell(
-                            Text(
-                              NumberFormat('#,##0.00').format(preco),
-                              style: const TextStyle(fontSize: 11),
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                item['produto_nome'] ?? '',
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                           DataCell(
-                            Text(
-                              NumberFormat('#,##0.00').format(precoCompra),
-                              style: const TextStyle(fontSize: 11),
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                item['familia_nome'] ?? '',
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                           DataCell(
-                            Text(
-                              NumberFormat('#,##0.00').format(valorVenda),
-                              style: const TextStyle(fontSize: 11, color: Colors.green),
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                item['setor_nome'] ?? '',
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                           DataCell(
-                            Text(
-                              NumberFormat('#,##0.00').format(valorCompra),
-                              style: const TextStyle(fontSize: 11, color: Colors.blue),
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                quantidade.toStringAsFixed(2),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                NumberFormat('#,##0.00').format(preco),
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                NumberFormat('#,##0.00').format(precoCompra),
+                                style: const TextStyle(fontSize: 11),
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                NumberFormat('#,##0.00').format(valorVenda),
+                                style: const TextStyle(fontSize: 11, color: Colors.green),
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Padding(
+                              padding: const EdgeInsets.all(2),
+                              child: Text(
+                                NumberFormat('#,##0.00').format(valorCompra),
+                                style: const TextStyle(fontSize: 11, color: Colors.blue),
+                                maxLines: 1,
+                              ),
                             ),
                           ),
                         ],
@@ -401,7 +507,7 @@ class _RelatorioStockTabState extends State<RelatorioStockTab> {
 
           // Rodapé
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             color: Colors.grey[100],
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -412,9 +518,10 @@ class _RelatorioStockTabState extends State<RelatorioStockTab> {
                     backgroundColor: Colors.green[800],
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
+                    visualDensity: VisualDensity.compact,
                     textStyle: const TextStyle(fontSize: 12),
                   ),
                   child: const Text('IMPRIMIR'),
@@ -425,9 +532,10 @@ class _RelatorioStockTabState extends State<RelatorioStockTab> {
                     backgroundColor: Colors.red[800],
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
+                    visualDensity: VisualDensity.compact,
                     textStyle: const TextStyle(fontSize: 12),
                   ),
                   child: const Text('VOLTAR'),

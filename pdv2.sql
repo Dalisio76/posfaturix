@@ -2,10 +2,12 @@
 -- PostgreSQL database dump
 --
 
---\restrict QxOwgbMxBhc2hgR4SktTJFWznvcJWZl2kH92CcsZH1UUIYVXxsA1HBto8wG0Wnx
+\restrict mkehfr4gb93bhvLfmuGaXgI2EMUldVL0U2bCwtAVJOmde4qwZkEOu1ZadZdXbqg
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
+
+-- Started on 2025-12-06 22:09:55
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,450 +21,33 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_terminal_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_cliente_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_terminal_id_atual_fkey;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_perfil_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.terminal_logs DROP CONSTRAINT IF EXISTS terminal_logs_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.terminal_logs DROP CONSTRAINT IF EXISTS terminal_logs_terminal_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_setor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_familia_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_area_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_produto_componente_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_permissao_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_perfil_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_mesa_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_venda DROP CONSTRAINT IF EXISTS pagamentos_venda_venda_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_venda DROP CONSTRAINT IF EXISTS pagamentos_venda_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_divida DROP CONSTRAINT IF EXISTS pagamentos_divida_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_divida DROP CONSTRAINT IF EXISTS pagamentos_divida_divida_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.mesas DROP CONSTRAINT IF EXISTS mesas_local_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.logs_acesso DROP CONSTRAINT IF EXISTS logs_acesso_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_venda DROP CONSTRAINT IF EXISTS itens_venda_venda_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_venda DROP CONSTRAINT IF EXISTS itens_venda_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_pedido DROP CONSTRAINT IF EXISTS itens_pedido_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_pedido DROP CONSTRAINT IF EXISTS itens_pedido_pedido_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_fatura_entrada DROP CONSTRAINT IF EXISTS itens_fatura_entrada_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_fatura_entrada DROP CONSTRAINT IF EXISTS itens_fatura_entrada_fatura_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.faturas_entrada DROP CONSTRAINT IF EXISTS faturas_entrada_fornecedor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_setor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_familia_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_familia_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_area_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_tipo_documento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_impressora_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_venda_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_cliente_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.despesas DROP CONSTRAINT IF EXISTS despesas_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.controle_fecho_caixa DROP CONSTRAINT IF EXISTS controle_fecho_caixa_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.conferencias_caixa DROP CONSTRAINT IF EXISTS conferencias_caixa_caixa_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_pedido_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_item_pedido_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.auditoria DROP CONSTRAINT IF EXISTS auditoria_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.areas DROP CONSTRAINT IF EXISTS areas_impressora_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_setor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_area_id_fkey;
-DROP TRIGGER IF EXISTS trigger_validar_data_venda ON public.vendas;
-DROP TRIGGER IF EXISTS trigger_validar_codigo_barras_produto ON public.produtos;
-DROP TRIGGER IF EXISTS trigger_audit_vendas ON public.vendas;
-DROP TRIGGER IF EXISTS trigger_audit_usuarios ON public.usuarios;
-DROP TRIGGER IF EXISTS trigger_audit_produtos ON public.produtos;
-DROP TRIGGER IF EXISTS trigger_audit_perfil_permissoes ON public.perfil_permissoes;
-DROP TRIGGER IF EXISTS trigger_audit_mesas ON public.mesas;
-DROP TRIGGER IF EXISTS trigger_audit_itens_venda ON public.itens_venda;
-DROP TRIGGER IF EXISTS trigger_audit_impressoras ON public.impressoras;
-DROP TRIGGER IF EXISTS trigger_audit_familias ON public.familias;
-DROP TRIGGER IF EXISTS trigger_audit_clientes ON public.clientes;
-DROP TRIGGER IF EXISTS trigger_audit_areas ON public.areas;
-DROP TRIGGER IF EXISTS trigger_atualizar_valor_restante ON public.dividas;
-DROP TRIGGER IF EXISTS trigger_atualizar_total_pedido ON public.itens_pedido;
-DROP TRIGGER IF EXISTS trigger_atualizar_terminais ON public.terminais;
-DROP TRIGGER IF EXISTS trigger_atualizar_impressoras ON public.impressoras;
-DROP TRIGGER IF EXISTS trigger_atualizar_estoque ON public.acertos_stock;
-DROP TRIGGER IF EXISTS trigger_atualizar_data_configuracao ON public.configuracoes;
-DROP TRIGGER IF EXISTS before_insert_produto_codigo ON public.produtos;
-CREATE OR REPLACE VIEW public.v_mesas_por_local AS
-SELECT
-    NULL::integer AS local_id,
-    NULL::character varying(50) AS local_nome,
-    NULL::bigint AS total_mesas,
-    NULL::bigint AS mesas_ativas,
-    NULL::bigint AS mesas_ocupadas,
-    NULL::bigint AS mesas_livres;
-DROP INDEX IF EXISTS public.idx_vendas_usuario;
-DROP INDEX IF EXISTS public.idx_vendas_tipo;
-DROP INDEX IF EXISTS public.idx_vendas_terminal;
-DROP INDEX IF EXISTS public.idx_vendas_status;
-DROP INDEX IF EXISTS public.idx_vendas_forma_pagamento;
-DROP INDEX IF EXISTS public.idx_vendas_data;
-DROP INDEX IF EXISTS public.idx_vendas_cliente;
-DROP INDEX IF EXISTS public.idx_usuarios_perfil;
-DROP INDEX IF EXISTS public.idx_usuarios_nome;
-DROP INDEX IF EXISTS public.idx_usuarios_codigo;
-DROP INDEX IF EXISTS public.idx_usuarios_ativo;
-DROP INDEX IF EXISTS public.idx_tipos_documento_codigo;
-DROP INDEX IF EXISTS public.idx_terminal_logs_terminal;
-DROP INDEX IF EXISTS public.idx_terminal_logs_created;
-DROP INDEX IF EXISTS public.idx_terminais_tipo;
-DROP INDEX IF EXISTS public.idx_terminais_ativo;
-DROP INDEX IF EXISTS public.idx_setores_ativo;
-DROP INDEX IF EXISTS public.idx_servidor_tempo_data;
-DROP INDEX IF EXISTS public.idx_produtos_setor;
-DROP INDEX IF EXISTS public.idx_produtos_familia;
-DROP INDEX IF EXISTS public.idx_produtos_estoque_baixo;
-DROP INDEX IF EXISTS public.idx_produtos_codigo_barras_lower;
-DROP INDEX IF EXISTS public.idx_produtos_codigo_barras;
-DROP INDEX IF EXISTS public.idx_produtos_ativo;
-DROP INDEX IF EXISTS public.idx_produtos_area;
-DROP INDEX IF EXISTS public.idx_produto_composicao_produto;
-DROP INDEX IF EXISTS public.idx_produto_composicao_componente;
-DROP INDEX IF EXISTS public.idx_permissoes_codigo;
-DROP INDEX IF EXISTS public.idx_permissoes_categoria;
-DROP INDEX IF EXISTS public.idx_perfil_permissoes_permissao;
-DROP INDEX IF EXISTS public.idx_perfil_permissoes_perfil;
-DROP INDEX IF EXISTS public.idx_pedidos_usuario;
-DROP INDEX IF EXISTS public.idx_pedidos_status;
-DROP INDEX IF EXISTS public.idx_pedidos_mesa;
-DROP INDEX IF EXISTS public.idx_pagamentos_venda_venda_id;
-DROP INDEX IF EXISTS public.idx_pagamentos_venda_forma_pagamento_id;
-DROP INDEX IF EXISTS public.idx_pagamentos_divida;
-DROP INDEX IF EXISTS public.idx_pagamentos_data;
-DROP INDEX IF EXISTS public.idx_mesas_numero;
-DROP INDEX IF EXISTS public.idx_mesas_local;
-DROP INDEX IF EXISTS public.idx_logs_acesso_usuario;
-DROP INDEX IF EXISTS public.idx_logs_acesso_tipo;
-DROP INDEX IF EXISTS public.idx_logs_acesso_data;
-DROP INDEX IF EXISTS public.idx_itens_venda;
-DROP INDEX IF EXISTS public.idx_itens_pedido_pedido;
-DROP INDEX IF EXISTS public.idx_itens_fatura_entrada_produto;
-DROP INDEX IF EXISTS public.idx_itens_fatura_entrada_fatura;
-DROP INDEX IF EXISTS public.idx_impressoras_ativo;
-DROP INDEX IF EXISTS public.idx_fornecedores_nome;
-DROP INDEX IF EXISTS public.idx_fornecedores_nif;
-DROP INDEX IF EXISTS public.idx_fornecedores_ativo;
-DROP INDEX IF EXISTS public.idx_faturas_entrada_numero;
-DROP INDEX IF EXISTS public.idx_faturas_entrada_fornecedor;
-DROP INDEX IF EXISTS public.idx_faturas_entrada_data;
-DROP INDEX IF EXISTS public.idx_familia_setores_setor;
-DROP INDEX IF EXISTS public.idx_familia_setores_familia;
-DROP INDEX IF EXISTS public.idx_familia_areas_familia;
-DROP INDEX IF EXISTS public.idx_familia_areas_area;
-DROP INDEX IF EXISTS public.idx_documento_impressora_tipo;
-DROP INDEX IF EXISTS public.idx_dividas_status;
-DROP INDEX IF EXISTS public.idx_dividas_data;
-DROP INDEX IF EXISTS public.idx_dividas_cliente;
-DROP INDEX IF EXISTS public.idx_despesas_data;
-DROP INDEX IF EXISTS public.idx_despesas_categoria;
-DROP INDEX IF EXISTS public.idx_controle_fecho_data;
-DROP INDEX IF EXISTS public.idx_configuracoes_chave;
-DROP INDEX IF EXISTS public.idx_configuracoes_categoria;
-DROP INDEX IF EXISTS public.idx_conferencias_caixa_caixa_id;
-DROP INDEX IF EXISTS public.idx_clientes_nome;
-DROP INDEX IF EXISTS public.idx_clientes_contacto;
-DROP INDEX IF EXISTS public.idx_clientes_ativo;
-DROP INDEX IF EXISTS public.idx_cancelamentos_usuario;
-DROP INDEX IF EXISTS public.idx_cancelamentos_pedido;
-DROP INDEX IF EXISTS public.idx_cancelamentos_data;
-DROP INDEX IF EXISTS public.idx_caixas_terminal;
-DROP INDEX IF EXISTS public.idx_caixas_status;
-DROP INDEX IF EXISTS public.idx_caixas_numero;
-DROP INDEX IF EXISTS public.idx_caixas_data_abertura;
-DROP INDEX IF EXISTS public.idx_auditoria_usuario;
-DROP INDEX IF EXISTS public.idx_auditoria_tabela;
-DROP INDEX IF EXISTS public.idx_auditoria_registro;
-DROP INDEX IF EXISTS public.idx_auditoria_operacao;
-DROP INDEX IF EXISTS public.idx_auditoria_data;
-DROP INDEX IF EXISTS public.idx_areas_impressora;
-DROP INDEX IF EXISTS public.idx_areas_ativo;
-DROP INDEX IF EXISTS public.idx_acertos_setor;
-DROP INDEX IF EXISTS public.idx_acertos_produto;
-DROP INDEX IF EXISTS public.idx_acertos_motivo;
-DROP INDEX IF EXISTS public.idx_acertos_data;
-DROP INDEX IF EXISTS public.idx_acertos_area;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_pkey;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_numero_key;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_pkey;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_nome_key;
-ALTER TABLE IF EXISTS ONLY public.tipos_documento DROP CONSTRAINT IF EXISTS tipos_documento_pkey;
-ALTER TABLE IF EXISTS ONLY public.tipos_documento DROP CONSTRAINT IF EXISTS tipos_documento_codigo_key;
-ALTER TABLE IF EXISTS ONLY public.terminal_logs DROP CONSTRAINT IF EXISTS terminal_logs_pkey;
-ALTER TABLE IF EXISTS ONLY public.terminais DROP CONSTRAINT IF EXISTS terminais_pkey;
-ALTER TABLE IF EXISTS ONLY public.terminais DROP CONSTRAINT IF EXISTS terminais_nome_key;
-ALTER TABLE IF EXISTS ONLY public.setores DROP CONSTRAINT IF EXISTS setores_pkey;
-ALTER TABLE IF EXISTS ONLY public.servidor_tempo DROP CONSTRAINT IF EXISTS servidor_tempo_pkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_pkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_codigo_key;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_produto_id_produto_componente_id_key;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_pkey;
-ALTER TABLE IF EXISTS ONLY public.permissoes DROP CONSTRAINT IF EXISTS permissoes_pkey;
-ALTER TABLE IF EXISTS ONLY public.permissoes DROP CONSTRAINT IF EXISTS permissoes_codigo_key;
-ALTER TABLE IF EXISTS ONLY public.perfis_usuario DROP CONSTRAINT IF EXISTS perfis_usuario_pkey;
-ALTER TABLE IF EXISTS ONLY public.perfis_usuario DROP CONSTRAINT IF EXISTS perfis_usuario_nome_key;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_pkey;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_perfil_id_permissao_id_key;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_pkey;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_numero_key;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_venda DROP CONSTRAINT IF EXISTS pagamentos_venda_pkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_divida DROP CONSTRAINT IF EXISTS pagamentos_divida_pkey;
-ALTER TABLE IF EXISTS ONLY public.mesas DROP CONSTRAINT IF EXISTS mesas_pkey;
-ALTER TABLE IF EXISTS ONLY public.mesas DROP CONSTRAINT IF EXISTS mesas_numero_key;
-ALTER TABLE IF EXISTS ONLY public.logs_acesso DROP CONSTRAINT IF EXISTS logs_acesso_pkey;
-ALTER TABLE IF EXISTS ONLY public.locais_mesa DROP CONSTRAINT IF EXISTS locais_mesa_pkey;
-ALTER TABLE IF EXISTS ONLY public.locais_mesa DROP CONSTRAINT IF EXISTS locais_mesa_nome_key;
-ALTER TABLE IF EXISTS ONLY public.itens_venda DROP CONSTRAINT IF EXISTS itens_venda_pkey;
-ALTER TABLE IF EXISTS ONLY public.itens_pedido DROP CONSTRAINT IF EXISTS itens_pedido_pkey;
-ALTER TABLE IF EXISTS ONLY public.itens_fatura_entrada DROP CONSTRAINT IF EXISTS itens_fatura_entrada_pkey;
-ALTER TABLE IF EXISTS ONLY public.impressoras DROP CONSTRAINT IF EXISTS impressoras_pkey;
-ALTER TABLE IF EXISTS ONLY public.impressoras DROP CONSTRAINT IF EXISTS impressoras_nome_key;
-ALTER TABLE IF EXISTS ONLY public.fornecedores DROP CONSTRAINT IF EXISTS fornecedores_pkey;
-ALTER TABLE IF EXISTS ONLY public.formas_pagamento DROP CONSTRAINT IF EXISTS formas_pagamento_pkey;
-ALTER TABLE IF EXISTS ONLY public.formas_pagamento DROP CONSTRAINT IF EXISTS formas_pagamento_nome_key;
-ALTER TABLE IF EXISTS ONLY public.faturas_entrada DROP CONSTRAINT IF EXISTS faturas_entrada_pkey;
-ALTER TABLE IF EXISTS ONLY public.faturas_entrada DROP CONSTRAINT IF EXISTS faturas_entrada_fornecedor_id_numero_fatura_key;
-ALTER TABLE IF EXISTS ONLY public.familias DROP CONSTRAINT IF EXISTS familias_pkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_pkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_familia_id_setor_id_key;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_pkey;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_familia_id_area_id_key;
-ALTER TABLE IF EXISTS ONLY public.empresa DROP CONSTRAINT IF EXISTS empresa_pkey;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_tipo_documento_id_impressora_id_key;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_pkey;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_venda_id_key;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_pkey;
-ALTER TABLE IF EXISTS ONLY public.despesas DROP CONSTRAINT IF EXISTS despesas_pkey;
-ALTER TABLE IF EXISTS ONLY public.controle_fecho_caixa DROP CONSTRAINT IF EXISTS controle_fecho_caixa_pkey;
-ALTER TABLE IF EXISTS ONLY public.controle_fecho_caixa DROP CONSTRAINT IF EXISTS controle_fecho_caixa_data_fecho_key;
-ALTER TABLE IF EXISTS ONLY public.configuracoes DROP CONSTRAINT IF EXISTS configuracoes_pkey;
-ALTER TABLE IF EXISTS ONLY public.configuracoes DROP CONSTRAINT IF EXISTS configuracoes_chave_key;
-ALTER TABLE IF EXISTS ONLY public.conferencias_caixa DROP CONSTRAINT IF EXISTS conferencias_caixa_pkey;
-ALTER TABLE IF EXISTS ONLY public.clientes DROP CONSTRAINT IF EXISTS clientes_pkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_pkey;
-ALTER TABLE IF EXISTS ONLY public.caixas DROP CONSTRAINT IF EXISTS caixas_pkey;
-ALTER TABLE IF EXISTS ONLY public.caixas DROP CONSTRAINT IF EXISTS caixas_numero_key;
-ALTER TABLE IF EXISTS ONLY public.auditoria DROP CONSTRAINT IF EXISTS auditoria_pkey;
-ALTER TABLE IF EXISTS ONLY public.areas DROP CONSTRAINT IF EXISTS areas_pkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_pkey;
-ALTER TABLE IF EXISTS public.vendas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.usuarios ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.tipos_documento ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.terminal_logs ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.terminais ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.setores ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.servidor_tempo ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.produtos ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.produto_composicao ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.permissoes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.perfis_usuario ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.perfil_permissoes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.pedidos ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.pagamentos_venda ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.pagamentos_divida ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.mesas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.logs_acesso ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.locais_mesa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.itens_venda ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.itens_pedido ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.itens_fatura_entrada ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.impressoras ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.fornecedores ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.formas_pagamento ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.faturas_entrada ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.familias ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.familia_setores ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.familia_areas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.empresa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.documento_impressora ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.dividas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.despesas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.controle_fecho_caixa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.configuracoes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.conferencias_caixa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.clientes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.cancelamentos_item_pedido ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.caixas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.auditoria ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.areas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.acertos_stock ALTER COLUMN id DROP DEFAULT;
-DROP VIEW IF EXISTS public.vw_vendas_por_terminal;
-DROP VIEW IF EXISTS public.vw_terminais_ativos;
-DROP VIEW IF EXISTS public.vw_produtos_deletados;
-DROP VIEW IF EXISTS public.vw_produtos_com_codigo_barras;
-DROP VIEW IF EXISTS public.vw_operacoes_suspeitas;
-DROP VIEW IF EXISTS public.vw_mapeamento_impressao;
-DROP VIEW IF EXISTS public.vw_logins_falhados;
-DROP VIEW IF EXISTS public.vw_historico_precos;
-DROP VIEW IF EXISTS public.vw_auditoria_por_usuario;
-DROP VIEW IF EXISTS public.vw_auditoria_detalhada;
-DROP VIEW IF EXISTS public.vw_areas_impressoras;
-DROP VIEW IF EXISTS public.vw_anomalias_data;
-DROP SEQUENCE IF EXISTS public.vendas_id_seq;
-DROP VIEW IF EXISTS public.v_vendas_resumo;
-DROP VIEW IF EXISTS public.v_vendas_completo;
-DROP VIEW IF EXISTS public.v_vendas_com_pagamentos;
-DROP VIEW IF EXISTS public.v_usuarios_completo;
-DROP VIEW IF EXISTS public.v_setores_ativos;
-DROP VIEW IF EXISTS public.v_resumo_produtos_caixa;
-DROP VIEW IF EXISTS public.v_resumo_compras_fornecedor;
-DROP VIEW IF EXISTS public.v_resumo_caixa;
-DROP VIEW IF EXISTS public.v_produtos_vendidos_caixa;
-DROP VIEW IF EXISTS public.v_produtos_por_setor;
-DROP VIEW IF EXISTS public.v_produtos_por_area;
-DROP VIEW IF EXISTS public.v_produtos_nao_contaveis;
-DROP VIEW IF EXISTS public.v_produtos_mais_comprados;
-DROP VIEW IF EXISTS public.v_produtos_detalhado;
-DROP VIEW IF EXISTS public.v_produtos_completo;
-DROP VIEW IF EXISTS public.v_produtos_com_setores;
-DROP VIEW IF EXISTS public.v_produtos_com_composicao;
-DROP VIEW IF EXISTS public.v_perfil_permissoes;
-DROP VIEW IF EXISTS public.v_pedidos_abertos;
-DROP VIEW IF EXISTS public.v_pagamentos_divida_caixa;
-DROP VIEW IF EXISTS public.v_mesas_por_local;
-DROP VIEW IF EXISTS public.v_mesas_completo;
-DROP VIEW IF EXISTS public.v_itens_fatura_entrada_completo;
-DROP VIEW IF EXISTS public.v_faturas_entrada_completo;
-DROP VIEW IF EXISTS public.v_familias_com_setores;
-DROP VIEW IF EXISTS public.v_familias_areas;
-DROP VIEW IF EXISTS public.v_dividas_completo;
-DROP TABLE IF EXISTS public.vendas;
-DROP VIEW IF EXISTS public.v_devedores;
-DROP VIEW IF EXISTS public.v_despesas_resumo;
-DROP VIEW IF EXISTS public.v_despesas_caixa;
-DROP VIEW IF EXISTS public.v_conferencias_caixa;
-DROP VIEW IF EXISTS public.v_clientes_dividas;
-DROP VIEW IF EXISTS public.v_cancelamentos_pedido;
-DROP VIEW IF EXISTS public.v_caixa_atual;
-DROP VIEW IF EXISTS public.v_areas_ativas;
-DROP VIEW IF EXISTS public.v_acertos_resumo;
-DROP VIEW IF EXISTS public.v_acertos_por_setor;
-DROP VIEW IF EXISTS public.v_acertos_por_motivo;
-DROP VIEW IF EXISTS public.v_acertos_completo;
-DROP SEQUENCE IF EXISTS public.usuarios_id_seq;
-DROP TABLE IF EXISTS public.usuarios;
-DROP SEQUENCE IF EXISTS public.tipos_documento_id_seq;
-DROP TABLE IF EXISTS public.tipos_documento;
-DROP SEQUENCE IF EXISTS public.terminal_logs_id_seq;
-DROP TABLE IF EXISTS public.terminal_logs;
-DROP SEQUENCE IF EXISTS public.terminais_id_seq;
-DROP TABLE IF EXISTS public.terminais;
-DROP SEQUENCE IF EXISTS public.setores_id_seq;
-DROP TABLE IF EXISTS public.setores;
-DROP SEQUENCE IF EXISTS public.servidor_tempo_id_seq;
-DROP TABLE IF EXISTS public.servidor_tempo;
-DROP SEQUENCE IF EXISTS public.produtos_id_seq;
-DROP SEQUENCE IF EXISTS public.produtos_codigo_seq;
-DROP TABLE IF EXISTS public.produtos;
-DROP SEQUENCE IF EXISTS public.produto_composicao_id_seq;
-DROP TABLE IF EXISTS public.produto_composicao;
-DROP SEQUENCE IF EXISTS public.permissoes_id_seq;
-DROP TABLE IF EXISTS public.permissoes;
-DROP SEQUENCE IF EXISTS public.perfis_usuario_id_seq;
-DROP TABLE IF EXISTS public.perfis_usuario;
-DROP SEQUENCE IF EXISTS public.perfil_permissoes_id_seq;
-DROP TABLE IF EXISTS public.perfil_permissoes;
-DROP SEQUENCE IF EXISTS public.pedidos_id_seq;
-DROP TABLE IF EXISTS public.pedidos;
-DROP SEQUENCE IF EXISTS public.pagamentos_venda_id_seq;
-DROP TABLE IF EXISTS public.pagamentos_venda;
-DROP SEQUENCE IF EXISTS public.pagamentos_divida_id_seq;
-DROP TABLE IF EXISTS public.pagamentos_divida;
-DROP SEQUENCE IF EXISTS public.mesas_id_seq;
-DROP TABLE IF EXISTS public.mesas;
-DROP SEQUENCE IF EXISTS public.logs_acesso_id_seq;
-DROP TABLE IF EXISTS public.logs_acesso;
-DROP SEQUENCE IF EXISTS public.locais_mesa_id_seq;
-DROP TABLE IF EXISTS public.locais_mesa;
-DROP SEQUENCE IF EXISTS public.itens_venda_id_seq;
-DROP TABLE IF EXISTS public.itens_venda;
-DROP SEQUENCE IF EXISTS public.itens_pedido_id_seq;
-DROP TABLE IF EXISTS public.itens_pedido;
-DROP SEQUENCE IF EXISTS public.itens_fatura_entrada_id_seq;
-DROP TABLE IF EXISTS public.itens_fatura_entrada;
-DROP SEQUENCE IF EXISTS public.impressoras_id_seq;
-DROP TABLE IF EXISTS public.impressoras;
-DROP SEQUENCE IF EXISTS public.fornecedores_id_seq;
-DROP TABLE IF EXISTS public.fornecedores;
-DROP SEQUENCE IF EXISTS public.formas_pagamento_id_seq;
-DROP TABLE IF EXISTS public.formas_pagamento;
-DROP SEQUENCE IF EXISTS public.faturas_entrada_id_seq;
-DROP TABLE IF EXISTS public.faturas_entrada;
-DROP SEQUENCE IF EXISTS public.familias_id_seq;
-DROP TABLE IF EXISTS public.familias;
-DROP SEQUENCE IF EXISTS public.familia_setores_id_seq;
-DROP TABLE IF EXISTS public.familia_setores;
-DROP SEQUENCE IF EXISTS public.familia_areas_id_seq;
-DROP TABLE IF EXISTS public.familia_areas;
-DROP SEQUENCE IF EXISTS public.empresa_id_seq;
-DROP TABLE IF EXISTS public.empresa;
-DROP SEQUENCE IF EXISTS public.documento_impressora_id_seq;
-DROP TABLE IF EXISTS public.documento_impressora;
-DROP SEQUENCE IF EXISTS public.dividas_id_seq;
-DROP TABLE IF EXISTS public.dividas;
-DROP SEQUENCE IF EXISTS public.despesas_id_seq;
-DROP TABLE IF EXISTS public.despesas;
-DROP SEQUENCE IF EXISTS public.controle_fecho_caixa_id_seq;
-DROP TABLE IF EXISTS public.controle_fecho_caixa;
-DROP SEQUENCE IF EXISTS public.configuracoes_id_seq;
-DROP TABLE IF EXISTS public.configuracoes;
-DROP SEQUENCE IF EXISTS public.conferencias_caixa_id_seq;
-DROP TABLE IF EXISTS public.conferencias_caixa;
-DROP SEQUENCE IF EXISTS public.clientes_id_seq;
-DROP TABLE IF EXISTS public.clientes;
-DROP SEQUENCE IF EXISTS public.cancelamentos_item_pedido_id_seq;
-DROP TABLE IF EXISTS public.cancelamentos_item_pedido;
-DROP SEQUENCE IF EXISTS public.caixas_id_seq;
-DROP TABLE IF EXISTS public.caixas;
-DROP SEQUENCE IF EXISTS public.auditoria_id_seq;
-DROP TABLE IF EXISTS public.auditoria;
-DROP SEQUENCE IF EXISTS public.areas_id_seq;
-DROP TABLE IF EXISTS public.areas;
-DROP SEQUENCE IF EXISTS public.acertos_stock_id_seq;
-DROP TABLE IF EXISTS public.acertos_stock;
-DROP FUNCTION IF EXISTS public.verificar_estoque_disponivel(p_produto_id integer, p_quantidade_desejada integer);
-DROP FUNCTION IF EXISTS public.validar_data_venda();
-DROP FUNCTION IF EXISTS public.validar_codigo_barras(p_codigo character varying);
-DROP FUNCTION IF EXISTS public.usuario_tem_permissao(p_usuario_id integer, p_codigo_permissao character varying);
-DROP FUNCTION IF EXISTS public.trigger_validar_codigo_barras();
-DROP FUNCTION IF EXISTS public.trigger_gerar_codigo_produto();
-DROP FUNCTION IF EXISTS public.registrar_pagamento_divida(p_divida_id integer, p_valor numeric, p_forma_pagamento_id integer, p_observacoes text, p_usuario character varying);
-DROP FUNCTION IF EXISTS public.registrar_logout(p_usuario_id integer, p_terminal_nome character varying, p_ip_address character varying);
-DROP FUNCTION IF EXISTS public.registrar_login_falhado(p_codigo character varying, p_motivo text, p_terminal_nome character varying, p_ip_address character varying);
-DROP FUNCTION IF EXISTS public.registrar_login(p_usuario_id integer, p_terminal_nome character varying, p_ip_address character varying);
-DROP FUNCTION IF EXISTS public.registrar_fecho_caixa(p_data_fecho date, p_usuario_id integer, p_valor_total numeric);
-DROP FUNCTION IF EXISTS public.registrar_conferencia_caixa(p_caixa_id integer, p_contado_cash numeric, p_contado_emola numeric, p_contado_mpesa numeric, p_contado_pos numeric, p_observacoes text);
-DROP FUNCTION IF EXISTS public.registrar_conexao_terminal(p_terminal_id integer, p_usuario_id integer, p_ip_address character varying, p_acao character varying);
-DROP FUNCTION IF EXISTS public.registrar_acerto_stock(p_produto_id integer, p_estoque_novo integer, p_motivo character varying, p_observacao text, p_usuario character varying);
-DROP FUNCTION IF EXISTS public.pode_vender_hoje();
-DROP FUNCTION IF EXISTS public.limpar_servidor_tempo();
-DROP FUNCTION IF EXISTS public.limpar_logs_terminais();
-DROP FUNCTION IF EXISTS public.limpar_logs_antigos(p_dias integer);
-DROP FUNCTION IF EXISTS public.get_proximo_codigo_produto();
-DROP FUNCTION IF EXISTS public.get_produtos_por_setor_e_area(p_setor_id integer, p_area_id integer);
-DROP FUNCTION IF EXISTS public.get_produtos_por_setor(p_setor_id integer);
-DROP FUNCTION IF EXISTS public.get_produtos_por_area(p_area_id integer);
-DROP FUNCTION IF EXISTS public.get_familia_setores(p_familia_id integer);
-DROP FUNCTION IF EXISTS public.get_composicao_produto(p_produto_id integer);
-DROP FUNCTION IF EXISTS public.fechar_caixa(p_caixa_id integer, p_observacoes text);
-DROP FUNCTION IF EXISTS public.familia_pertence_setor(p_familia_id integer, p_setor_id integer);
-DROP FUNCTION IF EXISTS public.calcular_total_pedido(p_pedido_id integer);
-DROP FUNCTION IF EXISTS public.calcular_totais_caixa(p_caixa_id integer);
-DROP FUNCTION IF EXISTS public.buscar_produto_por_codigo_barras(p_codigo_barras character varying);
-DROP FUNCTION IF EXISTS public.buscar_historico_registro(p_tabela character varying, p_registro_id integer);
-DROP FUNCTION IF EXISTS public.buscar_acertos_por_periodo(p_data_inicio timestamp without time zone, p_data_fim timestamp without time zone, p_produto_nome character varying, p_setor_id integer, p_area_id integer);
-DROP FUNCTION IF EXISTS public.audit_trigger_func();
-DROP FUNCTION IF EXISTS public.atualizar_valor_restante();
-DROP FUNCTION IF EXISTS public.atualizar_updated_at_terminais();
-DROP FUNCTION IF EXISTS public.atualizar_updated_at_impressoras();
-DROP FUNCTION IF EXISTS public.atualizar_total_pedido();
-DROP FUNCTION IF EXISTS public.atualizar_estoque_produto();
-DROP FUNCTION IF EXISTS public.atualizar_data_configuracao();
-DROP FUNCTION IF EXISTS public.abrir_caixa(p_terminal character varying, p_usuario character varying);
-DROP FUNCTION IF EXISTS public.abater_estoque_produto(p_produto_id integer, p_quantidade integer);
+DROP DATABASE pdv_system;
 --
+-- TOC entry 5947 (class 1262 OID 16596)
+-- Name: pdv_system; Type: DATABASE; Schema: -; Owner: -
+--
+
+CREATE DATABASE pdv_system WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United States.1252';
+
+
+\unrestrict mkehfr4gb93bhvLfmuGaXgI2EMUldVL0U2bCwtAVJOmde4qwZkEOu1ZadZdXbqg
+\connect pdv_system
+\restrict mkehfr4gb93bhvLfmuGaXgI2EMUldVL0U2bCwtAVJOmde4qwZkEOu1ZadZdXbqg
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 374 (class 1255 OID 82352)
 -- Name: abater_estoque_produto(integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -506,6 +91,7 @@ $$;
 
 
 --
+-- TOC entry 377 (class 1255 OID 57605)
 -- Name: abrir_caixa(character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -543,6 +129,8 @@ $$;
 
 
 --
+-- TOC entry 5948 (class 0 OID 0)
+-- Dependencies: 377
 -- Name: FUNCTION abrir_caixa(p_terminal character varying, p_usuario character varying); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -550,6 +138,7 @@ COMMENT ON FUNCTION public.abrir_caixa(p_terminal character varying, p_usuario c
 
 
 --
+-- TOC entry 357 (class 1255 OID 123644)
 -- Name: atualizar_data_configuracao(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -564,6 +153,7 @@ $$;
 
 
 --
+-- TOC entry 386 (class 1255 OID 107022)
 -- Name: atualizar_estoque_produto(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -583,6 +173,7 @@ $$;
 
 
 --
+-- TOC entry 356 (class 1255 OID 123571)
 -- Name: atualizar_total_pedido(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -611,6 +202,7 @@ $$;
 
 
 --
+-- TOC entry 358 (class 1255 OID 148293)
 -- Name: atualizar_updated_at_impressoras(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -625,6 +217,7 @@ $$;
 
 
 --
+-- TOC entry 375 (class 1255 OID 156603)
 -- Name: atualizar_updated_at_terminais(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -639,6 +232,7 @@ $$;
 
 
 --
+-- TOC entry 353 (class 1255 OID 49493)
 -- Name: atualizar_valor_restante(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -664,6 +258,7 @@ $$;
 
 
 --
+-- TOC entry 394 (class 1255 OID 156887)
 -- Name: audit_trigger_func(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -710,6 +305,7 @@ $$;
 
 
 --
+-- TOC entry 387 (class 1255 OID 107044)
 -- Name: buscar_acertos_por_periodo(timestamp without time zone, timestamp without time zone, character varying, integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -744,6 +340,7 @@ $$;
 
 
 --
+-- TOC entry 400 (class 1255 OID 156953)
 -- Name: buscar_historico_registro(character varying, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -770,6 +367,7 @@ $$;
 
 
 --
+-- TOC entry 391 (class 1255 OID 156619)
 -- Name: buscar_produto_por_codigo_barras(character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -798,6 +396,8 @@ $$;
 
 
 --
+-- TOC entry 5949 (class 0 OID 0)
+-- Dependencies: 391
 -- Name: FUNCTION buscar_produto_por_codigo_barras(p_codigo_barras character varying); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -805,6 +405,7 @@ COMMENT ON FUNCTION public.buscar_produto_por_codigo_barras(p_codigo_barras char
 
 
 --
+-- TOC entry 384 (class 1255 OID 57604)
 -- Name: calcular_totais_caixa(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1058,6 +659,8 @@ $$;
 
 
 --
+-- TOC entry 5950 (class 0 OID 0)
+-- Dependencies: 384
 -- Name: FUNCTION calcular_totais_caixa(p_caixa_id integer); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1065,6 +668,7 @@ COMMENT ON FUNCTION public.calcular_totais_caixa(p_caixa_id integer) IS 'Calcula
 
 
 --
+-- TOC entry 355 (class 1255 OID 123570)
 -- Name: calcular_total_pedido(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1085,6 +689,7 @@ $$;
 
 
 --
+-- TOC entry 379 (class 1255 OID 82263)
 -- Name: familia_pertence_setor(integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1103,6 +708,7 @@ $$;
 
 
 --
+-- TOC entry 378 (class 1255 OID 57606)
 -- Name: fechar_caixa(integer, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1153,6 +759,8 @@ $$;
 
 
 --
+-- TOC entry 5951 (class 0 OID 0)
+-- Dependencies: 378
 -- Name: FUNCTION fechar_caixa(p_caixa_id integer, p_observacoes text); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1160,6 +768,7 @@ COMMENT ON FUNCTION public.fechar_caixa(p_caixa_id integer, p_observacoes text) 
 
 
 --
+-- TOC entry 360 (class 1255 OID 82350)
 -- Name: get_composicao_produto(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1184,6 +793,7 @@ $$;
 
 
 --
+-- TOC entry 376 (class 1255 OID 82262)
 -- Name: get_familia_setores(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1203,6 +813,7 @@ $$;
 
 
 --
+-- TOC entry 381 (class 1255 OID 82297)
 -- Name: get_produtos_por_area(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1221,6 +832,7 @@ $$;
 
 
 --
+-- TOC entry 380 (class 1255 OID 82296)
 -- Name: get_produtos_por_setor(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1239,6 +851,7 @@ $$;
 
 
 --
+-- TOC entry 382 (class 1255 OID 82298)
 -- Name: get_produtos_por_setor_e_area(integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1258,6 +871,7 @@ $$;
 
 
 --
+-- TOC entry 383 (class 1255 OID 82306)
 -- Name: get_proximo_codigo_produto(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1271,6 +885,7 @@ $$;
 
 
 --
+-- TOC entry 399 (class 1255 OID 156952)
 -- Name: limpar_logs_antigos(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1295,6 +910,7 @@ $$;
 
 
 --
+-- TOC entry 390 (class 1255 OID 156616)
 -- Name: limpar_logs_terminais(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1314,6 +930,7 @@ $$;
 
 
 --
+-- TOC entry 397 (class 1255 OID 156696)
 -- Name: limpar_servidor_tempo(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1333,6 +950,7 @@ $$;
 
 
 --
+-- TOC entry 403 (class 1255 OID 156690)
 -- Name: pode_vender_hoje(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1382,6 +1000,8 @@ $$;
 
 
 --
+-- TOC entry 5952 (class 0 OID 0)
+-- Dependencies: 403
 -- Name: FUNCTION pode_vender_hoje(); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1389,6 +1009,7 @@ COMMENT ON FUNCTION public.pode_vender_hoje() IS 'Verifica se a data do sistema 
 
 
 --
+-- TOC entry 388 (class 1255 OID 107045)
 -- Name: registrar_acerto_stock(integer, integer, character varying, text, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1439,6 +1060,7 @@ $$;
 
 
 --
+-- TOC entry 389 (class 1255 OID 156605)
 -- Name: registrar_conexao_terminal(integer, integer, character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1460,6 +1082,7 @@ $$;
 
 
 --
+-- TOC entry 385 (class 1255 OID 65825)
 -- Name: registrar_conferencia_caixa(integer, numeric, numeric, numeric, numeric, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1541,6 +1164,8 @@ $$;
 
 
 --
+-- TOC entry 5953 (class 0 OID 0)
+-- Dependencies: 385
 -- Name: FUNCTION registrar_conferencia_caixa(p_caixa_id integer, p_contado_cash numeric, p_contado_emola numeric, p_contado_mpesa numeric, p_contado_pos numeric, p_observacoes text); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1548,6 +1173,7 @@ COMMENT ON FUNCTION public.registrar_conferencia_caixa(p_caixa_id integer, p_con
 
 
 --
+-- TOC entry 402 (class 1255 OID 156689)
 -- Name: registrar_fecho_caixa(date, integer, numeric); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1588,6 +1214,7 @@ $$;
 
 
 --
+-- TOC entry 395 (class 1255 OID 156949)
 -- Name: registrar_login(integer, character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1602,6 +1229,7 @@ $$;
 
 
 --
+-- TOC entry 398 (class 1255 OID 156951)
 -- Name: registrar_login_falhado(character varying, text, character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1621,6 +1249,7 @@ $$;
 
 
 --
+-- TOC entry 396 (class 1255 OID 156950)
 -- Name: registrar_logout(integer, character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1635,6 +1264,7 @@ $$;
 
 
 --
+-- TOC entry 373 (class 1255 OID 49495)
 -- Name: registrar_pagamento_divida(integer, numeric, integer, text, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1674,6 +1304,7 @@ $$;
 
 
 --
+-- TOC entry 359 (class 1255 OID 82353)
 -- Name: trigger_gerar_codigo_produto(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1691,6 +1322,7 @@ $$;
 
 
 --
+-- TOC entry 393 (class 1255 OID 156621)
 -- Name: trigger_validar_codigo_barras(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1732,6 +1364,7 @@ $$;
 
 
 --
+-- TOC entry 354 (class 1255 OID 123416)
 -- Name: usuario_tem_permissao(integer, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1758,6 +1391,7 @@ $$;
 
 
 --
+-- TOC entry 392 (class 1255 OID 156620)
 -- Name: validar_codigo_barras(character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1791,6 +1425,8 @@ $_$;
 
 
 --
+-- TOC entry 5954 (class 0 OID 0)
+-- Dependencies: 392
 -- Name: FUNCTION validar_codigo_barras(p_codigo character varying); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1798,6 +1434,7 @@ COMMENT ON FUNCTION public.validar_codigo_barras(p_codigo character varying) IS 
 
 
 --
+-- TOC entry 401 (class 1255 OID 156687)
 -- Name: validar_data_venda(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1844,6 +1481,8 @@ $$;
 
 
 --
+-- TOC entry 5955 (class 0 OID 0)
+-- Dependencies: 401
 -- Name: FUNCTION validar_data_venda(); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1851,6 +1490,7 @@ COMMENT ON FUNCTION public.validar_data_venda() IS 'Trigger que impede vendas co
 
 
 --
+-- TOC entry 365 (class 1255 OID 82351)
 -- Name: verificar_estoque_disponivel(integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1919,6 +1559,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- TOC entry 278 (class 1259 OID 106985)
 -- Name: acertos_stock; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1940,6 +1581,7 @@ CREATE TABLE public.acertos_stock (
 
 
 --
+-- TOC entry 277 (class 1259 OID 106984)
 -- Name: acertos_stock_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -1953,6 +1595,8 @@ CREATE SEQUENCE public.acertos_stock_id_seq
 
 
 --
+-- TOC entry 5956 (class 0 OID 0)
+-- Dependencies: 277
 -- Name: acertos_stock_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -1960,6 +1604,7 @@ ALTER SEQUENCE public.acertos_stock_id_seq OWNED BY public.acertos_stock.id;
 
 
 --
+-- TOC entry 235 (class 1259 OID 24834)
 -- Name: areas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1974,6 +1619,8 @@ CREATE TABLE public.areas (
 
 
 --
+-- TOC entry 5957 (class 0 OID 0)
+-- Dependencies: 235
 -- Name: COLUMN areas.impressora_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1981,6 +1628,7 @@ COMMENT ON COLUMN public.areas.impressora_id IS 'Impressora padrão para esta á
 
 
 --
+-- TOC entry 234 (class 1259 OID 24833)
 -- Name: areas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -1994,6 +1642,8 @@ CREATE SEQUENCE public.areas_id_seq
 
 
 --
+-- TOC entry 5958 (class 0 OID 0)
+-- Dependencies: 234
 -- Name: areas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2001,6 +1651,7 @@ ALTER SEQUENCE public.areas_id_seq OWNED BY public.areas.id;
 
 
 --
+-- TOC entry 344 (class 1259 OID 156865)
 -- Name: auditoria; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2020,6 +1671,8 @@ CREATE TABLE public.auditoria (
 
 
 --
+-- TOC entry 5959 (class 0 OID 0)
+-- Dependencies: 344
 -- Name: TABLE auditoria; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2027,6 +1680,8 @@ COMMENT ON TABLE public.auditoria IS 'Registro de todas as operações do sistem
 
 
 --
+-- TOC entry 5960 (class 0 OID 0)
+-- Dependencies: 344
 -- Name: COLUMN auditoria.dados_anteriores; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2034,6 +1689,8 @@ COMMENT ON COLUMN public.auditoria.dados_anteriores IS 'Estado do registro antes
 
 
 --
+-- TOC entry 5961 (class 0 OID 0)
+-- Dependencies: 344
 -- Name: COLUMN auditoria.dados_novos; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2041,6 +1698,7 @@ COMMENT ON COLUMN public.auditoria.dados_novos IS 'Estado do registro depois da 
 
 
 --
+-- TOC entry 343 (class 1259 OID 156864)
 -- Name: auditoria_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2054,6 +1712,8 @@ CREATE SEQUENCE public.auditoria_id_seq
 
 
 --
+-- TOC entry 5962 (class 0 OID 0)
+-- Dependencies: 343
 -- Name: auditoria_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2061,6 +1721,7 @@ ALTER SEQUENCE public.auditoria_id_seq OWNED BY public.auditoria.id;
 
 
 --
+-- TOC entry 255 (class 1259 OID 57566)
 -- Name: caixas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2097,6 +1758,8 @@ CREATE TABLE public.caixas (
 
 
 --
+-- TOC entry 5963 (class 0 OID 0)
+-- Dependencies: 255
 -- Name: TABLE caixas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2104,6 +1767,8 @@ COMMENT ON TABLE public.caixas IS 'Controle de abertura e fechamento de caixa co
 
 
 --
+-- TOC entry 5964 (class 0 OID 0)
+-- Dependencies: 255
 -- Name: COLUMN caixas.total_vendas_pagas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2111,6 +1776,8 @@ COMMENT ON COLUMN public.caixas.total_vendas_pagas IS 'Soma de vendas pagas (tip
 
 
 --
+-- TOC entry 5965 (class 0 OID 0)
+-- Dependencies: 255
 -- Name: COLUMN caixas.total_cash; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2118,6 +1785,8 @@ COMMENT ON COLUMN public.caixas.total_cash IS 'Soma de TODAS transações em CAS
 
 
 --
+-- TOC entry 5966 (class 0 OID 0)
+-- Dependencies: 255
 -- Name: COLUMN caixas.total_vendas_credito; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2125,6 +1794,8 @@ COMMENT ON COLUMN public.caixas.total_vendas_credito IS 'Soma de vendas a crédi
 
 
 --
+-- TOC entry 5967 (class 0 OID 0)
+-- Dependencies: 255
 -- Name: COLUMN caixas.saldo_final; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2132,6 +1803,7 @@ COMMENT ON COLUMN public.caixas.saldo_final IS 'Dinheiro real em caixa = (vendas
 
 
 --
+-- TOC entry 254 (class 1259 OID 57565)
 -- Name: caixas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2145,6 +1817,8 @@ CREATE SEQUENCE public.caixas_id_seq
 
 
 --
+-- TOC entry 5968 (class 0 OID 0)
+-- Dependencies: 254
 -- Name: caixas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2152,6 +1826,7 @@ ALTER SEQUENCE public.caixas_id_seq OWNED BY public.caixas.id;
 
 
 --
+-- TOC entry 319 (class 1259 OID 123577)
 -- Name: cancelamentos_item_pedido; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2172,6 +1847,8 @@ CREATE TABLE public.cancelamentos_item_pedido (
 
 
 --
+-- TOC entry 5969 (class 0 OID 0)
+-- Dependencies: 319
 -- Name: TABLE cancelamentos_item_pedido; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2179,6 +1856,8 @@ COMMENT ON TABLE public.cancelamentos_item_pedido IS 'Log de itens cancelados de
 
 
 --
+-- TOC entry 5970 (class 0 OID 0)
+-- Dependencies: 319
 -- Name: COLUMN cancelamentos_item_pedido.justificativa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2186,6 +1865,7 @@ COMMENT ON COLUMN public.cancelamentos_item_pedido.justificativa IS 'Motivo do c
 
 
 --
+-- TOC entry 318 (class 1259 OID 123576)
 -- Name: cancelamentos_item_pedido_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2199,6 +1879,8 @@ CREATE SEQUENCE public.cancelamentos_item_pedido_id_seq
 
 
 --
+-- TOC entry 5971 (class 0 OID 0)
+-- Dependencies: 318
 -- Name: cancelamentos_item_pedido_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2206,6 +1888,7 @@ ALTER SEQUENCE public.cancelamentos_item_pedido_id_seq OWNED BY public.cancelame
 
 
 --
+-- TOC entry 243 (class 1259 OID 49371)
 -- Name: clientes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2227,6 +1910,8 @@ CREATE TABLE public.clientes (
 
 
 --
+-- TOC entry 5972 (class 0 OID 0)
+-- Dependencies: 243
 -- Name: TABLE clientes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2234,6 +1919,7 @@ COMMENT ON TABLE public.clientes IS 'Cadastro de clientes';
 
 
 --
+-- TOC entry 242 (class 1259 OID 49370)
 -- Name: clientes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2247,6 +1933,8 @@ CREATE SEQUENCE public.clientes_id_seq
 
 
 --
+-- TOC entry 5973 (class 0 OID 0)
+-- Dependencies: 242
 -- Name: clientes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2254,6 +1942,7 @@ ALTER SEQUENCE public.clientes_id_seq OWNED BY public.clientes.id;
 
 
 --
+-- TOC entry 257 (class 1259 OID 65792)
 -- Name: conferencias_caixa; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2282,6 +1971,8 @@ CREATE TABLE public.conferencias_caixa (
 
 
 --
+-- TOC entry 5974 (class 0 OID 0)
+-- Dependencies: 257
 -- Name: TABLE conferencias_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2289,6 +1980,7 @@ COMMENT ON TABLE public.conferencias_caixa IS 'Registra a conferência manual do
 
 
 --
+-- TOC entry 256 (class 1259 OID 65791)
 -- Name: conferencias_caixa_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2302,6 +1994,8 @@ CREATE SEQUENCE public.conferencias_caixa_id_seq
 
 
 --
+-- TOC entry 5975 (class 0 OID 0)
+-- Dependencies: 256
 -- Name: conferencias_caixa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2309,6 +2003,7 @@ ALTER SEQUENCE public.conferencias_caixa_id_seq OWNED BY public.conferencias_cai
 
 
 --
+-- TOC entry 322 (class 1259 OID 123626)
 -- Name: configuracoes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2325,6 +2020,8 @@ CREATE TABLE public.configuracoes (
 
 
 --
+-- TOC entry 5976 (class 0 OID 0)
+-- Dependencies: 322
 -- Name: TABLE configuracoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2332,6 +2029,8 @@ COMMENT ON TABLE public.configuracoes IS 'Armazena configurações globais do si
 
 
 --
+-- TOC entry 5977 (class 0 OID 0)
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.chave; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2339,6 +2038,8 @@ COMMENT ON COLUMN public.configuracoes.chave IS 'Chave única da configuração'
 
 
 --
+-- TOC entry 5978 (class 0 OID 0)
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.valor; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2346,6 +2047,8 @@ COMMENT ON COLUMN public.configuracoes.valor IS 'Valor da configuração (armaze
 
 
 --
+-- TOC entry 5979 (class 0 OID 0)
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.tipo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2353,6 +2056,8 @@ COMMENT ON COLUMN public.configuracoes.tipo IS 'Tipo do valor: string, boolean, 
 
 
 --
+-- TOC entry 5980 (class 0 OID 0)
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.descricao; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2360,6 +2065,8 @@ COMMENT ON COLUMN public.configuracoes.descricao IS 'Descrição da configuraç�
 
 
 --
+-- TOC entry 5981 (class 0 OID 0)
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.categoria; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2367,6 +2074,7 @@ COMMENT ON COLUMN public.configuracoes.categoria IS 'Categoria da configuração
 
 
 --
+-- TOC entry 321 (class 1259 OID 123625)
 -- Name: configuracoes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2380,6 +2088,8 @@ CREATE SEQUENCE public.configuracoes_id_seq
 
 
 --
+-- TOC entry 5982 (class 0 OID 0)
+-- Dependencies: 321
 -- Name: configuracoes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2387,6 +2097,7 @@ ALTER SEQUENCE public.configuracoes_id_seq OWNED BY public.configuracoes.id;
 
 
 --
+-- TOC entry 341 (class 1259 OID 156671)
 -- Name: controle_fecho_caixa; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2400,6 +2111,8 @@ CREATE TABLE public.controle_fecho_caixa (
 
 
 --
+-- TOC entry 5983 (class 0 OID 0)
+-- Dependencies: 341
 -- Name: TABLE controle_fecho_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2407,6 +2120,7 @@ COMMENT ON TABLE public.controle_fecho_caixa IS 'Registro de fechos de caixa par
 
 
 --
+-- TOC entry 340 (class 1259 OID 156670)
 -- Name: controle_fecho_caixa_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2420,6 +2134,8 @@ CREATE SEQUENCE public.controle_fecho_caixa_id_seq
 
 
 --
+-- TOC entry 5984 (class 0 OID 0)
+-- Dependencies: 340
 -- Name: controle_fecho_caixa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2427,6 +2143,7 @@ ALTER SEQUENCE public.controle_fecho_caixa_id_seq OWNED BY public.controle_fecho
 
 
 --
+-- TOC entry 249 (class 1259 OID 49446)
 -- Name: despesas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2444,6 +2161,8 @@ CREATE TABLE public.despesas (
 
 
 --
+-- TOC entry 5985 (class 0 OID 0)
+-- Dependencies: 249
 -- Name: TABLE despesas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2451,6 +2170,7 @@ COMMENT ON TABLE public.despesas IS 'Registro de despesas do estabelecimento';
 
 
 --
+-- TOC entry 248 (class 1259 OID 49445)
 -- Name: despesas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2464,6 +2184,8 @@ CREATE SEQUENCE public.despesas_id_seq
 
 
 --
+-- TOC entry 5986 (class 0 OID 0)
+-- Dependencies: 248
 -- Name: despesas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2471,6 +2193,7 @@ ALTER SEQUENCE public.despesas_id_seq OWNED BY public.despesas.id;
 
 
 --
+-- TOC entry 245 (class 1259 OID 49388)
 -- Name: dividas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2490,6 +2213,8 @@ CREATE TABLE public.dividas (
 
 
 --
+-- TOC entry 5987 (class 0 OID 0)
+-- Dependencies: 245
 -- Name: TABLE dividas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2497,6 +2222,8 @@ COMMENT ON TABLE public.dividas IS 'Registro de dívidas de clientes';
 
 
 --
+-- TOC entry 5988 (class 0 OID 0)
+-- Dependencies: 245
 -- Name: COLUMN dividas.status; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2504,6 +2231,7 @@ COMMENT ON COLUMN public.dividas.status IS 'PENDENTE: Não pagou nada, PARCIAL: 
 
 
 --
+-- TOC entry 244 (class 1259 OID 49387)
 -- Name: dividas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2517,6 +2245,8 @@ CREATE SEQUENCE public.dividas_id_seq
 
 
 --
+-- TOC entry 5989 (class 0 OID 0)
+-- Dependencies: 244
 -- Name: dividas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2524,6 +2254,7 @@ ALTER SEQUENCE public.dividas_id_seq OWNED BY public.dividas.id;
 
 
 --
+-- TOC entry 328 (class 1259 OID 148261)
 -- Name: documento_impressora; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2537,6 +2268,8 @@ CREATE TABLE public.documento_impressora (
 
 
 --
+-- TOC entry 5990 (class 0 OID 0)
+-- Dependencies: 328
 -- Name: TABLE documento_impressora; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2544,6 +2277,7 @@ COMMENT ON TABLE public.documento_impressora IS 'Mapeamento de documentos para i
 
 
 --
+-- TOC entry 327 (class 1259 OID 148260)
 -- Name: documento_impressora_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2557,6 +2291,8 @@ CREATE SEQUENCE public.documento_impressora_id_seq
 
 
 --
+-- TOC entry 5991 (class 0 OID 0)
+-- Dependencies: 327
 -- Name: documento_impressora_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2564,6 +2300,7 @@ ALTER SEQUENCE public.documento_impressora_id_seq OWNED BY public.documento_impr
 
 
 --
+-- TOC entry 229 (class 1259 OID 24794)
 -- Name: empresa; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2583,6 +2320,7 @@ CREATE TABLE public.empresa (
 
 
 --
+-- TOC entry 228 (class 1259 OID 24793)
 -- Name: empresa_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2596,6 +2334,8 @@ CREATE SEQUENCE public.empresa_id_seq
 
 
 --
+-- TOC entry 5992 (class 0 OID 0)
+-- Dependencies: 228
 -- Name: empresa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2603,6 +2343,7 @@ ALTER SEQUENCE public.empresa_id_seq OWNED BY public.empresa.id;
 
 
 --
+-- TOC entry 304 (class 1259 OID 123423)
 -- Name: familia_areas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2615,6 +2356,8 @@ CREATE TABLE public.familia_areas (
 
 
 --
+-- TOC entry 5993 (class 0 OID 0)
+-- Dependencies: 304
 -- Name: TABLE familia_areas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2622,6 +2365,8 @@ COMMENT ON TABLE public.familia_areas IS 'Relacionamento many-to-many entre fam�
 
 
 --
+-- TOC entry 5994 (class 0 OID 0)
+-- Dependencies: 304
 -- Name: COLUMN familia_areas.familia_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2629,6 +2374,8 @@ COMMENT ON COLUMN public.familia_areas.familia_id IS 'ID da família';
 
 
 --
+-- TOC entry 5995 (class 0 OID 0)
+-- Dependencies: 304
 -- Name: COLUMN familia_areas.area_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2636,6 +2383,7 @@ COMMENT ON COLUMN public.familia_areas.area_id IS 'ID da área';
 
 
 --
+-- TOC entry 303 (class 1259 OID 123422)
 -- Name: familia_areas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2649,6 +2397,8 @@ CREATE SEQUENCE public.familia_areas_id_seq
 
 
 --
+-- TOC entry 5996 (class 0 OID 0)
+-- Dependencies: 303
 -- Name: familia_areas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2656,6 +2406,7 @@ ALTER SEQUENCE public.familia_areas_id_seq OWNED BY public.familia_areas.id;
 
 
 --
+-- TOC entry 260 (class 1259 OID 82228)
 -- Name: familia_setores; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2668,6 +2419,7 @@ CREATE TABLE public.familia_setores (
 
 
 --
+-- TOC entry 259 (class 1259 OID 82227)
 -- Name: familia_setores_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2681,6 +2433,8 @@ CREATE SEQUENCE public.familia_setores_id_seq
 
 
 --
+-- TOC entry 5997 (class 0 OID 0)
+-- Dependencies: 259
 -- Name: familia_setores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2688,6 +2442,7 @@ ALTER SEQUENCE public.familia_setores_id_seq OWNED BY public.familia_setores.id;
 
 
 --
+-- TOC entry 220 (class 1259 OID 16598)
 -- Name: familias; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2701,6 +2456,7 @@ CREATE TABLE public.familias (
 
 
 --
+-- TOC entry 219 (class 1259 OID 16597)
 -- Name: familias_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2714,6 +2470,8 @@ CREATE SEQUENCE public.familias_id_seq
 
 
 --
+-- TOC entry 5998 (class 0 OID 0)
+-- Dependencies: 219
 -- Name: familias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2721,6 +2479,7 @@ ALTER SEQUENCE public.familias_id_seq OWNED BY public.familias.id;
 
 
 --
+-- TOC entry 286 (class 1259 OID 115177)
 -- Name: faturas_entrada; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2738,6 +2497,8 @@ CREATE TABLE public.faturas_entrada (
 
 
 --
+-- TOC entry 5999 (class 0 OID 0)
+-- Dependencies: 286
 -- Name: TABLE faturas_entrada; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2745,6 +2506,8 @@ COMMENT ON TABLE public.faturas_entrada IS 'Registro de faturas de compra de for
 
 
 --
+-- TOC entry 6000 (class 0 OID 0)
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.fornecedor_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2752,6 +2515,8 @@ COMMENT ON COLUMN public.faturas_entrada.fornecedor_id IS 'Fornecedor da fatura'
 
 
 --
+-- TOC entry 6001 (class 0 OID 0)
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.numero_fatura; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2759,6 +2524,8 @@ COMMENT ON COLUMN public.faturas_entrada.numero_fatura IS 'Número da fatura do 
 
 
 --
+-- TOC entry 6002 (class 0 OID 0)
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.data_fatura; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2766,6 +2533,8 @@ COMMENT ON COLUMN public.faturas_entrada.data_fatura IS 'Data de emissão da fat
 
 
 --
+-- TOC entry 6003 (class 0 OID 0)
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.total; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2773,6 +2542,7 @@ COMMENT ON COLUMN public.faturas_entrada.total IS 'Valor total da fatura';
 
 
 --
+-- TOC entry 285 (class 1259 OID 115176)
 -- Name: faturas_entrada_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2786,6 +2556,8 @@ CREATE SEQUENCE public.faturas_entrada_id_seq
 
 
 --
+-- TOC entry 6004 (class 0 OID 0)
+-- Dependencies: 285
 -- Name: faturas_entrada_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2793,6 +2565,7 @@ ALTER SEQUENCE public.faturas_entrada_id_seq OWNED BY public.faturas_entrada.id;
 
 
 --
+-- TOC entry 231 (class 1259 OID 24808)
 -- Name: formas_pagamento; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2806,6 +2579,7 @@ CREATE TABLE public.formas_pagamento (
 
 
 --
+-- TOC entry 230 (class 1259 OID 24807)
 -- Name: formas_pagamento_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2819,6 +2593,8 @@ CREATE SEQUENCE public.formas_pagamento_id_seq
 
 
 --
+-- TOC entry 6005 (class 0 OID 0)
+-- Dependencies: 230
 -- Name: formas_pagamento_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2826,6 +2602,7 @@ ALTER SEQUENCE public.formas_pagamento_id_seq OWNED BY public.formas_pagamento.i
 
 
 --
+-- TOC entry 284 (class 1259 OID 107052)
 -- Name: fornecedores; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2848,6 +2625,8 @@ CREATE TABLE public.fornecedores (
 
 
 --
+-- TOC entry 6006 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: TABLE fornecedores; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2855,6 +2634,8 @@ COMMENT ON TABLE public.fornecedores IS 'Cadastro de fornecedores';
 
 
 --
+-- TOC entry 6007 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.nome; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2862,6 +2643,8 @@ COMMENT ON COLUMN public.fornecedores.nome IS 'Nome do fornecedor';
 
 
 --
+-- TOC entry 6008 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.nif; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2869,6 +2652,8 @@ COMMENT ON COLUMN public.fornecedores.nif IS 'Número de Identificação Fiscal'
 
 
 --
+-- TOC entry 6009 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.email; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2876,6 +2661,8 @@ COMMENT ON COLUMN public.fornecedores.email IS 'Email de contacto';
 
 
 --
+-- TOC entry 6010 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.telefone; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2883,6 +2670,8 @@ COMMENT ON COLUMN public.fornecedores.telefone IS 'Telefone de contacto';
 
 
 --
+-- TOC entry 6011 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.morada; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2890,6 +2679,8 @@ COMMENT ON COLUMN public.fornecedores.morada IS 'Morada completa';
 
 
 --
+-- TOC entry 6012 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.cidade; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2897,6 +2688,8 @@ COMMENT ON COLUMN public.fornecedores.cidade IS 'Cidade';
 
 
 --
+-- TOC entry 6013 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.codigo_postal; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2904,6 +2697,8 @@ COMMENT ON COLUMN public.fornecedores.codigo_postal IS 'Código postal';
 
 
 --
+-- TOC entry 6014 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.pais; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2911,6 +2706,8 @@ COMMENT ON COLUMN public.fornecedores.pais IS 'País';
 
 
 --
+-- TOC entry 6015 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.contacto; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2918,6 +2715,8 @@ COMMENT ON COLUMN public.fornecedores.contacto IS 'Nome da pessoa de contacto';
 
 
 --
+-- TOC entry 6016 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.observacoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2925,6 +2724,8 @@ COMMENT ON COLUMN public.fornecedores.observacoes IS 'Observações gerais';
 
 
 --
+-- TOC entry 6017 (class 0 OID 0)
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.ativo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2932,6 +2733,7 @@ COMMENT ON COLUMN public.fornecedores.ativo IS 'Indica se o fornecedor está ati
 
 
 --
+-- TOC entry 283 (class 1259 OID 107051)
 -- Name: fornecedores_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2945,6 +2747,8 @@ CREATE SEQUENCE public.fornecedores_id_seq
 
 
 --
+-- TOC entry 6018 (class 0 OID 0)
+-- Dependencies: 283
 -- Name: fornecedores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2952,6 +2756,7 @@ ALTER SEQUENCE public.fornecedores_id_seq OWNED BY public.fornecedores.id;
 
 
 --
+-- TOC entry 324 (class 1259 OID 148227)
 -- Name: impressoras; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2969,6 +2774,8 @@ CREATE TABLE public.impressoras (
 
 
 --
+-- TOC entry 6019 (class 0 OID 0)
+-- Dependencies: 324
 -- Name: TABLE impressoras; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2976,6 +2783,8 @@ COMMENT ON TABLE public.impressoras IS 'Cadastro de impressoras do sistema';
 
 
 --
+-- TOC entry 6020 (class 0 OID 0)
+-- Dependencies: 324
 -- Name: COLUMN impressoras.caminho_rede; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2983,6 +2792,7 @@ COMMENT ON COLUMN public.impressoras.caminho_rede IS 'Caminho de rede para impre
 
 
 --
+-- TOC entry 323 (class 1259 OID 148226)
 -- Name: impressoras_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -2996,6 +2806,8 @@ CREATE SEQUENCE public.impressoras_id_seq
 
 
 --
+-- TOC entry 6021 (class 0 OID 0)
+-- Dependencies: 323
 -- Name: impressoras_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3003,6 +2815,7 @@ ALTER SEQUENCE public.impressoras_id_seq OWNED BY public.impressoras.id;
 
 
 --
+-- TOC entry 288 (class 1259 OID 115200)
 -- Name: itens_fatura_entrada; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3021,6 +2834,8 @@ CREATE TABLE public.itens_fatura_entrada (
 
 
 --
+-- TOC entry 6022 (class 0 OID 0)
+-- Dependencies: 288
 -- Name: TABLE itens_fatura_entrada; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3028,6 +2843,8 @@ COMMENT ON TABLE public.itens_fatura_entrada IS 'Itens de cada fatura de compra'
 
 
 --
+-- TOC entry 6023 (class 0 OID 0)
+-- Dependencies: 288
 -- Name: COLUMN itens_fatura_entrada.quantidade; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3035,6 +2852,8 @@ COMMENT ON COLUMN public.itens_fatura_entrada.quantidade IS 'Quantidade comprada
 
 
 --
+-- TOC entry 6024 (class 0 OID 0)
+-- Dependencies: 288
 -- Name: COLUMN itens_fatura_entrada.preco_unitario; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3042,6 +2861,8 @@ COMMENT ON COLUMN public.itens_fatura_entrada.preco_unitario IS 'Preço de compr
 
 
 --
+-- TOC entry 6025 (class 0 OID 0)
+-- Dependencies: 288
 -- Name: COLUMN itens_fatura_entrada.subtotal; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3049,6 +2870,7 @@ COMMENT ON COLUMN public.itens_fatura_entrada.subtotal IS 'Subtotal do item (qua
 
 
 --
+-- TOC entry 287 (class 1259 OID 115199)
 -- Name: itens_fatura_entrada_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3062,6 +2884,8 @@ CREATE SEQUENCE public.itens_fatura_entrada_id_seq
 
 
 --
+-- TOC entry 6026 (class 0 OID 0)
+-- Dependencies: 287
 -- Name: itens_fatura_entrada_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3069,6 +2893,7 @@ ALTER SEQUENCE public.itens_fatura_entrada_id_seq OWNED BY public.itens_fatura_e
 
 
 --
+-- TOC entry 314 (class 1259 OID 123523)
 -- Name: itens_pedido; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3086,6 +2911,8 @@ CREATE TABLE public.itens_pedido (
 
 
 --
+-- TOC entry 6027 (class 0 OID 0)
+-- Dependencies: 314
 -- Name: TABLE itens_pedido; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3093,6 +2920,7 @@ COMMENT ON TABLE public.itens_pedido IS 'Itens de cada pedido';
 
 
 --
+-- TOC entry 313 (class 1259 OID 123522)
 -- Name: itens_pedido_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3106,6 +2934,8 @@ CREATE SEQUENCE public.itens_pedido_id_seq
 
 
 --
+-- TOC entry 6028 (class 0 OID 0)
+-- Dependencies: 313
 -- Name: itens_pedido_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3113,6 +2943,7 @@ ALTER SEQUENCE public.itens_pedido_id_seq OWNED BY public.itens_pedido.id;
 
 
 --
+-- TOC entry 226 (class 1259 OID 16646)
 -- Name: itens_venda; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3127,6 +2958,7 @@ CREATE TABLE public.itens_venda (
 
 
 --
+-- TOC entry 225 (class 1259 OID 16645)
 -- Name: itens_venda_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3140,6 +2972,8 @@ CREATE SEQUENCE public.itens_venda_id_seq
 
 
 --
+-- TOC entry 6029 (class 0 OID 0)
+-- Dependencies: 225
 -- Name: itens_venda_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3147,6 +2981,7 @@ ALTER SEQUENCE public.itens_venda_id_seq OWNED BY public.itens_venda.id;
 
 
 --
+-- TOC entry 308 (class 1259 OID 123458)
 -- Name: locais_mesa; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3161,6 +2996,8 @@ CREATE TABLE public.locais_mesa (
 
 
 --
+-- TOC entry 6030 (class 0 OID 0)
+-- Dependencies: 308
 -- Name: TABLE locais_mesa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3168,6 +3005,7 @@ COMMENT ON TABLE public.locais_mesa IS 'Locais onde as mesas estão localizadas 
 
 
 --
+-- TOC entry 307 (class 1259 OID 123457)
 -- Name: locais_mesa_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3181,6 +3019,8 @@ CREATE SEQUENCE public.locais_mesa_id_seq
 
 
 --
+-- TOC entry 6031 (class 0 OID 0)
+-- Dependencies: 307
 -- Name: locais_mesa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3188,6 +3028,7 @@ ALTER SEQUENCE public.locais_mesa_id_seq OWNED BY public.locais_mesa.id;
 
 
 --
+-- TOC entry 346 (class 1259 OID 156899)
 -- Name: logs_acesso; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3204,6 +3045,8 @@ CREATE TABLE public.logs_acesso (
 
 
 --
+-- TOC entry 6032 (class 0 OID 0)
+-- Dependencies: 346
 -- Name: TABLE logs_acesso; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3211,6 +3054,7 @@ COMMENT ON TABLE public.logs_acesso IS 'Registro de logins, logouts e tentativas
 
 
 --
+-- TOC entry 345 (class 1259 OID 156898)
 -- Name: logs_acesso_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3224,6 +3068,8 @@ CREATE SEQUENCE public.logs_acesso_id_seq
 
 
 --
+-- TOC entry 6033 (class 0 OID 0)
+-- Dependencies: 345
 -- Name: logs_acesso_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3231,6 +3077,7 @@ ALTER SEQUENCE public.logs_acesso_id_seq OWNED BY public.logs_acesso.id;
 
 
 --
+-- TOC entry 310 (class 1259 OID 123474)
 -- Name: mesas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3245,6 +3092,8 @@ CREATE TABLE public.mesas (
 
 
 --
+-- TOC entry 6034 (class 0 OID 0)
+-- Dependencies: 310
 -- Name: TABLE mesas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3252,6 +3101,7 @@ COMMENT ON TABLE public.mesas IS 'Mesas do restaurante';
 
 
 --
+-- TOC entry 309 (class 1259 OID 123473)
 -- Name: mesas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3265,6 +3115,8 @@ CREATE SEQUENCE public.mesas_id_seq
 
 
 --
+-- TOC entry 6035 (class 0 OID 0)
+-- Dependencies: 309
 -- Name: mesas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3272,6 +3124,7 @@ ALTER SEQUENCE public.mesas_id_seq OWNED BY public.mesas.id;
 
 
 --
+-- TOC entry 247 (class 1259 OID 49420)
 -- Name: pagamentos_divida; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3288,6 +3141,8 @@ CREATE TABLE public.pagamentos_divida (
 
 
 --
+-- TOC entry 6036 (class 0 OID 0)
+-- Dependencies: 247
 -- Name: TABLE pagamentos_divida; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3295,6 +3150,7 @@ COMMENT ON TABLE public.pagamentos_divida IS 'Histórico de pagamentos de dívid
 
 
 --
+-- TOC entry 246 (class 1259 OID 49419)
 -- Name: pagamentos_divida_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3308,6 +3164,8 @@ CREATE SEQUENCE public.pagamentos_divida_id_seq
 
 
 --
+-- TOC entry 6037 (class 0 OID 0)
+-- Dependencies: 246
 -- Name: pagamentos_divida_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3315,6 +3173,7 @@ ALTER SEQUENCE public.pagamentos_divida_id_seq OWNED BY public.pagamentos_divida
 
 
 --
+-- TOC entry 240 (class 1259 OID 24867)
 -- Name: pagamentos_venda; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3329,6 +3188,8 @@ CREATE TABLE public.pagamentos_venda (
 
 
 --
+-- TOC entry 6038 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: TABLE pagamentos_venda; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3336,6 +3197,8 @@ COMMENT ON TABLE public.pagamentos_venda IS 'Armazena os pagamentos de cada vend
 
 
 --
+-- TOC entry 6039 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: COLUMN pagamentos_venda.venda_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3343,6 +3206,8 @@ COMMENT ON COLUMN public.pagamentos_venda.venda_id IS 'ID da venda';
 
 
 --
+-- TOC entry 6040 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: COLUMN pagamentos_venda.forma_pagamento_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3350,6 +3215,8 @@ COMMENT ON COLUMN public.pagamentos_venda.forma_pagamento_id IS 'ID da forma de 
 
 
 --
+-- TOC entry 6041 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: COLUMN pagamentos_venda.valor; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3357,6 +3224,7 @@ COMMENT ON COLUMN public.pagamentos_venda.valor IS 'Valor pago com esta forma de
 
 
 --
+-- TOC entry 239 (class 1259 OID 24866)
 -- Name: pagamentos_venda_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3370,6 +3238,8 @@ CREATE SEQUENCE public.pagamentos_venda_id_seq
 
 
 --
+-- TOC entry 6042 (class 0 OID 0)
+-- Dependencies: 239
 -- Name: pagamentos_venda_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3377,6 +3247,7 @@ ALTER SEQUENCE public.pagamentos_venda_id_seq OWNED BY public.pagamentos_venda.i
 
 
 --
+-- TOC entry 312 (class 1259 OID 123494)
 -- Name: pedidos; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3395,6 +3266,8 @@ CREATE TABLE public.pedidos (
 
 
 --
+-- TOC entry 6043 (class 0 OID 0)
+-- Dependencies: 312
 -- Name: TABLE pedidos; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3402,6 +3275,8 @@ COMMENT ON TABLE public.pedidos IS 'Pedidos realizados nas mesas';
 
 
 --
+-- TOC entry 6044 (class 0 OID 0)
+-- Dependencies: 312
 -- Name: COLUMN pedidos.usuario_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3409,6 +3284,8 @@ COMMENT ON COLUMN public.pedidos.usuario_id IS 'Usuário responsável pelo pedid
 
 
 --
+-- TOC entry 6045 (class 0 OID 0)
+-- Dependencies: 312
 -- Name: COLUMN pedidos.status; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3416,6 +3293,7 @@ COMMENT ON COLUMN public.pedidos.status IS 'Status: aberto, fechado, cancelado';
 
 
 --
+-- TOC entry 311 (class 1259 OID 123493)
 -- Name: pedidos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3429,6 +3307,8 @@ CREATE SEQUENCE public.pedidos_id_seq
 
 
 --
+-- TOC entry 6046 (class 0 OID 0)
+-- Dependencies: 311
 -- Name: pedidos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3436,6 +3316,7 @@ ALTER SEQUENCE public.pedidos_id_seq OWNED BY public.pedidos.id;
 
 
 --
+-- TOC entry 301 (class 1259 OID 123385)
 -- Name: perfil_permissoes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3448,6 +3329,8 @@ CREATE TABLE public.perfil_permissoes (
 
 
 --
+-- TOC entry 6047 (class 0 OID 0)
+-- Dependencies: 301
 -- Name: TABLE perfil_permissoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3455,6 +3338,7 @@ COMMENT ON TABLE public.perfil_permissoes IS 'Permissões atribuídas a cada per
 
 
 --
+-- TOC entry 300 (class 1259 OID 123384)
 -- Name: perfil_permissoes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3468,6 +3352,8 @@ CREATE SEQUENCE public.perfil_permissoes_id_seq
 
 
 --
+-- TOC entry 6048 (class 0 OID 0)
+-- Dependencies: 300
 -- Name: perfil_permissoes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3475,6 +3361,7 @@ ALTER SEQUENCE public.perfil_permissoes_id_seq OWNED BY public.perfil_permissoes
 
 
 --
+-- TOC entry 294 (class 1259 OID 115256)
 -- Name: perfis_usuario; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3489,6 +3376,8 @@ CREATE TABLE public.perfis_usuario (
 
 
 --
+-- TOC entry 6049 (class 0 OID 0)
+-- Dependencies: 294
 -- Name: TABLE perfis_usuario; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3496,6 +3385,7 @@ COMMENT ON TABLE public.perfis_usuario IS 'Perfis/categorias de usuários do sis
 
 
 --
+-- TOC entry 293 (class 1259 OID 115255)
 -- Name: perfis_usuario_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3509,6 +3399,8 @@ CREATE SEQUENCE public.perfis_usuario_id_seq
 
 
 --
+-- TOC entry 6050 (class 0 OID 0)
+-- Dependencies: 293
 -- Name: perfis_usuario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3516,6 +3408,7 @@ ALTER SEQUENCE public.perfis_usuario_id_seq OWNED BY public.perfis_usuario.id;
 
 
 --
+-- TOC entry 299 (class 1259 OID 123369)
 -- Name: permissoes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3531,6 +3424,8 @@ CREATE TABLE public.permissoes (
 
 
 --
+-- TOC entry 6051 (class 0 OID 0)
+-- Dependencies: 299
 -- Name: TABLE permissoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3538,6 +3433,8 @@ COMMENT ON TABLE public.permissoes IS 'Operações/permissões disponíveis no s
 
 
 --
+-- TOC entry 6052 (class 0 OID 0)
+-- Dependencies: 299
 -- Name: COLUMN permissoes.codigo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3545,6 +3442,8 @@ COMMENT ON COLUMN public.permissoes.codigo IS 'Código único da permissão usad
 
 
 --
+-- TOC entry 6053 (class 0 OID 0)
+-- Dependencies: 299
 -- Name: COLUMN permissoes.categoria; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3552,6 +3451,7 @@ COMMENT ON COLUMN public.permissoes.categoria IS 'Categoria da permissão (VENDA
 
 
 --
+-- TOC entry 298 (class 1259 OID 123368)
 -- Name: permissoes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3565,6 +3465,8 @@ CREATE SEQUENCE public.permissoes_id_seq
 
 
 --
+-- TOC entry 6054 (class 0 OID 0)
+-- Dependencies: 298
 -- Name: permissoes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3572,6 +3474,7 @@ ALTER SEQUENCE public.permissoes_id_seq OWNED BY public.permissoes.id;
 
 
 --
+-- TOC entry 267 (class 1259 OID 82308)
 -- Name: produto_composicao; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3586,6 +3489,8 @@ CREATE TABLE public.produto_composicao (
 
 
 --
+-- TOC entry 6055 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: TABLE produto_composicao; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3593,6 +3498,8 @@ COMMENT ON TABLE public.produto_composicao IS 'Composição de produtos - produt
 
 
 --
+-- TOC entry 6056 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: COLUMN produto_composicao.produto_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3600,6 +3507,8 @@ COMMENT ON COLUMN public.produto_composicao.produto_id IS 'Produto principal (ex
 
 
 --
+-- TOC entry 6057 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: COLUMN produto_composicao.produto_componente_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3607,6 +3516,8 @@ COMMENT ON COLUMN public.produto_composicao.produto_componente_id IS 'Produto co
 
 
 --
+-- TOC entry 6058 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: COLUMN produto_composicao.quantidade; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3614,6 +3525,7 @@ COMMENT ON COLUMN public.produto_composicao.quantidade IS 'Quantidade do compone
 
 
 --
+-- TOC entry 266 (class 1259 OID 82307)
 -- Name: produto_composicao_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3627,6 +3539,8 @@ CREATE SEQUENCE public.produto_composicao_id_seq
 
 
 --
+-- TOC entry 6059 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: produto_composicao_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3634,6 +3548,7 @@ ALTER SEQUENCE public.produto_composicao_id_seq OWNED BY public.produto_composic
 
 
 --
+-- TOC entry 222 (class 1259 OID 16611)
 -- Name: produtos; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3658,6 +3573,8 @@ CREATE TABLE public.produtos (
 
 
 --
+-- TOC entry 6060 (class 0 OID 0)
+-- Dependencies: 222
 -- Name: COLUMN produtos.codigo_barras; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3665,6 +3582,8 @@ COMMENT ON COLUMN public.produtos.codigo_barras IS 'Código de barras do produto
 
 
 --
+-- TOC entry 6061 (class 0 OID 0)
+-- Dependencies: 222
 -- Name: COLUMN produtos.estoque_minimo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3672,6 +3591,7 @@ COMMENT ON COLUMN public.produtos.estoque_minimo IS 'Quantidade mínima de estoq
 
 
 --
+-- TOC entry 265 (class 1259 OID 82305)
 -- Name: produtos_codigo_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3684,6 +3604,7 @@ CREATE SEQUENCE public.produtos_codigo_seq
 
 
 --
+-- TOC entry 221 (class 1259 OID 16610)
 -- Name: produtos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3697,6 +3618,8 @@ CREATE SEQUENCE public.produtos_id_seq
 
 
 --
+-- TOC entry 6062 (class 0 OID 0)
+-- Dependencies: 221
 -- Name: produtos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3704,6 +3627,7 @@ ALTER SEQUENCE public.produtos_id_seq OWNED BY public.produtos.id;
 
 
 --
+-- TOC entry 339 (class 1259 OID 156660)
 -- Name: servidor_tempo; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3716,6 +3640,8 @@ CREATE TABLE public.servidor_tempo (
 
 
 --
+-- TOC entry 6063 (class 0 OID 0)
+-- Dependencies: 339
 -- Name: TABLE servidor_tempo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3723,6 +3649,7 @@ COMMENT ON TABLE public.servidor_tempo IS 'Registro de timestamps do servidor Po
 
 
 --
+-- TOC entry 338 (class 1259 OID 156659)
 -- Name: servidor_tempo_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3736,6 +3663,8 @@ CREATE SEQUENCE public.servidor_tempo_id_seq
 
 
 --
+-- TOC entry 6064 (class 0 OID 0)
+-- Dependencies: 338
 -- Name: servidor_tempo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3743,6 +3672,7 @@ ALTER SEQUENCE public.servidor_tempo_id_seq OWNED BY public.servidor_tempo.id;
 
 
 --
+-- TOC entry 233 (class 1259 OID 24821)
 -- Name: setores; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3756,6 +3686,7 @@ CREATE TABLE public.setores (
 
 
 --
+-- TOC entry 232 (class 1259 OID 24820)
 -- Name: setores_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3769,6 +3700,8 @@ CREATE SEQUENCE public.setores_id_seq
 
 
 --
+-- TOC entry 6065 (class 0 OID 0)
+-- Dependencies: 232
 -- Name: setores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3776,6 +3709,7 @@ ALTER SEQUENCE public.setores_id_seq OWNED BY public.setores.id;
 
 
 --
+-- TOC entry 332 (class 1259 OID 156551)
 -- Name: terminais; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3793,6 +3727,7 @@ CREATE TABLE public.terminais (
 
 
 --
+-- TOC entry 331 (class 1259 OID 156550)
 -- Name: terminais_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3806,6 +3741,8 @@ CREATE SEQUENCE public.terminais_id_seq
 
 
 --
+-- TOC entry 6066 (class 0 OID 0)
+-- Dependencies: 331
 -- Name: terminais_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3813,6 +3750,7 @@ ALTER SEQUENCE public.terminais_id_seq OWNED BY public.terminais.id;
 
 
 --
+-- TOC entry 334 (class 1259 OID 156578)
 -- Name: terminal_logs; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3828,6 +3766,7 @@ CREATE TABLE public.terminal_logs (
 
 
 --
+-- TOC entry 333 (class 1259 OID 156577)
 -- Name: terminal_logs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3841,6 +3780,8 @@ CREATE SEQUENCE public.terminal_logs_id_seq
 
 
 --
+-- TOC entry 6067 (class 0 OID 0)
+-- Dependencies: 333
 -- Name: terminal_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3848,6 +3789,7 @@ ALTER SEQUENCE public.terminal_logs_id_seq OWNED BY public.terminal_logs.id;
 
 
 --
+-- TOC entry 326 (class 1259 OID 148245)
 -- Name: tipos_documento; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3862,6 +3804,8 @@ CREATE TABLE public.tipos_documento (
 
 
 --
+-- TOC entry 6068 (class 0 OID 0)
+-- Dependencies: 326
 -- Name: TABLE tipos_documento; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3869,6 +3813,7 @@ COMMENT ON TABLE public.tipos_documento IS 'Tipos de documentos que podem ser im
 
 
 --
+-- TOC entry 325 (class 1259 OID 148244)
 -- Name: tipos_documento_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3882,6 +3827,8 @@ CREATE SEQUENCE public.tipos_documento_id_seq
 
 
 --
+-- TOC entry 6069 (class 0 OID 0)
+-- Dependencies: 325
 -- Name: tipos_documento_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3889,6 +3836,7 @@ ALTER SEQUENCE public.tipos_documento_id_seq OWNED BY public.tipos_documento.id;
 
 
 --
+-- TOC entry 296 (class 1259 OID 115272)
 -- Name: usuarios; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3905,6 +3853,8 @@ CREATE TABLE public.usuarios (
 
 
 --
+-- TOC entry 6070 (class 0 OID 0)
+-- Dependencies: 296
 -- Name: TABLE usuarios; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3912,6 +3862,8 @@ COMMENT ON TABLE public.usuarios IS 'Usuários do sistema';
 
 
 --
+-- TOC entry 6071 (class 0 OID 0)
+-- Dependencies: 296
 -- Name: COLUMN usuarios.nome; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3919,6 +3871,8 @@ COMMENT ON COLUMN public.usuarios.nome IS 'Nome do usuário (deve ser único)';
 
 
 --
+-- TOC entry 6072 (class 0 OID 0)
+-- Dependencies: 296
 -- Name: COLUMN usuarios.perfil_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3926,6 +3880,8 @@ COMMENT ON COLUMN public.usuarios.perfil_id IS 'Perfil/categoria do usuário';
 
 
 --
+-- TOC entry 6073 (class 0 OID 0)
+-- Dependencies: 296
 -- Name: COLUMN usuarios.codigo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3933,6 +3889,7 @@ COMMENT ON COLUMN public.usuarios.codigo IS 'Código numérico de 1 a 8 dígitos
 
 
 --
+-- TOC entry 295 (class 1259 OID 115271)
 -- Name: usuarios_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -3946,6 +3903,8 @@ CREATE SEQUENCE public.usuarios_id_seq
 
 
 --
+-- TOC entry 6074 (class 0 OID 0)
+-- Dependencies: 295
 -- Name: usuarios_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3953,6 +3912,7 @@ ALTER SEQUENCE public.usuarios_id_seq OWNED BY public.usuarios.id;
 
 
 --
+-- TOC entry 279 (class 1259 OID 107024)
 -- Name: v_acertos_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -3987,6 +3947,7 @@ CREATE VIEW public.v_acertos_completo AS
 
 
 --
+-- TOC entry 281 (class 1259 OID 107034)
 -- Name: v_acertos_por_motivo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4002,6 +3963,7 @@ CREATE VIEW public.v_acertos_por_motivo AS
 
 
 --
+-- TOC entry 282 (class 1259 OID 107039)
 -- Name: v_acertos_por_setor; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4019,6 +3981,7 @@ CREATE VIEW public.v_acertos_por_setor AS
 
 
 --
+-- TOC entry 280 (class 1259 OID 107029)
 -- Name: v_acertos_resumo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4044,6 +4007,7 @@ CREATE VIEW public.v_acertos_resumo AS
 
 
 --
+-- TOC entry 238 (class 1259 OID 24859)
 -- Name: v_areas_ativas; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4059,6 +4023,7 @@ CREATE VIEW public.v_areas_ativas AS
 
 
 --
+-- TOC entry 275 (class 1259 OID 82386)
 -- Name: v_caixa_atual; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4107,6 +4072,8 @@ CREATE VIEW public.v_caixa_atual AS
 
 
 --
+-- TOC entry 6075 (class 0 OID 0)
+-- Dependencies: 275
 -- Name: VIEW v_caixa_atual; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4114,6 +4081,7 @@ COMMENT ON VIEW public.v_caixa_atual IS 'Retorna o caixa atualmente aberto com v
 
 
 --
+-- TOC entry 320 (class 1259 OID 123614)
 -- Name: v_cancelamentos_pedido; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4137,6 +4105,7 @@ CREATE VIEW public.v_cancelamentos_pedido AS
 
 
 --
+-- TOC entry 250 (class 1259 OID 49474)
 -- Name: v_clientes_dividas; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4154,6 +4123,7 @@ CREATE VIEW public.v_clientes_dividas AS
 
 
 --
+-- TOC entry 258 (class 1259 OID 65826)
 -- Name: v_conferencias_caixa; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4188,6 +4158,8 @@ CREATE VIEW public.v_conferencias_caixa AS
 
 
 --
+-- TOC entry 6076 (class 0 OID 0)
+-- Dependencies: 258
 -- Name: VIEW v_conferencias_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4195,6 +4167,7 @@ COMMENT ON VIEW public.v_conferencias_caixa IS 'Lista de conferências com dados
 
 
 --
+-- TOC entry 271 (class 1259 OID 82366)
 -- Name: v_despesas_caixa; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4215,6 +4188,8 @@ CREATE VIEW public.v_despesas_caixa AS
 
 
 --
+-- TOC entry 6077 (class 0 OID 0)
+-- Dependencies: 271
 -- Name: VIEW v_despesas_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4222,6 +4197,7 @@ COMMENT ON VIEW public.v_despesas_caixa IS 'Lista detalhada de despesas por caix
 
 
 --
+-- TOC entry 252 (class 1259 OID 49484)
 -- Name: v_despesas_resumo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4236,6 +4212,7 @@ CREATE VIEW public.v_despesas_resumo AS
 
 
 --
+-- TOC entry 253 (class 1259 OID 49488)
 -- Name: v_devedores; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4257,6 +4234,7 @@ CREATE VIEW public.v_devedores AS
 
 
 --
+-- TOC entry 224 (class 1259 OID 16633)
 -- Name: vendas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -4278,6 +4256,8 @@ CREATE TABLE public.vendas (
 
 
 --
+-- TOC entry 6078 (class 0 OID 0)
+-- Dependencies: 224
 -- Name: COLUMN vendas.tipo_venda; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4285,6 +4265,7 @@ COMMENT ON COLUMN public.vendas.tipo_venda IS 'NORMAL: Venda comum, DIVIDA: Vend
 
 
 --
+-- TOC entry 251 (class 1259 OID 49479)
 -- Name: v_dividas_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4310,6 +4291,7 @@ CREATE VIEW public.v_dividas_completo AS
 
 
 --
+-- TOC entry 306 (class 1259 OID 123452)
 -- Name: v_familias_areas; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4327,6 +4309,7 @@ CREATE VIEW public.v_familias_areas AS
 
 
 --
+-- TOC entry 305 (class 1259 OID 123447)
 -- Name: v_familias_com_setores; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4351,6 +4334,7 @@ CREATE VIEW public.v_familias_com_setores AS
 
 
 --
+-- TOC entry 289 (class 1259 OID 115231)
 -- Name: v_faturas_entrada_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4375,6 +4359,7 @@ CREATE VIEW public.v_faturas_entrada_completo AS
 
 
 --
+-- TOC entry 290 (class 1259 OID 115236)
 -- Name: v_itens_fatura_entrada_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4397,6 +4382,7 @@ CREATE VIEW public.v_itens_fatura_entrada_completo AS
 
 
 --
+-- TOC entry 315 (class 1259 OID 123555)
 -- Name: v_mesas_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4426,6 +4412,7 @@ CREATE VIEW public.v_mesas_completo AS
 
 
 --
+-- TOC entry 317 (class 1259 OID 123565)
 -- Name: v_mesas_por_local; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4440,6 +4427,7 @@ SELECT
 
 
 --
+-- TOC entry 272 (class 1259 OID 82371)
 -- Name: v_pagamentos_divida_caixa; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4467,6 +4455,8 @@ CREATE VIEW public.v_pagamentos_divida_caixa AS
 
 
 --
+-- TOC entry 6079 (class 0 OID 0)
+-- Dependencies: 272
 -- Name: VIEW v_pagamentos_divida_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4474,6 +4464,7 @@ COMMENT ON VIEW public.v_pagamentos_divida_caixa IS 'Lista detalhada de pagament
 
 
 --
+-- TOC entry 316 (class 1259 OID 123560)
 -- Name: v_pedidos_abertos; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4500,6 +4491,7 @@ CREATE VIEW public.v_pedidos_abertos AS
 
 
 --
+-- TOC entry 302 (class 1259 OID 123411)
 -- Name: v_perfil_permissoes; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4522,6 +4514,7 @@ CREATE VIEW public.v_perfil_permissoes AS
 
 
 --
+-- TOC entry 268 (class 1259 OID 82340)
 -- Name: v_produtos_com_composicao; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4543,6 +4536,7 @@ CREATE VIEW public.v_produtos_com_composicao AS
 
 
 --
+-- TOC entry 261 (class 1259 OID 82257)
 -- Name: v_produtos_com_setores; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4566,6 +4560,7 @@ CREATE VIEW public.v_produtos_com_setores AS
 
 
 --
+-- TOC entry 276 (class 1259 OID 82391)
 -- Name: v_produtos_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4601,6 +4596,7 @@ CREATE VIEW public.v_produtos_completo AS
 
 
 --
+-- TOC entry 264 (class 1259 OID 82291)
 -- Name: v_produtos_detalhado; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4625,6 +4621,7 @@ CREATE VIEW public.v_produtos_detalhado AS
 
 
 --
+-- TOC entry 292 (class 1259 OID 115246)
 -- Name: v_produtos_mais_comprados; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4645,6 +4642,7 @@ CREATE VIEW public.v_produtos_mais_comprados AS
 
 
 --
+-- TOC entry 269 (class 1259 OID 82345)
 -- Name: v_produtos_nao_contaveis; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4662,6 +4660,7 @@ CREATE VIEW public.v_produtos_nao_contaveis AS
 
 
 --
+-- TOC entry 263 (class 1259 OID 82286)
 -- Name: v_produtos_por_area; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4678,6 +4677,7 @@ CREATE VIEW public.v_produtos_por_area AS
 
 
 --
+-- TOC entry 262 (class 1259 OID 82281)
 -- Name: v_produtos_por_setor; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4694,6 +4694,7 @@ CREATE VIEW public.v_produtos_por_setor AS
 
 
 --
+-- TOC entry 273 (class 1259 OID 82376)
 -- Name: v_produtos_vendidos_caixa; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4719,6 +4720,8 @@ CREATE VIEW public.v_produtos_vendidos_caixa AS
 
 
 --
+-- TOC entry 6080 (class 0 OID 0)
+-- Dependencies: 273
 -- Name: VIEW v_produtos_vendidos_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4726,6 +4729,7 @@ COMMENT ON VIEW public.v_produtos_vendidos_caixa IS 'Lista detalhada de produtos
 
 
 --
+-- TOC entry 270 (class 1259 OID 82361)
 -- Name: v_resumo_caixa; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4772,6 +4776,8 @@ CREATE VIEW public.v_resumo_caixa AS
 
 
 --
+-- TOC entry 6081 (class 0 OID 0)
+-- Dependencies: 270
 -- Name: VIEW v_resumo_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4779,6 +4785,7 @@ COMMENT ON VIEW public.v_resumo_caixa IS 'Resumo completo de todos os caixas com
 
 
 --
+-- TOC entry 291 (class 1259 OID 115241)
 -- Name: v_resumo_compras_fornecedor; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4798,6 +4805,7 @@ CREATE VIEW public.v_resumo_compras_fornecedor AS
 
 
 --
+-- TOC entry 274 (class 1259 OID 82381)
 -- Name: v_resumo_produtos_caixa; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4819,6 +4827,8 @@ CREATE VIEW public.v_resumo_produtos_caixa AS
 
 
 --
+-- TOC entry 6082 (class 0 OID 0)
+-- Dependencies: 274
 -- Name: VIEW v_resumo_produtos_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4826,6 +4836,7 @@ COMMENT ON VIEW public.v_resumo_produtos_caixa IS 'Resumo agregado de produtos v
 
 
 --
+-- TOC entry 237 (class 1259 OID 24855)
 -- Name: v_setores_ativos; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4841,6 +4852,7 @@ CREATE VIEW public.v_setores_ativos AS
 
 
 --
+-- TOC entry 297 (class 1259 OID 115295)
 -- Name: v_usuarios_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4859,6 +4871,7 @@ CREATE VIEW public.v_usuarios_completo AS
 
 
 --
+-- TOC entry 241 (class 1259 OID 24891)
 -- Name: v_vendas_com_pagamentos; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4876,6 +4889,7 @@ CREATE VIEW public.v_vendas_com_pagamentos AS
 
 
 --
+-- TOC entry 236 (class 1259 OID 24851)
 -- Name: v_vendas_completo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4892,6 +4906,7 @@ CREATE VIEW public.v_vendas_completo AS
 
 
 --
+-- TOC entry 227 (class 1259 OID 16674)
 -- Name: v_vendas_resumo; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4908,6 +4923,7 @@ CREATE VIEW public.v_vendas_resumo AS
 
 
 --
+-- TOC entry 223 (class 1259 OID 16632)
 -- Name: vendas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -4921,6 +4937,8 @@ CREATE SEQUENCE public.vendas_id_seq
 
 
 --
+-- TOC entry 6083 (class 0 OID 0)
+-- Dependencies: 223
 -- Name: vendas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -4928,6 +4946,7 @@ ALTER SEQUENCE public.vendas_id_seq OWNED BY public.vendas.id;
 
 
 --
+-- TOC entry 342 (class 1259 OID 156691)
 -- Name: vw_anomalias_data; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4948,6 +4967,7 @@ CREATE VIEW public.vw_anomalias_data AS
 
 
 --
+-- TOC entry 330 (class 1259 OID 156423)
 -- Name: vw_areas_impressoras; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4966,6 +4986,7 @@ CREATE VIEW public.vw_areas_impressoras AS
 
 
 --
+-- TOC entry 347 (class 1259 OID 156919)
 -- Name: vw_auditoria_detalhada; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -4989,6 +5010,7 @@ CREATE VIEW public.vw_auditoria_detalhada AS
 
 
 --
+-- TOC entry 348 (class 1259 OID 156924)
 -- Name: vw_auditoria_por_usuario; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5006,6 +5028,7 @@ CREATE VIEW public.vw_auditoria_por_usuario AS
 
 
 --
+-- TOC entry 350 (class 1259 OID 156934)
 -- Name: vw_historico_precos; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5026,6 +5049,7 @@ CREATE VIEW public.vw_historico_precos AS
 
 
 --
+-- TOC entry 352 (class 1259 OID 156944)
 -- Name: vw_logins_falhados; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5048,6 +5072,7 @@ CREATE VIEW public.vw_logins_falhados AS
 
 
 --
+-- TOC entry 329 (class 1259 OID 156418)
 -- Name: vw_mapeamento_impressao; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5068,6 +5093,7 @@ CREATE VIEW public.vw_mapeamento_impressao AS
 
 
 --
+-- TOC entry 349 (class 1259 OID 156929)
 -- Name: vw_operacoes_suspeitas; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5089,6 +5115,7 @@ CREATE VIEW public.vw_operacoes_suspeitas AS
 
 
 --
+-- TOC entry 337 (class 1259 OID 156623)
 -- Name: vw_produtos_com_codigo_barras; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5112,6 +5139,7 @@ CREATE VIEW public.vw_produtos_com_codigo_barras AS
 
 
 --
+-- TOC entry 351 (class 1259 OID 156939)
 -- Name: vw_produtos_deletados; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5132,6 +5160,7 @@ CREATE VIEW public.vw_produtos_deletados AS
 
 
 --
+-- TOC entry 335 (class 1259 OID 156606)
 -- Name: vw_terminais_ativos; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5157,6 +5186,7 @@ CREATE VIEW public.vw_terminais_ativos AS
 
 
 --
+-- TOC entry 336 (class 1259 OID 156611)
 -- Name: vw_vendas_por_terminal; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -5173,6 +5203,7 @@ CREATE VIEW public.vw_vendas_por_terminal AS
 
 
 --
+-- TOC entry 5292 (class 2604 OID 106988)
 -- Name: acertos_stock id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5180,6 +5211,7 @@ ALTER TABLE ONLY public.acertos_stock ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- TOC entry 5227 (class 2604 OID 24837)
 -- Name: areas id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5187,6 +5219,7 @@ ALTER TABLE ONLY public.areas ALTER COLUMN id SET DEFAULT nextval('public.areas_
 
 
 --
+-- TOC entry 5366 (class 2604 OID 156868)
 -- Name: auditoria id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5194,6 +5227,7 @@ ALTER TABLE ONLY public.auditoria ALTER COLUMN id SET DEFAULT nextval('public.au
 
 
 --
+-- TOC entry 5247 (class 2604 OID 57569)
 -- Name: caixas id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5201,6 +5235,7 @@ ALTER TABLE ONLY public.caixas ALTER COLUMN id SET DEFAULT nextval('public.caixa
 
 
 --
+-- TOC entry 5336 (class 2604 OID 123580)
 -- Name: cancelamentos_item_pedido id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5208,6 +5243,7 @@ ALTER TABLE ONLY public.cancelamentos_item_pedido ALTER COLUMN id SET DEFAULT ne
 
 
 --
+-- TOC entry 5232 (class 2604 OID 49374)
 -- Name: clientes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5215,6 +5251,7 @@ ALTER TABLE ONLY public.clientes ALTER COLUMN id SET DEFAULT nextval('public.cli
 
 
 --
+-- TOC entry 5269 (class 2604 OID 65795)
 -- Name: conferencias_caixa id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5222,6 +5259,7 @@ ALTER TABLE ONLY public.conferencias_caixa ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- TOC entry 5338 (class 2604 OID 123629)
 -- Name: configuracoes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5229,6 +5267,7 @@ ALTER TABLE ONLY public.configuracoes ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- TOC entry 5364 (class 2604 OID 156674)
 -- Name: controle_fecho_caixa id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5236,6 +5275,7 @@ ALTER TABLE ONLY public.controle_fecho_caixa ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- TOC entry 5244 (class 2604 OID 49449)
 -- Name: despesas id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5243,6 +5283,7 @@ ALTER TABLE ONLY public.despesas ALTER COLUMN id SET DEFAULT nextval('public.des
 
 
 --
+-- TOC entry 5236 (class 2604 OID 49391)
 -- Name: dividas id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5250,6 +5291,7 @@ ALTER TABLE ONLY public.dividas ALTER COLUMN id SET DEFAULT nextval('public.divi
 
 
 --
+-- TOC entry 5351 (class 2604 OID 148264)
 -- Name: documento_impressora id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5257,6 +5299,7 @@ ALTER TABLE ONLY public.documento_impressora ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- TOC entry 5217 (class 2604 OID 24797)
 -- Name: empresa id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5264,6 +5307,7 @@ ALTER TABLE ONLY public.empresa ALTER COLUMN id SET DEFAULT nextval('public.empr
 
 
 --
+-- TOC entry 5320 (class 2604 OID 123426)
 -- Name: familia_areas id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5271,6 +5315,7 @@ ALTER TABLE ONLY public.familia_areas ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- TOC entry 5287 (class 2604 OID 82231)
 -- Name: familia_setores id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5278,6 +5323,7 @@ ALTER TABLE ONLY public.familia_setores ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- TOC entry 5200 (class 2604 OID 16601)
 -- Name: familias id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5285,6 +5331,7 @@ ALTER TABLE ONLY public.familias ALTER COLUMN id SET DEFAULT nextval('public.fam
 
 
 --
+-- TOC entry 5302 (class 2604 OID 115180)
 -- Name: faturas_entrada id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5292,6 +5339,7 @@ ALTER TABLE ONLY public.faturas_entrada ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- TOC entry 5221 (class 2604 OID 24811)
 -- Name: formas_pagamento id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5299,6 +5347,7 @@ ALTER TABLE ONLY public.formas_pagamento ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- TOC entry 5297 (class 2604 OID 107055)
 -- Name: fornecedores id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5306,6 +5355,7 @@ ALTER TABLE ONLY public.fornecedores ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
+-- TOC entry 5342 (class 2604 OID 148230)
 -- Name: impressoras id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5313,6 +5363,7 @@ ALTER TABLE ONLY public.impressoras ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- TOC entry 5305 (class 2604 OID 115203)
 -- Name: itens_fatura_entrada id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5320,6 +5371,7 @@ ALTER TABLE ONLY public.itens_fatura_entrada ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- TOC entry 5334 (class 2604 OID 123526)
 -- Name: itens_pedido id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5327,6 +5379,7 @@ ALTER TABLE ONLY public.itens_pedido ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
+-- TOC entry 5216 (class 2604 OID 16649)
 -- Name: itens_venda id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5334,6 +5387,7 @@ ALTER TABLE ONLY public.itens_venda ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- TOC entry 5322 (class 2604 OID 123461)
 -- Name: locais_mesa id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5341,6 +5395,7 @@ ALTER TABLE ONLY public.locais_mesa ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- TOC entry 5368 (class 2604 OID 156902)
 -- Name: logs_acesso id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5348,6 +5403,7 @@ ALTER TABLE ONLY public.logs_acesso ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- TOC entry 5326 (class 2604 OID 123477)
 -- Name: mesas id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5355,6 +5411,7 @@ ALTER TABLE ONLY public.mesas ALTER COLUMN id SET DEFAULT nextval('public.mesas_
 
 
 --
+-- TOC entry 5241 (class 2604 OID 49423)
 -- Name: pagamentos_divida id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5362,6 +5419,7 @@ ALTER TABLE ONLY public.pagamentos_divida ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- TOC entry 5230 (class 2604 OID 24870)
 -- Name: pagamentos_venda id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5369,6 +5427,7 @@ ALTER TABLE ONLY public.pagamentos_venda ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- TOC entry 5330 (class 2604 OID 123497)
 -- Name: pedidos id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5376,6 +5435,7 @@ ALTER TABLE ONLY public.pedidos ALTER COLUMN id SET DEFAULT nextval('public.pedi
 
 
 --
+-- TOC entry 5318 (class 2604 OID 123388)
 -- Name: perfil_permissoes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5383,6 +5443,7 @@ ALTER TABLE ONLY public.perfil_permissoes ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- TOC entry 5307 (class 2604 OID 115259)
 -- Name: perfis_usuario id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5390,6 +5451,7 @@ ALTER TABLE ONLY public.perfis_usuario ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- TOC entry 5315 (class 2604 OID 123372)
 -- Name: permissoes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5397,6 +5459,7 @@ ALTER TABLE ONLY public.permissoes ALTER COLUMN id SET DEFAULT nextval('public.p
 
 
 --
+-- TOC entry 5289 (class 2604 OID 82311)
 -- Name: produto_composicao id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5404,6 +5467,7 @@ ALTER TABLE ONLY public.produto_composicao ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- TOC entry 5203 (class 2604 OID 16614)
 -- Name: produtos id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5411,6 +5475,7 @@ ALTER TABLE ONLY public.produtos ALTER COLUMN id SET DEFAULT nextval('public.pro
 
 
 --
+-- TOC entry 5361 (class 2604 OID 156663)
 -- Name: servidor_tempo id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5418,6 +5483,7 @@ ALTER TABLE ONLY public.servidor_tempo ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- TOC entry 5224 (class 2604 OID 24824)
 -- Name: setores id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5425,6 +5491,7 @@ ALTER TABLE ONLY public.setores ALTER COLUMN id SET DEFAULT nextval('public.seto
 
 
 --
+-- TOC entry 5354 (class 2604 OID 156554)
 -- Name: terminais id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5432,6 +5499,7 @@ ALTER TABLE ONLY public.terminais ALTER COLUMN id SET DEFAULT nextval('public.te
 
 
 --
+-- TOC entry 5359 (class 2604 OID 156581)
 -- Name: terminal_logs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5439,6 +5507,7 @@ ALTER TABLE ONLY public.terminal_logs ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- TOC entry 5348 (class 2604 OID 148248)
 -- Name: tipos_documento id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5446,6 +5515,7 @@ ALTER TABLE ONLY public.tipos_documento ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- TOC entry 5311 (class 2604 OID 115275)
 -- Name: usuarios id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5453,6 +5523,7 @@ ALTER TABLE ONLY public.usuarios ALTER COLUMN id SET DEFAULT nextval('public.usu
 
 
 --
+-- TOC entry 5212 (class 2604 OID 16636)
 -- Name: vendas id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -5460,6 +5531,7 @@ ALTER TABLE ONLY public.vendas ALTER COLUMN id SET DEFAULT nextval('public.venda
 
 
 --
+-- TOC entry 5466 (class 2606 OID 107001)
 -- Name: acertos_stock acertos_stock_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5468,6 +5540,7 @@ ALTER TABLE ONLY public.acertos_stock
 
 
 --
+-- TOC entry 5415 (class 2606 OID 24845)
 -- Name: areas areas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5476,6 +5549,7 @@ ALTER TABLE ONLY public.areas
 
 
 --
+-- TOC entry 5583 (class 2606 OID 156876)
 -- Name: auditoria auditoria_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5484,6 +5558,7 @@ ALTER TABLE ONLY public.auditoria
 
 
 --
+-- TOC entry 5443 (class 2606 OID 57599)
 -- Name: caixas caixas_numero_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5492,6 +5567,7 @@ ALTER TABLE ONLY public.caixas
 
 
 --
+-- TOC entry 5445 (class 2606 OID 57597)
 -- Name: caixas caixas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5500,6 +5576,7 @@ ALTER TABLE ONLY public.caixas
 
 
 --
+-- TOC entry 5539 (class 2606 OID 123595)
 -- Name: cancelamentos_item_pedido cancelamentos_item_pedido_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5508,6 +5585,7 @@ ALTER TABLE ONLY public.cancelamentos_item_pedido
 
 
 --
+-- TOC entry 5423 (class 2606 OID 49383)
 -- Name: clientes clientes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5516,6 +5594,7 @@ ALTER TABLE ONLY public.clientes
 
 
 --
+-- TOC entry 5451 (class 2606 OID 65818)
 -- Name: conferencias_caixa conferencias_caixa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5524,6 +5603,7 @@ ALTER TABLE ONLY public.conferencias_caixa
 
 
 --
+-- TOC entry 5544 (class 2606 OID 123641)
 -- Name: configuracoes configuracoes_chave_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5532,6 +5612,7 @@ ALTER TABLE ONLY public.configuracoes
 
 
 --
+-- TOC entry 5546 (class 2606 OID 123639)
 -- Name: configuracoes configuracoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5540,6 +5621,7 @@ ALTER TABLE ONLY public.configuracoes
 
 
 --
+-- TOC entry 5578 (class 2606 OID 156681)
 -- Name: controle_fecho_caixa controle_fecho_caixa_data_fecho_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5548,6 +5630,7 @@ ALTER TABLE ONLY public.controle_fecho_caixa
 
 
 --
+-- TOC entry 5580 (class 2606 OID 156679)
 -- Name: controle_fecho_caixa controle_fecho_caixa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5556,6 +5639,7 @@ ALTER TABLE ONLY public.controle_fecho_caixa
 
 
 --
+-- TOC entry 5439 (class 2606 OID 49458)
 -- Name: despesas despesas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5564,6 +5648,7 @@ ALTER TABLE ONLY public.despesas
 
 
 --
+-- TOC entry 5428 (class 2606 OID 49403)
 -- Name: dividas dividas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5572,6 +5657,7 @@ ALTER TABLE ONLY public.dividas
 
 
 --
+-- TOC entry 5430 (class 2606 OID 49405)
 -- Name: dividas dividas_venda_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5580,6 +5666,7 @@ ALTER TABLE ONLY public.dividas
 
 
 --
+-- TOC entry 5560 (class 2606 OID 148271)
 -- Name: documento_impressora documento_impressora_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5588,6 +5675,7 @@ ALTER TABLE ONLY public.documento_impressora
 
 
 --
+-- TOC entry 5562 (class 2606 OID 148273)
 -- Name: documento_impressora documento_impressora_tipo_documento_id_impressora_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5596,6 +5684,7 @@ ALTER TABLE ONLY public.documento_impressora
 
 
 --
+-- TOC entry 5406 (class 2606 OID 24806)
 -- Name: empresa empresa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5604,6 +5693,7 @@ ALTER TABLE ONLY public.empresa
 
 
 --
+-- TOC entry 5513 (class 2606 OID 123434)
 -- Name: familia_areas familia_areas_familia_id_area_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5612,6 +5702,7 @@ ALTER TABLE ONLY public.familia_areas
 
 
 --
+-- TOC entry 5515 (class 2606 OID 123432)
 -- Name: familia_areas familia_areas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5620,6 +5711,7 @@ ALTER TABLE ONLY public.familia_areas
 
 
 --
+-- TOC entry 5454 (class 2606 OID 82239)
 -- Name: familia_setores familia_setores_familia_id_setor_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5628,6 +5720,7 @@ ALTER TABLE ONLY public.familia_setores
 
 
 --
+-- TOC entry 5456 (class 2606 OID 82237)
 -- Name: familia_setores familia_setores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5636,6 +5729,7 @@ ALTER TABLE ONLY public.familia_setores
 
 
 --
+-- TOC entry 5379 (class 2606 OID 16609)
 -- Name: familias familias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5644,6 +5738,7 @@ ALTER TABLE ONLY public.familias
 
 
 --
+-- TOC entry 5478 (class 2606 OID 115193)
 -- Name: faturas_entrada faturas_entrada_fornecedor_id_numero_fatura_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5652,6 +5747,7 @@ ALTER TABLE ONLY public.faturas_entrada
 
 
 --
+-- TOC entry 5480 (class 2606 OID 115191)
 -- Name: faturas_entrada faturas_entrada_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5660,6 +5756,7 @@ ALTER TABLE ONLY public.faturas_entrada
 
 
 --
+-- TOC entry 5408 (class 2606 OID 24819)
 -- Name: formas_pagamento formas_pagamento_nome_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5668,6 +5765,7 @@ ALTER TABLE ONLY public.formas_pagamento
 
 
 --
+-- TOC entry 5410 (class 2606 OID 24817)
 -- Name: formas_pagamento formas_pagamento_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5676,6 +5774,7 @@ ALTER TABLE ONLY public.formas_pagamento
 
 
 --
+-- TOC entry 5473 (class 2606 OID 107065)
 -- Name: fornecedores fornecedores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5684,6 +5783,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
+-- TOC entry 5551 (class 2606 OID 148243)
 -- Name: impressoras impressoras_nome_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5692,6 +5792,7 @@ ALTER TABLE ONLY public.impressoras
 
 
 --
+-- TOC entry 5553 (class 2606 OID 148241)
 -- Name: impressoras impressoras_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5700,6 +5801,7 @@ ALTER TABLE ONLY public.impressoras
 
 
 --
+-- TOC entry 5487 (class 2606 OID 115215)
 -- Name: itens_fatura_entrada itens_fatura_entrada_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5708,6 +5810,7 @@ ALTER TABLE ONLY public.itens_fatura_entrada
 
 
 --
+-- TOC entry 5537 (class 2606 OID 123538)
 -- Name: itens_pedido itens_pedido_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5716,6 +5819,7 @@ ALTER TABLE ONLY public.itens_pedido
 
 
 --
+-- TOC entry 5404 (class 2606 OID 16655)
 -- Name: itens_venda itens_venda_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5724,6 +5828,7 @@ ALTER TABLE ONLY public.itens_venda
 
 
 --
+-- TOC entry 5519 (class 2606 OID 123472)
 -- Name: locais_mesa locais_mesa_nome_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5732,6 +5837,7 @@ ALTER TABLE ONLY public.locais_mesa
 
 
 --
+-- TOC entry 5521 (class 2606 OID 123470)
 -- Name: locais_mesa locais_mesa_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5740,6 +5846,7 @@ ALTER TABLE ONLY public.locais_mesa
 
 
 --
+-- TOC entry 5593 (class 2606 OID 156910)
 -- Name: logs_acesso logs_acesso_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5748,6 +5855,7 @@ ALTER TABLE ONLY public.logs_acesso
 
 
 --
+-- TOC entry 5525 (class 2606 OID 123487)
 -- Name: mesas mesas_numero_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5756,6 +5864,7 @@ ALTER TABLE ONLY public.mesas
 
 
 --
+-- TOC entry 5527 (class 2606 OID 123485)
 -- Name: mesas mesas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5764,6 +5873,7 @@ ALTER TABLE ONLY public.mesas
 
 
 --
+-- TOC entry 5437 (class 2606 OID 49432)
 -- Name: pagamentos_divida pagamentos_divida_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5772,6 +5882,7 @@ ALTER TABLE ONLY public.pagamentos_divida
 
 
 --
+-- TOC entry 5421 (class 2606 OID 24878)
 -- Name: pagamentos_venda pagamentos_venda_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5780,6 +5891,7 @@ ALTER TABLE ONLY public.pagamentos_venda
 
 
 --
+-- TOC entry 5532 (class 2606 OID 123511)
 -- Name: pedidos pedidos_numero_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5788,6 +5900,7 @@ ALTER TABLE ONLY public.pedidos
 
 
 --
+-- TOC entry 5534 (class 2606 OID 123509)
 -- Name: pedidos pedidos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5796,6 +5909,7 @@ ALTER TABLE ONLY public.pedidos
 
 
 --
+-- TOC entry 5509 (class 2606 OID 123396)
 -- Name: perfil_permissoes perfil_permissoes_perfil_id_permissao_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5804,6 +5918,7 @@ ALTER TABLE ONLY public.perfil_permissoes
 
 
 --
+-- TOC entry 5511 (class 2606 OID 123394)
 -- Name: perfil_permissoes perfil_permissoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5812,6 +5927,7 @@ ALTER TABLE ONLY public.perfil_permissoes
 
 
 --
+-- TOC entry 5489 (class 2606 OID 115270)
 -- Name: perfis_usuario perfis_usuario_nome_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5820,6 +5936,7 @@ ALTER TABLE ONLY public.perfis_usuario
 
 
 --
+-- TOC entry 5491 (class 2606 OID 115268)
 -- Name: perfis_usuario perfis_usuario_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5828,6 +5945,7 @@ ALTER TABLE ONLY public.perfis_usuario
 
 
 --
+-- TOC entry 5503 (class 2606 OID 123383)
 -- Name: permissoes permissoes_codigo_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5836,6 +5954,7 @@ ALTER TABLE ONLY public.permissoes
 
 
 --
+-- TOC entry 5505 (class 2606 OID 123381)
 -- Name: permissoes permissoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5844,6 +5963,7 @@ ALTER TABLE ONLY public.permissoes
 
 
 --
+-- TOC entry 5462 (class 2606 OID 82320)
 -- Name: produto_composicao produto_composicao_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5852,6 +5972,7 @@ ALTER TABLE ONLY public.produto_composicao
 
 
 --
+-- TOC entry 5464 (class 2606 OID 82322)
 -- Name: produto_composicao produto_composicao_produto_id_produto_componente_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5860,6 +5981,7 @@ ALTER TABLE ONLY public.produto_composicao
 
 
 --
+-- TOC entry 5388 (class 2606 OID 16626)
 -- Name: produtos produtos_codigo_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5868,6 +5990,7 @@ ALTER TABLE ONLY public.produtos
 
 
 --
+-- TOC entry 5390 (class 2606 OID 16624)
 -- Name: produtos produtos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5876,6 +5999,7 @@ ALTER TABLE ONLY public.produtos
 
 
 --
+-- TOC entry 5576 (class 2606 OID 156669)
 -- Name: servidor_tempo servidor_tempo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5884,6 +6008,7 @@ ALTER TABLE ONLY public.servidor_tempo
 
 
 --
+-- TOC entry 5413 (class 2606 OID 24832)
 -- Name: setores setores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5892,6 +6017,7 @@ ALTER TABLE ONLY public.setores
 
 
 --
+-- TOC entry 5567 (class 2606 OID 156566)
 -- Name: terminais terminais_nome_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5900,6 +6026,7 @@ ALTER TABLE ONLY public.terminais
 
 
 --
+-- TOC entry 5569 (class 2606 OID 156564)
 -- Name: terminais terminais_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5908,6 +6035,7 @@ ALTER TABLE ONLY public.terminais
 
 
 --
+-- TOC entry 5573 (class 2606 OID 156587)
 -- Name: terminal_logs terminal_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5916,6 +6044,7 @@ ALTER TABLE ONLY public.terminal_logs
 
 
 --
+-- TOC entry 5556 (class 2606 OID 148259)
 -- Name: tipos_documento tipos_documento_codigo_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5924,6 +6053,7 @@ ALTER TABLE ONLY public.tipos_documento
 
 
 --
+-- TOC entry 5558 (class 2606 OID 148257)
 -- Name: tipos_documento tipos_documento_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5932,6 +6062,7 @@ ALTER TABLE ONLY public.tipos_documento
 
 
 --
+-- TOC entry 5497 (class 2606 OID 123419)
 -- Name: usuarios usuarios_nome_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5940,6 +6071,7 @@ ALTER TABLE ONLY public.usuarios
 
 
 --
+-- TOC entry 5499 (class 2606 OID 115284)
 -- Name: usuarios usuarios_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5948,6 +6080,7 @@ ALTER TABLE ONLY public.usuarios
 
 
 --
+-- TOC entry 5399 (class 2606 OID 16644)
 -- Name: vendas vendas_numero_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5956,6 +6089,7 @@ ALTER TABLE ONLY public.vendas
 
 
 --
+-- TOC entry 5401 (class 2606 OID 16642)
 -- Name: vendas vendas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5964,6 +6098,7 @@ ALTER TABLE ONLY public.vendas
 
 
 --
+-- TOC entry 5467 (class 1259 OID 107020)
 -- Name: idx_acertos_area; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5971,6 +6106,7 @@ CREATE INDEX idx_acertos_area ON public.acertos_stock USING btree (area_id);
 
 
 --
+-- TOC entry 5468 (class 1259 OID 107018)
 -- Name: idx_acertos_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5978,6 +6114,7 @@ CREATE INDEX idx_acertos_data ON public.acertos_stock USING btree (data);
 
 
 --
+-- TOC entry 5469 (class 1259 OID 107021)
 -- Name: idx_acertos_motivo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5985,6 +6122,7 @@ CREATE INDEX idx_acertos_motivo ON public.acertos_stock USING btree (motivo);
 
 
 --
+-- TOC entry 5470 (class 1259 OID 107017)
 -- Name: idx_acertos_produto; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5992,6 +6130,7 @@ CREATE INDEX idx_acertos_produto ON public.acertos_stock USING btree (produto_id
 
 
 --
+-- TOC entry 5471 (class 1259 OID 107019)
 -- Name: idx_acertos_setor; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -5999,6 +6138,7 @@ CREATE INDEX idx_acertos_setor ON public.acertos_stock USING btree (setor_id);
 
 
 --
+-- TOC entry 5416 (class 1259 OID 24865)
 -- Name: idx_areas_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6006,6 +6146,7 @@ CREATE INDEX idx_areas_ativo ON public.areas USING btree (ativo);
 
 
 --
+-- TOC entry 5417 (class 1259 OID 148292)
 -- Name: idx_areas_impressora; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6013,6 +6154,7 @@ CREATE INDEX idx_areas_impressora ON public.areas USING btree (impressora_id);
 
 
 --
+-- TOC entry 5584 (class 1259 OID 156884)
 -- Name: idx_auditoria_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6020,6 +6162,7 @@ CREATE INDEX idx_auditoria_data ON public.auditoria USING btree (data_operacao D
 
 
 --
+-- TOC entry 5585 (class 1259 OID 156885)
 -- Name: idx_auditoria_operacao; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6027,6 +6170,7 @@ CREATE INDEX idx_auditoria_operacao ON public.auditoria USING btree (operacao);
 
 
 --
+-- TOC entry 5586 (class 1259 OID 156886)
 -- Name: idx_auditoria_registro; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6034,6 +6178,7 @@ CREATE INDEX idx_auditoria_registro ON public.auditoria USING btree (tabela, reg
 
 
 --
+-- TOC entry 5587 (class 1259 OID 156882)
 -- Name: idx_auditoria_tabela; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6041,6 +6186,7 @@ CREATE INDEX idx_auditoria_tabela ON public.auditoria USING btree (tabela);
 
 
 --
+-- TOC entry 5588 (class 1259 OID 156883)
 -- Name: idx_auditoria_usuario; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6048,6 +6194,7 @@ CREATE INDEX idx_auditoria_usuario ON public.auditoria USING btree (usuario_id);
 
 
 --
+-- TOC entry 5446 (class 1259 OID 57601)
 -- Name: idx_caixas_data_abertura; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6055,6 +6202,7 @@ CREATE INDEX idx_caixas_data_abertura ON public.caixas USING btree (data_abertur
 
 
 --
+-- TOC entry 5447 (class 1259 OID 57603)
 -- Name: idx_caixas_numero; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6062,6 +6210,7 @@ CREATE INDEX idx_caixas_numero ON public.caixas USING btree (numero);
 
 
 --
+-- TOC entry 5448 (class 1259 OID 57600)
 -- Name: idx_caixas_status; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6069,6 +6218,7 @@ CREATE INDEX idx_caixas_status ON public.caixas USING btree (status);
 
 
 --
+-- TOC entry 5449 (class 1259 OID 57602)
 -- Name: idx_caixas_terminal; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6076,6 +6226,7 @@ CREATE INDEX idx_caixas_terminal ON public.caixas USING btree (terminal);
 
 
 --
+-- TOC entry 5540 (class 1259 OID 123613)
 -- Name: idx_cancelamentos_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6083,6 +6234,7 @@ CREATE INDEX idx_cancelamentos_data ON public.cancelamentos_item_pedido USING bt
 
 
 --
+-- TOC entry 5541 (class 1259 OID 123611)
 -- Name: idx_cancelamentos_pedido; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6090,6 +6242,7 @@ CREATE INDEX idx_cancelamentos_pedido ON public.cancelamentos_item_pedido USING 
 
 
 --
+-- TOC entry 5542 (class 1259 OID 123612)
 -- Name: idx_cancelamentos_usuario; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6097,6 +6250,7 @@ CREATE INDEX idx_cancelamentos_usuario ON public.cancelamentos_item_pedido USING
 
 
 --
+-- TOC entry 5424 (class 1259 OID 49386)
 -- Name: idx_clientes_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6104,6 +6258,7 @@ CREATE INDEX idx_clientes_ativo ON public.clientes USING btree (ativo);
 
 
 --
+-- TOC entry 5425 (class 1259 OID 49385)
 -- Name: idx_clientes_contacto; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6111,6 +6266,7 @@ CREATE INDEX idx_clientes_contacto ON public.clientes USING btree (contacto);
 
 
 --
+-- TOC entry 5426 (class 1259 OID 49384)
 -- Name: idx_clientes_nome; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6118,6 +6274,7 @@ CREATE INDEX idx_clientes_nome ON public.clientes USING btree (nome);
 
 
 --
+-- TOC entry 5452 (class 1259 OID 65824)
 -- Name: idx_conferencias_caixa_caixa_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6125,6 +6282,7 @@ CREATE INDEX idx_conferencias_caixa_caixa_id ON public.conferencias_caixa USING 
 
 
 --
+-- TOC entry 5547 (class 1259 OID 123643)
 -- Name: idx_configuracoes_categoria; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6132,6 +6290,7 @@ CREATE INDEX idx_configuracoes_categoria ON public.configuracoes USING btree (ca
 
 
 --
+-- TOC entry 5548 (class 1259 OID 123642)
 -- Name: idx_configuracoes_chave; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6139,6 +6298,7 @@ CREATE INDEX idx_configuracoes_chave ON public.configuracoes USING btree (chave)
 
 
 --
+-- TOC entry 5581 (class 1259 OID 156698)
 -- Name: idx_controle_fecho_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6146,6 +6306,7 @@ CREATE INDEX idx_controle_fecho_data ON public.controle_fecho_caixa USING btree 
 
 
 --
+-- TOC entry 5440 (class 1259 OID 49465)
 -- Name: idx_despesas_categoria; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6153,6 +6314,7 @@ CREATE INDEX idx_despesas_categoria ON public.despesas USING btree (categoria);
 
 
 --
+-- TOC entry 5441 (class 1259 OID 49464)
 -- Name: idx_despesas_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6160,6 +6322,7 @@ CREATE INDEX idx_despesas_data ON public.despesas USING btree (data_despesa);
 
 
 --
+-- TOC entry 5431 (class 1259 OID 49416)
 -- Name: idx_dividas_cliente; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6167,6 +6330,7 @@ CREATE INDEX idx_dividas_cliente ON public.dividas USING btree (cliente_id);
 
 
 --
+-- TOC entry 5432 (class 1259 OID 49418)
 -- Name: idx_dividas_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6174,6 +6338,7 @@ CREATE INDEX idx_dividas_data ON public.dividas USING btree (data_divida);
 
 
 --
+-- TOC entry 5433 (class 1259 OID 49417)
 -- Name: idx_dividas_status; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6181,6 +6346,7 @@ CREATE INDEX idx_dividas_status ON public.dividas USING btree (status);
 
 
 --
+-- TOC entry 5563 (class 1259 OID 148291)
 -- Name: idx_documento_impressora_tipo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6188,6 +6354,7 @@ CREATE INDEX idx_documento_impressora_tipo ON public.documento_impressora USING 
 
 
 --
+-- TOC entry 5516 (class 1259 OID 123446)
 -- Name: idx_familia_areas_area; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6195,6 +6362,7 @@ CREATE INDEX idx_familia_areas_area ON public.familia_areas USING btree (area_id
 
 
 --
+-- TOC entry 5517 (class 1259 OID 123445)
 -- Name: idx_familia_areas_familia; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6202,6 +6370,7 @@ CREATE INDEX idx_familia_areas_familia ON public.familia_areas USING btree (fami
 
 
 --
+-- TOC entry 5457 (class 1259 OID 82250)
 -- Name: idx_familia_setores_familia; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6209,6 +6378,7 @@ CREATE INDEX idx_familia_setores_familia ON public.familia_setores USING btree (
 
 
 --
+-- TOC entry 5458 (class 1259 OID 82251)
 -- Name: idx_familia_setores_setor; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6216,6 +6386,7 @@ CREATE INDEX idx_familia_setores_setor ON public.familia_setores USING btree (se
 
 
 --
+-- TOC entry 5481 (class 1259 OID 115227)
 -- Name: idx_faturas_entrada_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6223,6 +6394,7 @@ CREATE INDEX idx_faturas_entrada_data ON public.faturas_entrada USING btree (dat
 
 
 --
+-- TOC entry 5482 (class 1259 OID 115226)
 -- Name: idx_faturas_entrada_fornecedor; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6230,6 +6402,7 @@ CREATE INDEX idx_faturas_entrada_fornecedor ON public.faturas_entrada USING btre
 
 
 --
+-- TOC entry 5483 (class 1259 OID 115228)
 -- Name: idx_faturas_entrada_numero; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6237,6 +6410,7 @@ CREATE INDEX idx_faturas_entrada_numero ON public.faturas_entrada USING btree (n
 
 
 --
+-- TOC entry 5474 (class 1259 OID 107068)
 -- Name: idx_fornecedores_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6244,6 +6418,7 @@ CREATE INDEX idx_fornecedores_ativo ON public.fornecedores USING btree (ativo);
 
 
 --
+-- TOC entry 5475 (class 1259 OID 107067)
 -- Name: idx_fornecedores_nif; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6251,6 +6426,7 @@ CREATE INDEX idx_fornecedores_nif ON public.fornecedores USING btree (nif);
 
 
 --
+-- TOC entry 5476 (class 1259 OID 107066)
 -- Name: idx_fornecedores_nome; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6258,6 +6434,7 @@ CREATE INDEX idx_fornecedores_nome ON public.fornecedores USING btree (nome);
 
 
 --
+-- TOC entry 5549 (class 1259 OID 148289)
 -- Name: idx_impressoras_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6265,6 +6442,7 @@ CREATE INDEX idx_impressoras_ativo ON public.impressoras USING btree (ativo);
 
 
 --
+-- TOC entry 5484 (class 1259 OID 115229)
 -- Name: idx_itens_fatura_entrada_fatura; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6272,6 +6450,7 @@ CREATE INDEX idx_itens_fatura_entrada_fatura ON public.itens_fatura_entrada USIN
 
 
 --
+-- TOC entry 5485 (class 1259 OID 115230)
 -- Name: idx_itens_fatura_entrada_produto; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6279,6 +6458,7 @@ CREATE INDEX idx_itens_fatura_entrada_produto ON public.itens_fatura_entrada USI
 
 
 --
+-- TOC entry 5535 (class 1259 OID 123554)
 -- Name: idx_itens_pedido_pedido; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6286,6 +6466,7 @@ CREATE INDEX idx_itens_pedido_pedido ON public.itens_pedido USING btree (pedido_
 
 
 --
+-- TOC entry 5402 (class 1259 OID 16669)
 -- Name: idx_itens_venda; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6293,6 +6474,7 @@ CREATE INDEX idx_itens_venda ON public.itens_venda USING btree (venda_id);
 
 
 --
+-- TOC entry 5589 (class 1259 OID 156917)
 -- Name: idx_logs_acesso_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6300,6 +6482,7 @@ CREATE INDEX idx_logs_acesso_data ON public.logs_acesso USING btree (data_hora D
 
 
 --
+-- TOC entry 5590 (class 1259 OID 156918)
 -- Name: idx_logs_acesso_tipo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6307,6 +6490,7 @@ CREATE INDEX idx_logs_acesso_tipo ON public.logs_acesso USING btree (tipo);
 
 
 --
+-- TOC entry 5591 (class 1259 OID 156916)
 -- Name: idx_logs_acesso_usuario; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6314,6 +6498,7 @@ CREATE INDEX idx_logs_acesso_usuario ON public.logs_acesso USING btree (usuario_
 
 
 --
+-- TOC entry 5522 (class 1259 OID 123549)
 -- Name: idx_mesas_local; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6321,6 +6506,7 @@ CREATE INDEX idx_mesas_local ON public.mesas USING btree (local_id);
 
 
 --
+-- TOC entry 5523 (class 1259 OID 123550)
 -- Name: idx_mesas_numero; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6328,6 +6514,7 @@ CREATE INDEX idx_mesas_numero ON public.mesas USING btree (numero);
 
 
 --
+-- TOC entry 5434 (class 1259 OID 49444)
 -- Name: idx_pagamentos_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6335,6 +6522,7 @@ CREATE INDEX idx_pagamentos_data ON public.pagamentos_divida USING btree (data_p
 
 
 --
+-- TOC entry 5435 (class 1259 OID 49443)
 -- Name: idx_pagamentos_divida; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6342,6 +6530,7 @@ CREATE INDEX idx_pagamentos_divida ON public.pagamentos_divida USING btree (divi
 
 
 --
+-- TOC entry 5418 (class 1259 OID 24890)
 -- Name: idx_pagamentos_venda_forma_pagamento_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6349,6 +6538,7 @@ CREATE INDEX idx_pagamentos_venda_forma_pagamento_id ON public.pagamentos_venda 
 
 
 --
+-- TOC entry 5419 (class 1259 OID 24889)
 -- Name: idx_pagamentos_venda_venda_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6356,6 +6546,7 @@ CREATE INDEX idx_pagamentos_venda_venda_id ON public.pagamentos_venda USING btre
 
 
 --
+-- TOC entry 5528 (class 1259 OID 123551)
 -- Name: idx_pedidos_mesa; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6363,6 +6554,7 @@ CREATE INDEX idx_pedidos_mesa ON public.pedidos USING btree (mesa_id);
 
 
 --
+-- TOC entry 5529 (class 1259 OID 123553)
 -- Name: idx_pedidos_status; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6370,6 +6562,7 @@ CREATE INDEX idx_pedidos_status ON public.pedidos USING btree (status);
 
 
 --
+-- TOC entry 5530 (class 1259 OID 123552)
 -- Name: idx_pedidos_usuario; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6377,6 +6570,7 @@ CREATE INDEX idx_pedidos_usuario ON public.pedidos USING btree (usuario_id);
 
 
 --
+-- TOC entry 5506 (class 1259 OID 123407)
 -- Name: idx_perfil_permissoes_perfil; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6384,6 +6578,7 @@ CREATE INDEX idx_perfil_permissoes_perfil ON public.perfil_permissoes USING btre
 
 
 --
+-- TOC entry 5507 (class 1259 OID 123408)
 -- Name: idx_perfil_permissoes_permissao; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6391,6 +6586,7 @@ CREATE INDEX idx_perfil_permissoes_permissao ON public.perfil_permissoes USING b
 
 
 --
+-- TOC entry 5500 (class 1259 OID 123410)
 -- Name: idx_permissoes_categoria; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6398,6 +6594,7 @@ CREATE INDEX idx_permissoes_categoria ON public.permissoes USING btree (categori
 
 
 --
+-- TOC entry 5501 (class 1259 OID 123409)
 -- Name: idx_permissoes_codigo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6405,6 +6602,7 @@ CREATE INDEX idx_permissoes_codigo ON public.permissoes USING btree (codigo);
 
 
 --
+-- TOC entry 5459 (class 1259 OID 82334)
 -- Name: idx_produto_composicao_componente; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6412,6 +6610,7 @@ CREATE INDEX idx_produto_composicao_componente ON public.produto_composicao USIN
 
 
 --
+-- TOC entry 5460 (class 1259 OID 82333)
 -- Name: idx_produto_composicao_produto; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6419,6 +6618,7 @@ CREATE INDEX idx_produto_composicao_produto ON public.produto_composicao USING b
 
 
 --
+-- TOC entry 5380 (class 1259 OID 82275)
 -- Name: idx_produtos_area; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6426,6 +6626,7 @@ CREATE INDEX idx_produtos_area ON public.produtos USING btree (area_id);
 
 
 --
+-- TOC entry 5381 (class 1259 OID 16667)
 -- Name: idx_produtos_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6433,6 +6634,7 @@ CREATE INDEX idx_produtos_ativo ON public.produtos USING btree (ativo);
 
 
 --
+-- TOC entry 5382 (class 1259 OID 156617)
 -- Name: idx_produtos_codigo_barras; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6440,6 +6642,7 @@ CREATE UNIQUE INDEX idx_produtos_codigo_barras ON public.produtos USING btree (c
 
 
 --
+-- TOC entry 5383 (class 1259 OID 156618)
 -- Name: idx_produtos_codigo_barras_lower; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6447,6 +6650,7 @@ CREATE INDEX idx_produtos_codigo_barras_lower ON public.produtos USING btree (lo
 
 
 --
+-- TOC entry 5384 (class 1259 OID 173396)
 -- Name: idx_produtos_estoque_baixo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6454,6 +6658,7 @@ CREATE INDEX idx_produtos_estoque_baixo ON public.produtos USING btree (estoque_
 
 
 --
+-- TOC entry 5385 (class 1259 OID 16666)
 -- Name: idx_produtos_familia; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6461,6 +6666,7 @@ CREATE INDEX idx_produtos_familia ON public.produtos USING btree (familia_id);
 
 
 --
+-- TOC entry 5386 (class 1259 OID 82274)
 -- Name: idx_produtos_setor; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6468,6 +6674,7 @@ CREATE INDEX idx_produtos_setor ON public.produtos USING btree (setor_id);
 
 
 --
+-- TOC entry 5574 (class 1259 OID 156697)
 -- Name: idx_servidor_tempo_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6475,6 +6682,7 @@ CREATE INDEX idx_servidor_tempo_data ON public.servidor_tempo USING btree (ultim
 
 
 --
+-- TOC entry 5411 (class 1259 OID 24864)
 -- Name: idx_setores_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6482,6 +6690,7 @@ CREATE INDEX idx_setores_ativo ON public.setores USING btree (ativo);
 
 
 --
+-- TOC entry 5564 (class 1259 OID 156598)
 -- Name: idx_terminais_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6489,6 +6698,7 @@ CREATE INDEX idx_terminais_ativo ON public.terminais USING btree (ativo);
 
 
 --
+-- TOC entry 5565 (class 1259 OID 156599)
 -- Name: idx_terminais_tipo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6496,6 +6706,7 @@ CREATE INDEX idx_terminais_tipo ON public.terminais USING btree (tipo);
 
 
 --
+-- TOC entry 5570 (class 1259 OID 156602)
 -- Name: idx_terminal_logs_created; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6503,6 +6714,7 @@ CREATE INDEX idx_terminal_logs_created ON public.terminal_logs USING btree (crea
 
 
 --
+-- TOC entry 5571 (class 1259 OID 156601)
 -- Name: idx_terminal_logs_terminal; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6510,6 +6722,7 @@ CREATE INDEX idx_terminal_logs_terminal ON public.terminal_logs USING btree (ter
 
 
 --
+-- TOC entry 5554 (class 1259 OID 148290)
 -- Name: idx_tipos_documento_codigo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6517,6 +6730,7 @@ CREATE INDEX idx_tipos_documento_codigo ON public.tipos_documento USING btree (c
 
 
 --
+-- TOC entry 5492 (class 1259 OID 115294)
 -- Name: idx_usuarios_ativo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6524,6 +6738,7 @@ CREATE INDEX idx_usuarios_ativo ON public.usuarios USING btree (ativo);
 
 
 --
+-- TOC entry 5493 (class 1259 OID 123420)
 -- Name: idx_usuarios_codigo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6531,6 +6746,7 @@ CREATE INDEX idx_usuarios_codigo ON public.usuarios USING btree (codigo);
 
 
 --
+-- TOC entry 5494 (class 1259 OID 123421)
 -- Name: idx_usuarios_nome; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6538,6 +6754,7 @@ CREATE INDEX idx_usuarios_nome ON public.usuarios USING btree (nome);
 
 
 --
+-- TOC entry 5495 (class 1259 OID 115292)
 -- Name: idx_usuarios_perfil; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6545,6 +6762,7 @@ CREATE INDEX idx_usuarios_perfil ON public.usuarios USING btree (perfil_id);
 
 
 --
+-- TOC entry 5391 (class 1259 OID 49472)
 -- Name: idx_vendas_cliente; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6552,6 +6770,7 @@ CREATE INDEX idx_vendas_cliente ON public.vendas USING btree (cliente_id);
 
 
 --
+-- TOC entry 5392 (class 1259 OID 16668)
 -- Name: idx_vendas_data; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6559,6 +6778,7 @@ CREATE INDEX idx_vendas_data ON public.vendas USING btree (data_venda);
 
 
 --
+-- TOC entry 5393 (class 1259 OID 24863)
 -- Name: idx_vendas_forma_pagamento; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6566,6 +6786,7 @@ CREATE INDEX idx_vendas_forma_pagamento ON public.vendas USING btree (forma_paga
 
 
 --
+-- TOC entry 5394 (class 1259 OID 156994)
 -- Name: idx_vendas_status; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6573,6 +6794,7 @@ CREATE INDEX idx_vendas_status ON public.vendas USING btree (status);
 
 
 --
+-- TOC entry 5395 (class 1259 OID 156600)
 -- Name: idx_vendas_terminal; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6580,6 +6802,7 @@ CREATE INDEX idx_vendas_terminal ON public.vendas USING btree (terminal_id);
 
 
 --
+-- TOC entry 5396 (class 1259 OID 49473)
 -- Name: idx_vendas_tipo; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6587,6 +6810,7 @@ CREATE INDEX idx_vendas_tipo ON public.vendas USING btree (tipo_venda);
 
 
 --
+-- TOC entry 5397 (class 1259 OID 156995)
 -- Name: idx_vendas_usuario; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -6594,6 +6818,7 @@ CREATE INDEX idx_vendas_usuario ON public.vendas USING btree (usuario_id);
 
 
 --
+-- TOC entry 5845 (class 2618 OID 123568)
 -- Name: v_mesas_por_local _RETURN; Type: RULE; Schema: public; Owner: -
 --
 
@@ -6620,6 +6845,7 @@ CREATE OR REPLACE VIEW public.v_mesas_por_local AS
 
 
 --
+-- TOC entry 5643 (class 2620 OID 82398)
 -- Name: produtos before_insert_produto_codigo; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6627,6 +6853,7 @@ CREATE TRIGGER before_insert_produto_codigo BEFORE INSERT ON public.produtos FOR
 
 
 --
+-- TOC entry 5657 (class 2620 OID 123646)
 -- Name: configuracoes trigger_atualizar_data_configuracao; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6634,6 +6861,7 @@ CREATE TRIGGER trigger_atualizar_data_configuracao BEFORE UPDATE ON public.confi
 
 
 --
+-- TOC entry 5652 (class 2620 OID 107046)
 -- Name: acertos_stock trigger_atualizar_estoque; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6641,6 +6869,7 @@ CREATE TRIGGER trigger_atualizar_estoque AFTER INSERT ON public.acertos_stock FO
 
 
 --
+-- TOC entry 5658 (class 2620 OID 148306)
 -- Name: impressoras trigger_atualizar_impressoras; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6648,6 +6877,7 @@ CREATE TRIGGER trigger_atualizar_impressoras BEFORE UPDATE ON public.impressoras
 
 
 --
+-- TOC entry 5660 (class 2620 OID 156604)
 -- Name: terminais trigger_atualizar_terminais; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6655,6 +6885,7 @@ CREATE TRIGGER trigger_atualizar_terminais BEFORE UPDATE ON public.terminais FOR
 
 
 --
+-- TOC entry 5656 (class 2620 OID 123572)
 -- Name: itens_pedido trigger_atualizar_total_pedido; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6662,6 +6893,7 @@ CREATE TRIGGER trigger_atualizar_total_pedido AFTER INSERT OR DELETE OR UPDATE O
 
 
 --
+-- TOC entry 5651 (class 2620 OID 49494)
 -- Name: dividas trigger_atualizar_valor_restante; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6669,6 +6901,7 @@ CREATE TRIGGER trigger_atualizar_valor_restante BEFORE INSERT OR UPDATE ON publi
 
 
 --
+-- TOC entry 5649 (class 2620 OID 156962)
 -- Name: areas trigger_audit_areas; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6676,6 +6909,7 @@ CREATE TRIGGER trigger_audit_areas AFTER INSERT OR DELETE OR UPDATE ON public.ar
 
 
 --
+-- TOC entry 5650 (class 2620 OID 156959)
 -- Name: clientes trigger_audit_clientes; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6683,6 +6917,7 @@ CREATE TRIGGER trigger_audit_clientes AFTER INSERT OR DELETE OR UPDATE ON public
 
 
 --
+-- TOC entry 5642 (class 2620 OID 156960)
 -- Name: familias trigger_audit_familias; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6690,6 +6925,7 @@ CREATE TRIGGER trigger_audit_familias AFTER INSERT OR DELETE OR UPDATE ON public
 
 
 --
+-- TOC entry 5659 (class 2620 OID 156961)
 -- Name: impressoras trigger_audit_impressoras; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6697,6 +6933,7 @@ CREATE TRIGGER trigger_audit_impressoras AFTER INSERT OR DELETE OR UPDATE ON pub
 
 
 --
+-- TOC entry 5648 (class 2620 OID 156956)
 -- Name: itens_venda trigger_audit_itens_venda; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6704,6 +6941,7 @@ CREATE TRIGGER trigger_audit_itens_venda AFTER INSERT OR DELETE OR UPDATE ON pub
 
 
 --
+-- TOC entry 5655 (class 2620 OID 156963)
 -- Name: mesas trigger_audit_mesas; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6711,6 +6949,7 @@ CREATE TRIGGER trigger_audit_mesas AFTER INSERT OR DELETE OR UPDATE ON public.me
 
 
 --
+-- TOC entry 5654 (class 2620 OID 156958)
 -- Name: perfil_permissoes trigger_audit_perfil_permissoes; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6718,6 +6957,7 @@ CREATE TRIGGER trigger_audit_perfil_permissoes AFTER INSERT OR DELETE OR UPDATE 
 
 
 --
+-- TOC entry 5644 (class 2620 OID 156954)
 -- Name: produtos trigger_audit_produtos; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6725,6 +6965,7 @@ CREATE TRIGGER trigger_audit_produtos AFTER INSERT OR DELETE OR UPDATE ON public
 
 
 --
+-- TOC entry 5653 (class 2620 OID 156957)
 -- Name: usuarios trigger_audit_usuarios; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6732,6 +6973,7 @@ CREATE TRIGGER trigger_audit_usuarios AFTER INSERT OR DELETE OR UPDATE ON public
 
 
 --
+-- TOC entry 5646 (class 2620 OID 156955)
 -- Name: vendas trigger_audit_vendas; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6739,6 +6981,7 @@ CREATE TRIGGER trigger_audit_vendas AFTER INSERT OR DELETE OR UPDATE ON public.v
 
 
 --
+-- TOC entry 5645 (class 2620 OID 156628)
 -- Name: produtos trigger_validar_codigo_barras_produto; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6746,6 +6989,7 @@ CREATE TRIGGER trigger_validar_codigo_barras_produto BEFORE INSERT OR UPDATE ON 
 
 
 --
+-- TOC entry 5647 (class 2620 OID 156699)
 -- Name: vendas trigger_validar_data_venda; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -6753,6 +6997,7 @@ CREATE TRIGGER trigger_validar_data_venda BEFORE INSERT ON public.vendas FOR EAC
 
 
 --
+-- TOC entry 5615 (class 2606 OID 107012)
 -- Name: acertos_stock acertos_stock_area_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6761,6 +7006,7 @@ ALTER TABLE ONLY public.acertos_stock
 
 
 --
+-- TOC entry 5616 (class 2606 OID 107002)
 -- Name: acertos_stock acertos_stock_produto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6769,6 +7015,7 @@ ALTER TABLE ONLY public.acertos_stock
 
 
 --
+-- TOC entry 5617 (class 2606 OID 107007)
 -- Name: acertos_stock acertos_stock_setor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6777,6 +7024,7 @@ ALTER TABLE ONLY public.acertos_stock
 
 
 --
+-- TOC entry 5602 (class 2606 OID 148284)
 -- Name: areas areas_impressora_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6785,6 +7033,7 @@ ALTER TABLE ONLY public.areas
 
 
 --
+-- TOC entry 5640 (class 2606 OID 156877)
 -- Name: auditoria auditoria_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6793,6 +7042,7 @@ ALTER TABLE ONLY public.auditoria
 
 
 --
+-- TOC entry 5632 (class 2606 OID 123596)
 -- Name: cancelamentos_item_pedido cancelamentos_item_pedido_item_pedido_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6801,6 +7051,7 @@ ALTER TABLE ONLY public.cancelamentos_item_pedido
 
 
 --
+-- TOC entry 5633 (class 2606 OID 123601)
 -- Name: cancelamentos_item_pedido cancelamentos_item_pedido_pedido_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6809,6 +7060,7 @@ ALTER TABLE ONLY public.cancelamentos_item_pedido
 
 
 --
+-- TOC entry 5634 (class 2606 OID 123606)
 -- Name: cancelamentos_item_pedido cancelamentos_item_pedido_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6817,6 +7069,7 @@ ALTER TABLE ONLY public.cancelamentos_item_pedido
 
 
 --
+-- TOC entry 5610 (class 2606 OID 65819)
 -- Name: conferencias_caixa conferencias_caixa_caixa_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6825,6 +7078,7 @@ ALTER TABLE ONLY public.conferencias_caixa
 
 
 --
+-- TOC entry 5639 (class 2606 OID 156682)
 -- Name: controle_fecho_caixa controle_fecho_caixa_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6833,6 +7087,7 @@ ALTER TABLE ONLY public.controle_fecho_caixa
 
 
 --
+-- TOC entry 5609 (class 2606 OID 49459)
 -- Name: despesas despesas_forma_pagamento_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6841,6 +7096,7 @@ ALTER TABLE ONLY public.despesas
 
 
 --
+-- TOC entry 5605 (class 2606 OID 49406)
 -- Name: dividas dividas_cliente_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6849,6 +7105,7 @@ ALTER TABLE ONLY public.dividas
 
 
 --
+-- TOC entry 5606 (class 2606 OID 49411)
 -- Name: dividas dividas_venda_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6857,6 +7114,7 @@ ALTER TABLE ONLY public.dividas
 
 
 --
+-- TOC entry 5635 (class 2606 OID 148279)
 -- Name: documento_impressora documento_impressora_impressora_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6865,6 +7123,7 @@ ALTER TABLE ONLY public.documento_impressora
 
 
 --
+-- TOC entry 5636 (class 2606 OID 148274)
 -- Name: documento_impressora documento_impressora_tipo_documento_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6873,6 +7132,7 @@ ALTER TABLE ONLY public.documento_impressora
 
 
 --
+-- TOC entry 5625 (class 2606 OID 123440)
 -- Name: familia_areas familia_areas_area_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6881,6 +7141,7 @@ ALTER TABLE ONLY public.familia_areas
 
 
 --
+-- TOC entry 5626 (class 2606 OID 123435)
 -- Name: familia_areas familia_areas_familia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6889,6 +7150,7 @@ ALTER TABLE ONLY public.familia_areas
 
 
 --
+-- TOC entry 5611 (class 2606 OID 82240)
 -- Name: familia_setores familia_setores_familia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6897,6 +7159,7 @@ ALTER TABLE ONLY public.familia_setores
 
 
 --
+-- TOC entry 5612 (class 2606 OID 82245)
 -- Name: familia_setores familia_setores_setor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6905,6 +7168,7 @@ ALTER TABLE ONLY public.familia_setores
 
 
 --
+-- TOC entry 5618 (class 2606 OID 115194)
 -- Name: faturas_entrada faturas_entrada_fornecedor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6913,6 +7177,7 @@ ALTER TABLE ONLY public.faturas_entrada
 
 
 --
+-- TOC entry 5619 (class 2606 OID 115216)
 -- Name: itens_fatura_entrada itens_fatura_entrada_fatura_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6921,6 +7186,7 @@ ALTER TABLE ONLY public.itens_fatura_entrada
 
 
 --
+-- TOC entry 5620 (class 2606 OID 115221)
 -- Name: itens_fatura_entrada itens_fatura_entrada_produto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6929,6 +7195,7 @@ ALTER TABLE ONLY public.itens_fatura_entrada
 
 
 --
+-- TOC entry 5630 (class 2606 OID 123539)
 -- Name: itens_pedido itens_pedido_pedido_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6937,6 +7204,7 @@ ALTER TABLE ONLY public.itens_pedido
 
 
 --
+-- TOC entry 5631 (class 2606 OID 123544)
 -- Name: itens_pedido itens_pedido_produto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6945,6 +7213,7 @@ ALTER TABLE ONLY public.itens_pedido
 
 
 --
+-- TOC entry 5600 (class 2606 OID 16661)
 -- Name: itens_venda itens_venda_produto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6953,6 +7222,7 @@ ALTER TABLE ONLY public.itens_venda
 
 
 --
+-- TOC entry 5601 (class 2606 OID 16656)
 -- Name: itens_venda itens_venda_venda_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6961,6 +7231,7 @@ ALTER TABLE ONLY public.itens_venda
 
 
 --
+-- TOC entry 5641 (class 2606 OID 156911)
 -- Name: logs_acesso logs_acesso_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6969,6 +7240,7 @@ ALTER TABLE ONLY public.logs_acesso
 
 
 --
+-- TOC entry 5627 (class 2606 OID 123488)
 -- Name: mesas mesas_local_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6977,6 +7249,7 @@ ALTER TABLE ONLY public.mesas
 
 
 --
+-- TOC entry 5607 (class 2606 OID 49433)
 -- Name: pagamentos_divida pagamentos_divida_divida_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6985,6 +7258,7 @@ ALTER TABLE ONLY public.pagamentos_divida
 
 
 --
+-- TOC entry 5608 (class 2606 OID 49438)
 -- Name: pagamentos_divida pagamentos_divida_forma_pagamento_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6993,6 +7267,7 @@ ALTER TABLE ONLY public.pagamentos_divida
 
 
 --
+-- TOC entry 5603 (class 2606 OID 24884)
 -- Name: pagamentos_venda pagamentos_venda_forma_pagamento_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7001,6 +7276,7 @@ ALTER TABLE ONLY public.pagamentos_venda
 
 
 --
+-- TOC entry 5604 (class 2606 OID 24879)
 -- Name: pagamentos_venda pagamentos_venda_venda_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7009,6 +7285,7 @@ ALTER TABLE ONLY public.pagamentos_venda
 
 
 --
+-- TOC entry 5628 (class 2606 OID 123512)
 -- Name: pedidos pedidos_mesa_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7017,6 +7294,7 @@ ALTER TABLE ONLY public.pedidos
 
 
 --
+-- TOC entry 5629 (class 2606 OID 123517)
 -- Name: pedidos pedidos_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7025,6 +7303,7 @@ ALTER TABLE ONLY public.pedidos
 
 
 --
+-- TOC entry 5623 (class 2606 OID 123397)
 -- Name: perfil_permissoes perfil_permissoes_perfil_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7033,6 +7312,7 @@ ALTER TABLE ONLY public.perfil_permissoes
 
 
 --
+-- TOC entry 5624 (class 2606 OID 123402)
 -- Name: perfil_permissoes perfil_permissoes_permissao_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7041,6 +7321,7 @@ ALTER TABLE ONLY public.perfil_permissoes
 
 
 --
+-- TOC entry 5613 (class 2606 OID 82328)
 -- Name: produto_composicao produto_composicao_produto_componente_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7049,6 +7330,7 @@ ALTER TABLE ONLY public.produto_composicao
 
 
 --
+-- TOC entry 5614 (class 2606 OID 82323)
 -- Name: produto_composicao produto_composicao_produto_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7057,6 +7339,7 @@ ALTER TABLE ONLY public.produto_composicao
 
 
 --
+-- TOC entry 5594 (class 2606 OID 82269)
 -- Name: produtos produtos_area_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7065,6 +7348,7 @@ ALTER TABLE ONLY public.produtos
 
 
 --
+-- TOC entry 5595 (class 2606 OID 16627)
 -- Name: produtos produtos_familia_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7073,6 +7357,7 @@ ALTER TABLE ONLY public.produtos
 
 
 --
+-- TOC entry 5596 (class 2606 OID 82264)
 -- Name: produtos produtos_setor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7081,6 +7366,7 @@ ALTER TABLE ONLY public.produtos
 
 
 --
+-- TOC entry 5637 (class 2606 OID 156588)
 -- Name: terminal_logs terminal_logs_terminal_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7089,6 +7375,7 @@ ALTER TABLE ONLY public.terminal_logs
 
 
 --
+-- TOC entry 5638 (class 2606 OID 156593)
 -- Name: terminal_logs terminal_logs_usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7097,6 +7384,7 @@ ALTER TABLE ONLY public.terminal_logs
 
 
 --
+-- TOC entry 5621 (class 2606 OID 115287)
 -- Name: usuarios usuarios_perfil_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7105,6 +7393,7 @@ ALTER TABLE ONLY public.usuarios
 
 
 --
+-- TOC entry 5622 (class 2606 OID 156572)
 -- Name: usuarios usuarios_terminal_id_atual_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7113,6 +7402,7 @@ ALTER TABLE ONLY public.usuarios
 
 
 --
+-- TOC entry 5597 (class 2606 OID 49466)
 -- Name: vendas vendas_cliente_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7121,6 +7411,7 @@ ALTER TABLE ONLY public.vendas
 
 
 --
+-- TOC entry 5598 (class 2606 OID 24846)
 -- Name: vendas vendas_forma_pagamento_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7129,6 +7420,7 @@ ALTER TABLE ONLY public.vendas
 
 
 --
+-- TOC entry 5599 (class 2606 OID 156567)
 -- Name: vendas vendas_terminal_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7136,96 +7428,11 @@ ALTER TABLE ONLY public.vendas
     ADD CONSTRAINT vendas_terminal_id_fkey FOREIGN KEY (terminal_id) REFERENCES public.terminais(id) ON DELETE SET NULL;
 
 
+-- Completed on 2025-12-06 22:09:56
+
 --
-
--- =====================================================
--- DADOS INICIAIS: USUÁRIO ADMIN (VERSÃO SIMPLES)
--- Adicionado automaticamente por combinar_arquivos_simples.py
--- NOTA: Permissões devem ser configuradas manualmente
--- =====================================================
-
--- =====================================================
--- DADOS INICIAIS MÍNIMOS: APENAS USUÁRIO ADMIN
--- =====================================================
--- Este script cria APENAS o usuário Admin/0000
--- Sem perfis, sem permissões (você configura manualmente)
--- =====================================================
-
--- DESABILITAR TRIGGERS TEMPORARIAMENTE
-SET session_replication_role = 'replica';
-
--- =====================================================
--- 1. CRIAR PERFIL "Super Administrador" (se não existir)
--- =====================================================
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM public.perfis_usuario WHERE nome = 'Super Administrador') THEN
-        INSERT INTO public.perfis_usuario (nome, descricao)
-        VALUES ('Super Administrador', 'Acesso total ao sistema');
-        RAISE NOTICE 'Perfil "Super Administrador" criado';
-    ELSE
-        RAISE NOTICE 'Perfil "Super Administrador" já existe';
-    END IF;
-END $$;
-
--- =====================================================
--- 2. CRIAR USUÁRIO ADMIN/0000 (se não existir)
--- =====================================================
-
-DO $$
-DECLARE
-    perfil_admin_id INTEGER;
-BEGIN
-    -- Buscar ID do perfil Super Administrador
-    SELECT id INTO perfil_admin_id
-    FROM public.perfis_usuario
-    WHERE nome = 'Super Administrador'
-    LIMIT 1;
-
-    IF perfil_admin_id IS NULL THEN
-        RAISE EXCEPTION 'Perfil "Super Administrador" não encontrado';
-    END IF;
-
-    -- Criar ou atualizar usuário Admin
-    IF NOT EXISTS (SELECT 1 FROM public.usuarios WHERE codigo = '0000') THEN
-        INSERT INTO public.usuarios (nome, codigo, perfil_id, ativo)
-        VALUES ('Admin', '0000', perfil_admin_id, true);
-        RAISE NOTICE 'Usuário "Admin" criado com código 0000';
-    ELSE
-        UPDATE public.usuarios
-        SET nome = 'Admin',
-            ativo = true,
-            perfil_id = perfil_admin_id
-        WHERE codigo = '0000';
-        RAISE NOTICE 'Usuário "Admin" atualizado';
-    END IF;
-END $$;
-
--- REABILITAR TRIGGERS
-SET session_replication_role = 'origin';
-
--- =====================================================
--- MENSAGEM FINAL
--- =====================================================
-
-DO $$
-BEGIN
-    RAISE NOTICE '====================================================';
-    RAISE NOTICE 'USUÁRIO ADMIN CRIADO COM SUCESSO!';
-    RAISE NOTICE '====================================================';
-    RAISE NOTICE 'Nome: Admin';
-    RAISE NOTICE 'Código: 0000';
-    RAISE NOTICE 'Perfil: Super Administrador';
-    RAISE NOTICE '';
-    RAISE NOTICE 'IMPORTANTE:';
-    RAISE NOTICE '- Configure as permissões manualmente na administração';
-    RAISE NOTICE '- Este usuário foi criado sem permissões definidas';
-    RAISE NOTICE '====================================================';
-END $$;
-
 -- PostgreSQL database dump complete
 --
 
---\unrestrict QxOwgbMxBhc2hgR4SktTJFWznvcJWZl2kH92CcsZH1UUIYVXxsA1HBto8wG0Wnx
+\unrestrict mkehfr4gb93bhvLfmuGaXgI2EMUldVL0U2bCwtAVJOmde4qwZkEOu1ZadZdXbqg
 

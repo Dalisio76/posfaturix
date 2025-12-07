@@ -90,7 +90,8 @@ CREATE TABLE IF NOT EXISTS vendas (
     cliente_id INTEGER,
     usuario_id INTEGER,
     status VARCHAR(20) DEFAULT 'finalizada',
-    observacoes TEXT
+    observacoes TEXT,
+    CONSTRAINT chk_vendas_status CHECK (status IN ('finalizada', 'cancelada'))
 );
 
 -- TABELA: itens_venda
@@ -334,118 +335,6 @@ CREATE TABLE IF NOT EXISTS acertos_stock (
     usuario_id INTEGER REFERENCES usuarios(id),
     data_acerto TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- =====================================================
--- PARTE 5.5: ADICIONAR COLUNAS DE MIGRATIONS (SE NÃO EXISTIREM)
--- =====================================================
--- Esta seção garante que colunas adicionadas via migrations existam
--- mesmo se as tabelas já existiam antes
-
--- Adicionar estoque_minimo em produtos
-DO $$
-BEGIN
-    ALTER TABLE produtos ADD COLUMN IF NOT EXISTS estoque_minimo INTEGER DEFAULT 0;
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
-END $$;
-
--- Adicionar numero_venda em vendas
-DO $$
-BEGIN
-    ALTER TABLE vendas ADD COLUMN IF NOT EXISTS numero_venda INTEGER;
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
-END $$;
-
--- Adicionar status em vendas
-DO $$
-BEGIN
-    ALTER TABLE vendas ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'finalizada';
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
-END $$;
-
--- Adicionar cliente_id em vendas
-DO $$
-BEGIN
-    ALTER TABLE vendas ADD COLUMN IF NOT EXISTS cliente_id INTEGER;
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
-END $$;
-
--- Adicionar usuario_id em vendas
-DO $$
-BEGIN
-    ALTER TABLE vendas ADD COLUMN IF NOT EXISTS usuario_id INTEGER;
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
-END $$;
-
--- Adicionar observacoes em vendas
-DO $$
-BEGIN
-    ALTER TABLE vendas ADD COLUMN IF NOT EXISTS observacoes TEXT;
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
-END $$;
-
--- Atualizar vendas existentes sem status
-UPDATE vendas SET status = 'finalizada' WHERE status IS NULL OR status = '';
-
--- Adicionar constraint de status (ignora se já existe)
-DO $$
-BEGIN
-    ALTER TABLE vendas ADD CONSTRAINT chk_vendas_status
-        CHECK (status IN ('finalizada', 'cancelada'));
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-END $$;
-
--- Adicionar codigo em usuarios (migração de email para codigo)
-DO $$
-BEGIN
-    -- Adicionar coluna codigo se não existir
-    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS codigo VARCHAR(8);
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
-END $$;
-
--- Se a tabela tinha email mas não tinha codigo, criar códigos únicos
-DO $$
-DECLARE
-    v_count INTEGER;
-BEGIN
-    -- Verificar se há usuários sem código
-    SELECT COUNT(*) INTO v_count FROM usuarios WHERE codigo IS NULL OR codigo = '';
-
-    IF v_count > 0 THEN
-        -- Atualizar usuários sem código
-        UPDATE usuarios
-        SET codigo = LPAD(id::TEXT, 4, '0')
-        WHERE codigo IS NULL OR codigo = '';
-    END IF;
-END $$;
-
--- Tornar codigo UNIQUE (só depois de garantir que todos têm código)
-DO $$
-BEGIN
-    -- Remover constraint antiga se existir
-    ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_codigo_key;
-
-    -- Adicionar constraint UNIQUE
-    ALTER TABLE usuarios ADD CONSTRAINT usuarios_codigo_key UNIQUE (codigo);
-EXCEPTION
-    WHEN duplicate_object THEN NULL;
-    WHEN others THEN NULL;
-END $$;
-
--- Tornar codigo NOT NULL (só depois de garantir que todos têm código)
-DO $$
-BEGIN
-    ALTER TABLE usuarios ALTER COLUMN codigo SET NOT NULL;
-EXCEPTION
-    WHEN others THEN NULL;
-END $$;
 
 -- =====================================================
 -- PARTE 6: ÍNDICES PARA PERFORMANCE
@@ -898,8 +787,8 @@ COMMENT ON FUNCTION fechar_caixa(INTEGER, TEXT) IS 'Fecha o caixa e retorna o re
 -- 1. Verificar se todas as tabelas foram criadas: \dt
 -- 2. Verificar views: \dv
 -- 3. Verificar funções: \df
--- 4. Fazer login com: Admin / 0000 (nome de usuário: Admin, código: 0000)
--- 5. IMPORTANTE: Mudar o código padrão após primeiro acesso!
+-- 4. Fazer login com: admin@sistema.com / admin123
+-- 5. IMPORTANTE: Mudar a senha padrão!
 -- =====================================================
 
 SELECT 'BASE DE DADOS CRIADA COM SUCESSO!' as status;

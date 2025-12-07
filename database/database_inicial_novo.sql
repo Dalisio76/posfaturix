@@ -1,470 +1,16 @@
+-- =====================================================
+-- POSFATURIX - BASE DE DADOS LIMPA E COMPLETA
+-- =====================================================
+-- Extraído da base de dados em produção
+-- Data de Extração: 06/12/2025
+-- Versão: 2.5.0
 --
--- PostgreSQL database dump
+-- INSTRUÇÕES:
+-- 1. Conectar à base de dados já criada
+-- 2. Executar este script completo
 --
-
---\restrict QxOwgbMxBhc2hgR4SktTJFWznvcJWZl2kH92CcsZH1UUIYVXxsA1HBto8wG0Wnx
-
--- Dumped from database version 18.0
--- Dumped by pg_dump version 18.0
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_terminal_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_cliente_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_terminal_id_atual_fkey;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_perfil_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.terminal_logs DROP CONSTRAINT IF EXISTS terminal_logs_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.terminal_logs DROP CONSTRAINT IF EXISTS terminal_logs_terminal_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_setor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_familia_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_area_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_produto_componente_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_permissao_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_perfil_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_mesa_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_venda DROP CONSTRAINT IF EXISTS pagamentos_venda_venda_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_venda DROP CONSTRAINT IF EXISTS pagamentos_venda_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_divida DROP CONSTRAINT IF EXISTS pagamentos_divida_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_divida DROP CONSTRAINT IF EXISTS pagamentos_divida_divida_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.mesas DROP CONSTRAINT IF EXISTS mesas_local_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.logs_acesso DROP CONSTRAINT IF EXISTS logs_acesso_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_venda DROP CONSTRAINT IF EXISTS itens_venda_venda_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_venda DROP CONSTRAINT IF EXISTS itens_venda_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_pedido DROP CONSTRAINT IF EXISTS itens_pedido_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_pedido DROP CONSTRAINT IF EXISTS itens_pedido_pedido_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_fatura_entrada DROP CONSTRAINT IF EXISTS itens_fatura_entrada_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.itens_fatura_entrada DROP CONSTRAINT IF EXISTS itens_fatura_entrada_fatura_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.faturas_entrada DROP CONSTRAINT IF EXISTS faturas_entrada_fornecedor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_setor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_familia_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_familia_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_area_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_tipo_documento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_impressora_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_venda_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_cliente_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.despesas DROP CONSTRAINT IF EXISTS despesas_forma_pagamento_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.controle_fecho_caixa DROP CONSTRAINT IF EXISTS controle_fecho_caixa_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.conferencias_caixa DROP CONSTRAINT IF EXISTS conferencias_caixa_caixa_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_pedido_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_item_pedido_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.auditoria DROP CONSTRAINT IF EXISTS auditoria_usuario_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.areas DROP CONSTRAINT IF EXISTS areas_impressora_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_setor_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_produto_id_fkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_area_id_fkey;
-DROP TRIGGER IF EXISTS trigger_validar_data_venda ON public.vendas;
-DROP TRIGGER IF EXISTS trigger_validar_codigo_barras_produto ON public.produtos;
-DROP TRIGGER IF EXISTS trigger_audit_vendas ON public.vendas;
-DROP TRIGGER IF EXISTS trigger_audit_usuarios ON public.usuarios;
-DROP TRIGGER IF EXISTS trigger_audit_produtos ON public.produtos;
-DROP TRIGGER IF EXISTS trigger_audit_perfil_permissoes ON public.perfil_permissoes;
-DROP TRIGGER IF EXISTS trigger_audit_mesas ON public.mesas;
-DROP TRIGGER IF EXISTS trigger_audit_itens_venda ON public.itens_venda;
-DROP TRIGGER IF EXISTS trigger_audit_impressoras ON public.impressoras;
-DROP TRIGGER IF EXISTS trigger_audit_familias ON public.familias;
-DROP TRIGGER IF EXISTS trigger_audit_clientes ON public.clientes;
-DROP TRIGGER IF EXISTS trigger_audit_areas ON public.areas;
-DROP TRIGGER IF EXISTS trigger_atualizar_valor_restante ON public.dividas;
-DROP TRIGGER IF EXISTS trigger_atualizar_total_pedido ON public.itens_pedido;
-DROP TRIGGER IF EXISTS trigger_atualizar_terminais ON public.terminais;
-DROP TRIGGER IF EXISTS trigger_atualizar_impressoras ON public.impressoras;
-DROP TRIGGER IF EXISTS trigger_atualizar_estoque ON public.acertos_stock;
-DROP TRIGGER IF EXISTS trigger_atualizar_data_configuracao ON public.configuracoes;
-DROP TRIGGER IF EXISTS before_insert_produto_codigo ON public.produtos;
-CREATE OR REPLACE VIEW public.v_mesas_por_local AS
-SELECT
-    NULL::integer AS local_id,
-    NULL::character varying(50) AS local_nome,
-    NULL::bigint AS total_mesas,
-    NULL::bigint AS mesas_ativas,
-    NULL::bigint AS mesas_ocupadas,
-    NULL::bigint AS mesas_livres;
-DROP INDEX IF EXISTS public.idx_vendas_usuario;
-DROP INDEX IF EXISTS public.idx_vendas_tipo;
-DROP INDEX IF EXISTS public.idx_vendas_terminal;
-DROP INDEX IF EXISTS public.idx_vendas_status;
-DROP INDEX IF EXISTS public.idx_vendas_forma_pagamento;
-DROP INDEX IF EXISTS public.idx_vendas_data;
-DROP INDEX IF EXISTS public.idx_vendas_cliente;
-DROP INDEX IF EXISTS public.idx_usuarios_perfil;
-DROP INDEX IF EXISTS public.idx_usuarios_nome;
-DROP INDEX IF EXISTS public.idx_usuarios_codigo;
-DROP INDEX IF EXISTS public.idx_usuarios_ativo;
-DROP INDEX IF EXISTS public.idx_tipos_documento_codigo;
-DROP INDEX IF EXISTS public.idx_terminal_logs_terminal;
-DROP INDEX IF EXISTS public.idx_terminal_logs_created;
-DROP INDEX IF EXISTS public.idx_terminais_tipo;
-DROP INDEX IF EXISTS public.idx_terminais_ativo;
-DROP INDEX IF EXISTS public.idx_setores_ativo;
-DROP INDEX IF EXISTS public.idx_servidor_tempo_data;
-DROP INDEX IF EXISTS public.idx_produtos_setor;
-DROP INDEX IF EXISTS public.idx_produtos_familia;
-DROP INDEX IF EXISTS public.idx_produtos_estoque_baixo;
-DROP INDEX IF EXISTS public.idx_produtos_codigo_barras_lower;
-DROP INDEX IF EXISTS public.idx_produtos_codigo_barras;
-DROP INDEX IF EXISTS public.idx_produtos_ativo;
-DROP INDEX IF EXISTS public.idx_produtos_area;
-DROP INDEX IF EXISTS public.idx_produto_composicao_produto;
-DROP INDEX IF EXISTS public.idx_produto_composicao_componente;
-DROP INDEX IF EXISTS public.idx_permissoes_codigo;
-DROP INDEX IF EXISTS public.idx_permissoes_categoria;
-DROP INDEX IF EXISTS public.idx_perfil_permissoes_permissao;
-DROP INDEX IF EXISTS public.idx_perfil_permissoes_perfil;
-DROP INDEX IF EXISTS public.idx_pedidos_usuario;
-DROP INDEX IF EXISTS public.idx_pedidos_status;
-DROP INDEX IF EXISTS public.idx_pedidos_mesa;
-DROP INDEX IF EXISTS public.idx_pagamentos_venda_venda_id;
-DROP INDEX IF EXISTS public.idx_pagamentos_venda_forma_pagamento_id;
-DROP INDEX IF EXISTS public.idx_pagamentos_divida;
-DROP INDEX IF EXISTS public.idx_pagamentos_data;
-DROP INDEX IF EXISTS public.idx_mesas_numero;
-DROP INDEX IF EXISTS public.idx_mesas_local;
-DROP INDEX IF EXISTS public.idx_logs_acesso_usuario;
-DROP INDEX IF EXISTS public.idx_logs_acesso_tipo;
-DROP INDEX IF EXISTS public.idx_logs_acesso_data;
-DROP INDEX IF EXISTS public.idx_itens_venda;
-DROP INDEX IF EXISTS public.idx_itens_pedido_pedido;
-DROP INDEX IF EXISTS public.idx_itens_fatura_entrada_produto;
-DROP INDEX IF EXISTS public.idx_itens_fatura_entrada_fatura;
-DROP INDEX IF EXISTS public.idx_impressoras_ativo;
-DROP INDEX IF EXISTS public.idx_fornecedores_nome;
-DROP INDEX IF EXISTS public.idx_fornecedores_nif;
-DROP INDEX IF EXISTS public.idx_fornecedores_ativo;
-DROP INDEX IF EXISTS public.idx_faturas_entrada_numero;
-DROP INDEX IF EXISTS public.idx_faturas_entrada_fornecedor;
-DROP INDEX IF EXISTS public.idx_faturas_entrada_data;
-DROP INDEX IF EXISTS public.idx_familia_setores_setor;
-DROP INDEX IF EXISTS public.idx_familia_setores_familia;
-DROP INDEX IF EXISTS public.idx_familia_areas_familia;
-DROP INDEX IF EXISTS public.idx_familia_areas_area;
-DROP INDEX IF EXISTS public.idx_documento_impressora_tipo;
-DROP INDEX IF EXISTS public.idx_dividas_status;
-DROP INDEX IF EXISTS public.idx_dividas_data;
-DROP INDEX IF EXISTS public.idx_dividas_cliente;
-DROP INDEX IF EXISTS public.idx_despesas_data;
-DROP INDEX IF EXISTS public.idx_despesas_categoria;
-DROP INDEX IF EXISTS public.idx_controle_fecho_data;
-DROP INDEX IF EXISTS public.idx_configuracoes_chave;
-DROP INDEX IF EXISTS public.idx_configuracoes_categoria;
-DROP INDEX IF EXISTS public.idx_conferencias_caixa_caixa_id;
-DROP INDEX IF EXISTS public.idx_clientes_nome;
-DROP INDEX IF EXISTS public.idx_clientes_contacto;
-DROP INDEX IF EXISTS public.idx_clientes_ativo;
-DROP INDEX IF EXISTS public.idx_cancelamentos_usuario;
-DROP INDEX IF EXISTS public.idx_cancelamentos_pedido;
-DROP INDEX IF EXISTS public.idx_cancelamentos_data;
-DROP INDEX IF EXISTS public.idx_caixas_terminal;
-DROP INDEX IF EXISTS public.idx_caixas_status;
-DROP INDEX IF EXISTS public.idx_caixas_numero;
-DROP INDEX IF EXISTS public.idx_caixas_data_abertura;
-DROP INDEX IF EXISTS public.idx_auditoria_usuario;
-DROP INDEX IF EXISTS public.idx_auditoria_tabela;
-DROP INDEX IF EXISTS public.idx_auditoria_registro;
-DROP INDEX IF EXISTS public.idx_auditoria_operacao;
-DROP INDEX IF EXISTS public.idx_auditoria_data;
-DROP INDEX IF EXISTS public.idx_areas_impressora;
-DROP INDEX IF EXISTS public.idx_areas_ativo;
-DROP INDEX IF EXISTS public.idx_acertos_setor;
-DROP INDEX IF EXISTS public.idx_acertos_produto;
-DROP INDEX IF EXISTS public.idx_acertos_motivo;
-DROP INDEX IF EXISTS public.idx_acertos_data;
-DROP INDEX IF EXISTS public.idx_acertos_area;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_pkey;
-ALTER TABLE IF EXISTS ONLY public.vendas DROP CONSTRAINT IF EXISTS vendas_numero_key;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_pkey;
-ALTER TABLE IF EXISTS ONLY public.usuarios DROP CONSTRAINT IF EXISTS usuarios_nome_key;
-ALTER TABLE IF EXISTS ONLY public.tipos_documento DROP CONSTRAINT IF EXISTS tipos_documento_pkey;
-ALTER TABLE IF EXISTS ONLY public.tipos_documento DROP CONSTRAINT IF EXISTS tipos_documento_codigo_key;
-ALTER TABLE IF EXISTS ONLY public.terminal_logs DROP CONSTRAINT IF EXISTS terminal_logs_pkey;
-ALTER TABLE IF EXISTS ONLY public.terminais DROP CONSTRAINT IF EXISTS terminais_pkey;
-ALTER TABLE IF EXISTS ONLY public.terminais DROP CONSTRAINT IF EXISTS terminais_nome_key;
-ALTER TABLE IF EXISTS ONLY public.setores DROP CONSTRAINT IF EXISTS setores_pkey;
-ALTER TABLE IF EXISTS ONLY public.servidor_tempo DROP CONSTRAINT IF EXISTS servidor_tempo_pkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_pkey;
-ALTER TABLE IF EXISTS ONLY public.produtos DROP CONSTRAINT IF EXISTS produtos_codigo_key;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_produto_id_produto_componente_id_key;
-ALTER TABLE IF EXISTS ONLY public.produto_composicao DROP CONSTRAINT IF EXISTS produto_composicao_pkey;
-ALTER TABLE IF EXISTS ONLY public.permissoes DROP CONSTRAINT IF EXISTS permissoes_pkey;
-ALTER TABLE IF EXISTS ONLY public.permissoes DROP CONSTRAINT IF EXISTS permissoes_codigo_key;
-ALTER TABLE IF EXISTS ONLY public.perfis_usuario DROP CONSTRAINT IF EXISTS perfis_usuario_pkey;
-ALTER TABLE IF EXISTS ONLY public.perfis_usuario DROP CONSTRAINT IF EXISTS perfis_usuario_nome_key;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_pkey;
-ALTER TABLE IF EXISTS ONLY public.perfil_permissoes DROP CONSTRAINT IF EXISTS perfil_permissoes_perfil_id_permissao_id_key;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_pkey;
-ALTER TABLE IF EXISTS ONLY public.pedidos DROP CONSTRAINT IF EXISTS pedidos_numero_key;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_venda DROP CONSTRAINT IF EXISTS pagamentos_venda_pkey;
-ALTER TABLE IF EXISTS ONLY public.pagamentos_divida DROP CONSTRAINT IF EXISTS pagamentos_divida_pkey;
-ALTER TABLE IF EXISTS ONLY public.mesas DROP CONSTRAINT IF EXISTS mesas_pkey;
-ALTER TABLE IF EXISTS ONLY public.mesas DROP CONSTRAINT IF EXISTS mesas_numero_key;
-ALTER TABLE IF EXISTS ONLY public.logs_acesso DROP CONSTRAINT IF EXISTS logs_acesso_pkey;
-ALTER TABLE IF EXISTS ONLY public.locais_mesa DROP CONSTRAINT IF EXISTS locais_mesa_pkey;
-ALTER TABLE IF EXISTS ONLY public.locais_mesa DROP CONSTRAINT IF EXISTS locais_mesa_nome_key;
-ALTER TABLE IF EXISTS ONLY public.itens_venda DROP CONSTRAINT IF EXISTS itens_venda_pkey;
-ALTER TABLE IF EXISTS ONLY public.itens_pedido DROP CONSTRAINT IF EXISTS itens_pedido_pkey;
-ALTER TABLE IF EXISTS ONLY public.itens_fatura_entrada DROP CONSTRAINT IF EXISTS itens_fatura_entrada_pkey;
-ALTER TABLE IF EXISTS ONLY public.impressoras DROP CONSTRAINT IF EXISTS impressoras_pkey;
-ALTER TABLE IF EXISTS ONLY public.impressoras DROP CONSTRAINT IF EXISTS impressoras_nome_key;
-ALTER TABLE IF EXISTS ONLY public.fornecedores DROP CONSTRAINT IF EXISTS fornecedores_pkey;
-ALTER TABLE IF EXISTS ONLY public.formas_pagamento DROP CONSTRAINT IF EXISTS formas_pagamento_pkey;
-ALTER TABLE IF EXISTS ONLY public.formas_pagamento DROP CONSTRAINT IF EXISTS formas_pagamento_nome_key;
-ALTER TABLE IF EXISTS ONLY public.faturas_entrada DROP CONSTRAINT IF EXISTS faturas_entrada_pkey;
-ALTER TABLE IF EXISTS ONLY public.faturas_entrada DROP CONSTRAINT IF EXISTS faturas_entrada_fornecedor_id_numero_fatura_key;
-ALTER TABLE IF EXISTS ONLY public.familias DROP CONSTRAINT IF EXISTS familias_pkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_pkey;
-ALTER TABLE IF EXISTS ONLY public.familia_setores DROP CONSTRAINT IF EXISTS familia_setores_familia_id_setor_id_key;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_pkey;
-ALTER TABLE IF EXISTS ONLY public.familia_areas DROP CONSTRAINT IF EXISTS familia_areas_familia_id_area_id_key;
-ALTER TABLE IF EXISTS ONLY public.empresa DROP CONSTRAINT IF EXISTS empresa_pkey;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_tipo_documento_id_impressora_id_key;
-ALTER TABLE IF EXISTS ONLY public.documento_impressora DROP CONSTRAINT IF EXISTS documento_impressora_pkey;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_venda_id_key;
-ALTER TABLE IF EXISTS ONLY public.dividas DROP CONSTRAINT IF EXISTS dividas_pkey;
-ALTER TABLE IF EXISTS ONLY public.despesas DROP CONSTRAINT IF EXISTS despesas_pkey;
-ALTER TABLE IF EXISTS ONLY public.controle_fecho_caixa DROP CONSTRAINT IF EXISTS controle_fecho_caixa_pkey;
-ALTER TABLE IF EXISTS ONLY public.controle_fecho_caixa DROP CONSTRAINT IF EXISTS controle_fecho_caixa_data_fecho_key;
-ALTER TABLE IF EXISTS ONLY public.configuracoes DROP CONSTRAINT IF EXISTS configuracoes_pkey;
-ALTER TABLE IF EXISTS ONLY public.configuracoes DROP CONSTRAINT IF EXISTS configuracoes_chave_key;
-ALTER TABLE IF EXISTS ONLY public.conferencias_caixa DROP CONSTRAINT IF EXISTS conferencias_caixa_pkey;
-ALTER TABLE IF EXISTS ONLY public.clientes DROP CONSTRAINT IF EXISTS clientes_pkey;
-ALTER TABLE IF EXISTS ONLY public.cancelamentos_item_pedido DROP CONSTRAINT IF EXISTS cancelamentos_item_pedido_pkey;
-ALTER TABLE IF EXISTS ONLY public.caixas DROP CONSTRAINT IF EXISTS caixas_pkey;
-ALTER TABLE IF EXISTS ONLY public.caixas DROP CONSTRAINT IF EXISTS caixas_numero_key;
-ALTER TABLE IF EXISTS ONLY public.auditoria DROP CONSTRAINT IF EXISTS auditoria_pkey;
-ALTER TABLE IF EXISTS ONLY public.areas DROP CONSTRAINT IF EXISTS areas_pkey;
-ALTER TABLE IF EXISTS ONLY public.acertos_stock DROP CONSTRAINT IF EXISTS acertos_stock_pkey;
-ALTER TABLE IF EXISTS public.vendas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.usuarios ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.tipos_documento ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.terminal_logs ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.terminais ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.setores ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.servidor_tempo ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.produtos ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.produto_composicao ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.permissoes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.perfis_usuario ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.perfil_permissoes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.pedidos ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.pagamentos_venda ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.pagamentos_divida ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.mesas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.logs_acesso ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.locais_mesa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.itens_venda ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.itens_pedido ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.itens_fatura_entrada ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.impressoras ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.fornecedores ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.formas_pagamento ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.faturas_entrada ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.familias ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.familia_setores ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.familia_areas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.empresa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.documento_impressora ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.dividas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.despesas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.controle_fecho_caixa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.configuracoes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.conferencias_caixa ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.clientes ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.cancelamentos_item_pedido ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.caixas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.auditoria ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.areas ALTER COLUMN id DROP DEFAULT;
-ALTER TABLE IF EXISTS public.acertos_stock ALTER COLUMN id DROP DEFAULT;
-DROP VIEW IF EXISTS public.vw_vendas_por_terminal;
-DROP VIEW IF EXISTS public.vw_terminais_ativos;
-DROP VIEW IF EXISTS public.vw_produtos_deletados;
-DROP VIEW IF EXISTS public.vw_produtos_com_codigo_barras;
-DROP VIEW IF EXISTS public.vw_operacoes_suspeitas;
-DROP VIEW IF EXISTS public.vw_mapeamento_impressao;
-DROP VIEW IF EXISTS public.vw_logins_falhados;
-DROP VIEW IF EXISTS public.vw_historico_precos;
-DROP VIEW IF EXISTS public.vw_auditoria_por_usuario;
-DROP VIEW IF EXISTS public.vw_auditoria_detalhada;
-DROP VIEW IF EXISTS public.vw_areas_impressoras;
-DROP VIEW IF EXISTS public.vw_anomalias_data;
-DROP SEQUENCE IF EXISTS public.vendas_id_seq;
-DROP VIEW IF EXISTS public.v_vendas_resumo;
-DROP VIEW IF EXISTS public.v_vendas_completo;
-DROP VIEW IF EXISTS public.v_vendas_com_pagamentos;
-DROP VIEW IF EXISTS public.v_usuarios_completo;
-DROP VIEW IF EXISTS public.v_setores_ativos;
-DROP VIEW IF EXISTS public.v_resumo_produtos_caixa;
-DROP VIEW IF EXISTS public.v_resumo_compras_fornecedor;
-DROP VIEW IF EXISTS public.v_resumo_caixa;
-DROP VIEW IF EXISTS public.v_produtos_vendidos_caixa;
-DROP VIEW IF EXISTS public.v_produtos_por_setor;
-DROP VIEW IF EXISTS public.v_produtos_por_area;
-DROP VIEW IF EXISTS public.v_produtos_nao_contaveis;
-DROP VIEW IF EXISTS public.v_produtos_mais_comprados;
-DROP VIEW IF EXISTS public.v_produtos_detalhado;
-DROP VIEW IF EXISTS public.v_produtos_completo;
-DROP VIEW IF EXISTS public.v_produtos_com_setores;
-DROP VIEW IF EXISTS public.v_produtos_com_composicao;
-DROP VIEW IF EXISTS public.v_perfil_permissoes;
-DROP VIEW IF EXISTS public.v_pedidos_abertos;
-DROP VIEW IF EXISTS public.v_pagamentos_divida_caixa;
-DROP VIEW IF EXISTS public.v_mesas_por_local;
-DROP VIEW IF EXISTS public.v_mesas_completo;
-DROP VIEW IF EXISTS public.v_itens_fatura_entrada_completo;
-DROP VIEW IF EXISTS public.v_faturas_entrada_completo;
-DROP VIEW IF EXISTS public.v_familias_com_setores;
-DROP VIEW IF EXISTS public.v_familias_areas;
-DROP VIEW IF EXISTS public.v_dividas_completo;
-DROP TABLE IF EXISTS public.vendas;
-DROP VIEW IF EXISTS public.v_devedores;
-DROP VIEW IF EXISTS public.v_despesas_resumo;
-DROP VIEW IF EXISTS public.v_despesas_caixa;
-DROP VIEW IF EXISTS public.v_conferencias_caixa;
-DROP VIEW IF EXISTS public.v_clientes_dividas;
-DROP VIEW IF EXISTS public.v_cancelamentos_pedido;
-DROP VIEW IF EXISTS public.v_caixa_atual;
-DROP VIEW IF EXISTS public.v_areas_ativas;
-DROP VIEW IF EXISTS public.v_acertos_resumo;
-DROP VIEW IF EXISTS public.v_acertos_por_setor;
-DROP VIEW IF EXISTS public.v_acertos_por_motivo;
-DROP VIEW IF EXISTS public.v_acertos_completo;
-DROP SEQUENCE IF EXISTS public.usuarios_id_seq;
-DROP TABLE IF EXISTS public.usuarios;
-DROP SEQUENCE IF EXISTS public.tipos_documento_id_seq;
-DROP TABLE IF EXISTS public.tipos_documento;
-DROP SEQUENCE IF EXISTS public.terminal_logs_id_seq;
-DROP TABLE IF EXISTS public.terminal_logs;
-DROP SEQUENCE IF EXISTS public.terminais_id_seq;
-DROP TABLE IF EXISTS public.terminais;
-DROP SEQUENCE IF EXISTS public.setores_id_seq;
-DROP TABLE IF EXISTS public.setores;
-DROP SEQUENCE IF EXISTS public.servidor_tempo_id_seq;
-DROP TABLE IF EXISTS public.servidor_tempo;
-DROP SEQUENCE IF EXISTS public.produtos_id_seq;
-DROP SEQUENCE IF EXISTS public.produtos_codigo_seq;
-DROP TABLE IF EXISTS public.produtos;
-DROP SEQUENCE IF EXISTS public.produto_composicao_id_seq;
-DROP TABLE IF EXISTS public.produto_composicao;
-DROP SEQUENCE IF EXISTS public.permissoes_id_seq;
-DROP TABLE IF EXISTS public.permissoes;
-DROP SEQUENCE IF EXISTS public.perfis_usuario_id_seq;
-DROP TABLE IF EXISTS public.perfis_usuario;
-DROP SEQUENCE IF EXISTS public.perfil_permissoes_id_seq;
-DROP TABLE IF EXISTS public.perfil_permissoes;
-DROP SEQUENCE IF EXISTS public.pedidos_id_seq;
-DROP TABLE IF EXISTS public.pedidos;
-DROP SEQUENCE IF EXISTS public.pagamentos_venda_id_seq;
-DROP TABLE IF EXISTS public.pagamentos_venda;
-DROP SEQUENCE IF EXISTS public.pagamentos_divida_id_seq;
-DROP TABLE IF EXISTS public.pagamentos_divida;
-DROP SEQUENCE IF EXISTS public.mesas_id_seq;
-DROP TABLE IF EXISTS public.mesas;
-DROP SEQUENCE IF EXISTS public.logs_acesso_id_seq;
-DROP TABLE IF EXISTS public.logs_acesso;
-DROP SEQUENCE IF EXISTS public.locais_mesa_id_seq;
-DROP TABLE IF EXISTS public.locais_mesa;
-DROP SEQUENCE IF EXISTS public.itens_venda_id_seq;
-DROP TABLE IF EXISTS public.itens_venda;
-DROP SEQUENCE IF EXISTS public.itens_pedido_id_seq;
-DROP TABLE IF EXISTS public.itens_pedido;
-DROP SEQUENCE IF EXISTS public.itens_fatura_entrada_id_seq;
-DROP TABLE IF EXISTS public.itens_fatura_entrada;
-DROP SEQUENCE IF EXISTS public.impressoras_id_seq;
-DROP TABLE IF EXISTS public.impressoras;
-DROP SEQUENCE IF EXISTS public.fornecedores_id_seq;
-DROP TABLE IF EXISTS public.fornecedores;
-DROP SEQUENCE IF EXISTS public.formas_pagamento_id_seq;
-DROP TABLE IF EXISTS public.formas_pagamento;
-DROP SEQUENCE IF EXISTS public.faturas_entrada_id_seq;
-DROP TABLE IF EXISTS public.faturas_entrada;
-DROP SEQUENCE IF EXISTS public.familias_id_seq;
-DROP TABLE IF EXISTS public.familias;
-DROP SEQUENCE IF EXISTS public.familia_setores_id_seq;
-DROP TABLE IF EXISTS public.familia_setores;
-DROP SEQUENCE IF EXISTS public.familia_areas_id_seq;
-DROP TABLE IF EXISTS public.familia_areas;
-DROP SEQUENCE IF EXISTS public.empresa_id_seq;
-DROP TABLE IF EXISTS public.empresa;
-DROP SEQUENCE IF EXISTS public.documento_impressora_id_seq;
-DROP TABLE IF EXISTS public.documento_impressora;
-DROP SEQUENCE IF EXISTS public.dividas_id_seq;
-DROP TABLE IF EXISTS public.dividas;
-DROP SEQUENCE IF EXISTS public.despesas_id_seq;
-DROP TABLE IF EXISTS public.despesas;
-DROP SEQUENCE IF EXISTS public.controle_fecho_caixa_id_seq;
-DROP TABLE IF EXISTS public.controle_fecho_caixa;
-DROP SEQUENCE IF EXISTS public.configuracoes_id_seq;
-DROP TABLE IF EXISTS public.configuracoes;
-DROP SEQUENCE IF EXISTS public.conferencias_caixa_id_seq;
-DROP TABLE IF EXISTS public.conferencias_caixa;
-DROP SEQUENCE IF EXISTS public.clientes_id_seq;
-DROP TABLE IF EXISTS public.clientes;
-DROP SEQUENCE IF EXISTS public.cancelamentos_item_pedido_id_seq;
-DROP TABLE IF EXISTS public.cancelamentos_item_pedido;
-DROP SEQUENCE IF EXISTS public.caixas_id_seq;
-DROP TABLE IF EXISTS public.caixas;
-DROP SEQUENCE IF EXISTS public.auditoria_id_seq;
-DROP TABLE IF EXISTS public.auditoria;
-DROP SEQUENCE IF EXISTS public.areas_id_seq;
-DROP TABLE IF EXISTS public.areas;
-DROP SEQUENCE IF EXISTS public.acertos_stock_id_seq;
-DROP TABLE IF EXISTS public.acertos_stock;
-DROP FUNCTION IF EXISTS public.verificar_estoque_disponivel(p_produto_id integer, p_quantidade_desejada integer);
-DROP FUNCTION IF EXISTS public.validar_data_venda();
-DROP FUNCTION IF EXISTS public.validar_codigo_barras(p_codigo character varying);
-DROP FUNCTION IF EXISTS public.usuario_tem_permissao(p_usuario_id integer, p_codigo_permissao character varying);
-DROP FUNCTION IF EXISTS public.trigger_validar_codigo_barras();
-DROP FUNCTION IF EXISTS public.trigger_gerar_codigo_produto();
-DROP FUNCTION IF EXISTS public.registrar_pagamento_divida(p_divida_id integer, p_valor numeric, p_forma_pagamento_id integer, p_observacoes text, p_usuario character varying);
-DROP FUNCTION IF EXISTS public.registrar_logout(p_usuario_id integer, p_terminal_nome character varying, p_ip_address character varying);
-DROP FUNCTION IF EXISTS public.registrar_login_falhado(p_codigo character varying, p_motivo text, p_terminal_nome character varying, p_ip_address character varying);
-DROP FUNCTION IF EXISTS public.registrar_login(p_usuario_id integer, p_terminal_nome character varying, p_ip_address character varying);
-DROP FUNCTION IF EXISTS public.registrar_fecho_caixa(p_data_fecho date, p_usuario_id integer, p_valor_total numeric);
-DROP FUNCTION IF EXISTS public.registrar_conferencia_caixa(p_caixa_id integer, p_contado_cash numeric, p_contado_emola numeric, p_contado_mpesa numeric, p_contado_pos numeric, p_observacoes text);
-DROP FUNCTION IF EXISTS public.registrar_conexao_terminal(p_terminal_id integer, p_usuario_id integer, p_ip_address character varying, p_acao character varying);
-DROP FUNCTION IF EXISTS public.registrar_acerto_stock(p_produto_id integer, p_estoque_novo integer, p_motivo character varying, p_observacao text, p_usuario character varying);
-DROP FUNCTION IF EXISTS public.pode_vender_hoje();
-DROP FUNCTION IF EXISTS public.limpar_servidor_tempo();
-DROP FUNCTION IF EXISTS public.limpar_logs_terminais();
-DROP FUNCTION IF EXISTS public.limpar_logs_antigos(p_dias integer);
-DROP FUNCTION IF EXISTS public.get_proximo_codigo_produto();
-DROP FUNCTION IF EXISTS public.get_produtos_por_setor_e_area(p_setor_id integer, p_area_id integer);
-DROP FUNCTION IF EXISTS public.get_produtos_por_setor(p_setor_id integer);
-DROP FUNCTION IF EXISTS public.get_produtos_por_area(p_area_id integer);
-DROP FUNCTION IF EXISTS public.get_familia_setores(p_familia_id integer);
-DROP FUNCTION IF EXISTS public.get_composicao_produto(p_produto_id integer);
-DROP FUNCTION IF EXISTS public.fechar_caixa(p_caixa_id integer, p_observacoes text);
-DROP FUNCTION IF EXISTS public.familia_pertence_setor(p_familia_id integer, p_setor_id integer);
-DROP FUNCTION IF EXISTS public.calcular_total_pedido(p_pedido_id integer);
-DROP FUNCTION IF EXISTS public.calcular_totais_caixa(p_caixa_id integer);
-DROP FUNCTION IF EXISTS public.buscar_produto_por_codigo_barras(p_codigo_barras character varying);
-DROP FUNCTION IF EXISTS public.buscar_historico_registro(p_tabela character varying, p_registro_id integer);
-DROP FUNCTION IF EXISTS public.buscar_acertos_por_periodo(p_data_inicio timestamp without time zone, p_data_fim timestamp without time zone, p_produto_nome character varying, p_setor_id integer, p_area_id integer);
-DROP FUNCTION IF EXISTS public.audit_trigger_func();
-DROP FUNCTION IF EXISTS public.atualizar_valor_restante();
-DROP FUNCTION IF EXISTS public.atualizar_updated_at_terminais();
-DROP FUNCTION IF EXISTS public.atualizar_updated_at_impressoras();
-DROP FUNCTION IF EXISTS public.atualizar_total_pedido();
-DROP FUNCTION IF EXISTS public.atualizar_estoque_produto();
-DROP FUNCTION IF EXISTS public.atualizar_data_configuracao();
-DROP FUNCTION IF EXISTS public.abrir_caixa(p_terminal character varying, p_usuario character varying);
-DROP FUNCTION IF EXISTS public.abater_estoque_produto(p_produto_id integer, p_quantidade integer);
---
--- Name: abater_estoque_produto(integer, integer); Type: FUNCTION; Schema: public; Owner: -
---
+-- NOTA: Collation será a padrão do sistema (funciona em qualquer país)
+-- =====================================================
 
 CREATE FUNCTION public.abater_estoque_produto(p_produto_id integer, p_quantidade integer) RETURNS void
     LANGUAGE plpgsql
@@ -543,6 +89,7 @@ $$;
 
 
 --
+-- Dependencies: 377
 -- Name: FUNCTION abrir_caixa(p_terminal character varying, p_usuario character varying); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -798,6 +345,7 @@ $$;
 
 
 --
+-- Dependencies: 391
 -- Name: FUNCTION buscar_produto_por_codigo_barras(p_codigo_barras character varying); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1058,6 +606,7 @@ $$;
 
 
 --
+-- Dependencies: 384
 -- Name: FUNCTION calcular_totais_caixa(p_caixa_id integer); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1153,6 +702,7 @@ $$;
 
 
 --
+-- Dependencies: 378
 -- Name: FUNCTION fechar_caixa(p_caixa_id integer, p_observacoes text); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1382,6 +932,7 @@ $$;
 
 
 --
+-- Dependencies: 403
 -- Name: FUNCTION pode_vender_hoje(); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1541,6 +1092,7 @@ $$;
 
 
 --
+-- Dependencies: 385
 -- Name: FUNCTION registrar_conferencia_caixa(p_caixa_id integer, p_contado_cash numeric, p_contado_emola numeric, p_contado_mpesa numeric, p_contado_pos numeric, p_observacoes text); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1791,6 +1343,7 @@ $_$;
 
 
 --
+-- Dependencies: 392
 -- Name: FUNCTION validar_codigo_barras(p_codigo character varying); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1844,6 +1397,7 @@ $$;
 
 
 --
+-- Dependencies: 401
 -- Name: FUNCTION validar_data_venda(); Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1953,6 +1507,7 @@ CREATE SEQUENCE public.acertos_stock_id_seq
 
 
 --
+-- Dependencies: 277
 -- Name: acertos_stock_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -1974,6 +1529,7 @@ CREATE TABLE public.areas (
 
 
 --
+-- Dependencies: 235
 -- Name: COLUMN areas.impressora_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -1994,6 +1550,7 @@ CREATE SEQUENCE public.areas_id_seq
 
 
 --
+-- Dependencies: 234
 -- Name: areas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2020,6 +1577,7 @@ CREATE TABLE public.auditoria (
 
 
 --
+-- Dependencies: 344
 -- Name: TABLE auditoria; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2027,6 +1585,7 @@ COMMENT ON TABLE public.auditoria IS 'Registro de todas as operações do sistem
 
 
 --
+-- Dependencies: 344
 -- Name: COLUMN auditoria.dados_anteriores; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2034,6 +1593,7 @@ COMMENT ON COLUMN public.auditoria.dados_anteriores IS 'Estado do registro antes
 
 
 --
+-- Dependencies: 344
 -- Name: COLUMN auditoria.dados_novos; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2054,6 +1614,7 @@ CREATE SEQUENCE public.auditoria_id_seq
 
 
 --
+-- Dependencies: 343
 -- Name: auditoria_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2097,6 +1658,7 @@ CREATE TABLE public.caixas (
 
 
 --
+-- Dependencies: 255
 -- Name: TABLE caixas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2104,6 +1666,7 @@ COMMENT ON TABLE public.caixas IS 'Controle de abertura e fechamento de caixa co
 
 
 --
+-- Dependencies: 255
 -- Name: COLUMN caixas.total_vendas_pagas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2111,6 +1674,7 @@ COMMENT ON COLUMN public.caixas.total_vendas_pagas IS 'Soma de vendas pagas (tip
 
 
 --
+-- Dependencies: 255
 -- Name: COLUMN caixas.total_cash; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2118,6 +1682,7 @@ COMMENT ON COLUMN public.caixas.total_cash IS 'Soma de TODAS transações em CAS
 
 
 --
+-- Dependencies: 255
 -- Name: COLUMN caixas.total_vendas_credito; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2125,6 +1690,7 @@ COMMENT ON COLUMN public.caixas.total_vendas_credito IS 'Soma de vendas a crédi
 
 
 --
+-- Dependencies: 255
 -- Name: COLUMN caixas.saldo_final; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2145,6 +1711,7 @@ CREATE SEQUENCE public.caixas_id_seq
 
 
 --
+-- Dependencies: 254
 -- Name: caixas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2172,6 +1739,7 @@ CREATE TABLE public.cancelamentos_item_pedido (
 
 
 --
+-- Dependencies: 319
 -- Name: TABLE cancelamentos_item_pedido; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2179,6 +1747,7 @@ COMMENT ON TABLE public.cancelamentos_item_pedido IS 'Log de itens cancelados de
 
 
 --
+-- Dependencies: 319
 -- Name: COLUMN cancelamentos_item_pedido.justificativa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2199,6 +1768,7 @@ CREATE SEQUENCE public.cancelamentos_item_pedido_id_seq
 
 
 --
+-- Dependencies: 318
 -- Name: cancelamentos_item_pedido_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2227,6 +1797,7 @@ CREATE TABLE public.clientes (
 
 
 --
+-- Dependencies: 243
 -- Name: TABLE clientes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2247,6 +1818,7 @@ CREATE SEQUENCE public.clientes_id_seq
 
 
 --
+-- Dependencies: 242
 -- Name: clientes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2282,6 +1854,7 @@ CREATE TABLE public.conferencias_caixa (
 
 
 --
+-- Dependencies: 257
 -- Name: TABLE conferencias_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2302,6 +1875,7 @@ CREATE SEQUENCE public.conferencias_caixa_id_seq
 
 
 --
+-- Dependencies: 256
 -- Name: conferencias_caixa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2325,6 +1899,7 @@ CREATE TABLE public.configuracoes (
 
 
 --
+-- Dependencies: 322
 -- Name: TABLE configuracoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2332,6 +1907,7 @@ COMMENT ON TABLE public.configuracoes IS 'Armazena configurações globais do si
 
 
 --
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.chave; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2339,6 +1915,7 @@ COMMENT ON COLUMN public.configuracoes.chave IS 'Chave única da configuração'
 
 
 --
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.valor; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2346,6 +1923,7 @@ COMMENT ON COLUMN public.configuracoes.valor IS 'Valor da configuração (armaze
 
 
 --
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.tipo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2353,6 +1931,7 @@ COMMENT ON COLUMN public.configuracoes.tipo IS 'Tipo do valor: string, boolean, 
 
 
 --
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.descricao; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2360,6 +1939,7 @@ COMMENT ON COLUMN public.configuracoes.descricao IS 'Descrição da configuraç�
 
 
 --
+-- Dependencies: 322
 -- Name: COLUMN configuracoes.categoria; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2380,6 +1960,7 @@ CREATE SEQUENCE public.configuracoes_id_seq
 
 
 --
+-- Dependencies: 321
 -- Name: configuracoes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2400,6 +1981,7 @@ CREATE TABLE public.controle_fecho_caixa (
 
 
 --
+-- Dependencies: 341
 -- Name: TABLE controle_fecho_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2420,6 +2002,7 @@ CREATE SEQUENCE public.controle_fecho_caixa_id_seq
 
 
 --
+-- Dependencies: 340
 -- Name: controle_fecho_caixa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2444,6 +2027,7 @@ CREATE TABLE public.despesas (
 
 
 --
+-- Dependencies: 249
 -- Name: TABLE despesas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2464,6 +2048,7 @@ CREATE SEQUENCE public.despesas_id_seq
 
 
 --
+-- Dependencies: 248
 -- Name: despesas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2490,6 +2075,7 @@ CREATE TABLE public.dividas (
 
 
 --
+-- Dependencies: 245
 -- Name: TABLE dividas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2497,6 +2083,7 @@ COMMENT ON TABLE public.dividas IS 'Registro de dívidas de clientes';
 
 
 --
+-- Dependencies: 245
 -- Name: COLUMN dividas.status; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2517,6 +2104,7 @@ CREATE SEQUENCE public.dividas_id_seq
 
 
 --
+-- Dependencies: 244
 -- Name: dividas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2537,6 +2125,7 @@ CREATE TABLE public.documento_impressora (
 
 
 --
+-- Dependencies: 328
 -- Name: TABLE documento_impressora; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2557,6 +2146,7 @@ CREATE SEQUENCE public.documento_impressora_id_seq
 
 
 --
+-- Dependencies: 327
 -- Name: documento_impressora_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2596,6 +2186,7 @@ CREATE SEQUENCE public.empresa_id_seq
 
 
 --
+-- Dependencies: 228
 -- Name: empresa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2615,6 +2206,7 @@ CREATE TABLE public.familia_areas (
 
 
 --
+-- Dependencies: 304
 -- Name: TABLE familia_areas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2622,6 +2214,7 @@ COMMENT ON TABLE public.familia_areas IS 'Relacionamento many-to-many entre fam�
 
 
 --
+-- Dependencies: 304
 -- Name: COLUMN familia_areas.familia_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2629,6 +2222,7 @@ COMMENT ON COLUMN public.familia_areas.familia_id IS 'ID da família';
 
 
 --
+-- Dependencies: 304
 -- Name: COLUMN familia_areas.area_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2649,6 +2243,7 @@ CREATE SEQUENCE public.familia_areas_id_seq
 
 
 --
+-- Dependencies: 303
 -- Name: familia_areas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2681,6 +2276,7 @@ CREATE SEQUENCE public.familia_setores_id_seq
 
 
 --
+-- Dependencies: 259
 -- Name: familia_setores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2714,6 +2310,7 @@ CREATE SEQUENCE public.familias_id_seq
 
 
 --
+-- Dependencies: 219
 -- Name: familias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2738,6 +2335,7 @@ CREATE TABLE public.faturas_entrada (
 
 
 --
+-- Dependencies: 286
 -- Name: TABLE faturas_entrada; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2745,6 +2343,7 @@ COMMENT ON TABLE public.faturas_entrada IS 'Registro de faturas de compra de for
 
 
 --
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.fornecedor_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2752,6 +2351,7 @@ COMMENT ON COLUMN public.faturas_entrada.fornecedor_id IS 'Fornecedor da fatura'
 
 
 --
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.numero_fatura; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2759,6 +2359,7 @@ COMMENT ON COLUMN public.faturas_entrada.numero_fatura IS 'Número da fatura do 
 
 
 --
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.data_fatura; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2766,6 +2367,7 @@ COMMENT ON COLUMN public.faturas_entrada.data_fatura IS 'Data de emissão da fat
 
 
 --
+-- Dependencies: 286
 -- Name: COLUMN faturas_entrada.total; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2786,6 +2388,7 @@ CREATE SEQUENCE public.faturas_entrada_id_seq
 
 
 --
+-- Dependencies: 285
 -- Name: faturas_entrada_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2819,6 +2422,7 @@ CREATE SEQUENCE public.formas_pagamento_id_seq
 
 
 --
+-- Dependencies: 230
 -- Name: formas_pagamento_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2848,6 +2452,7 @@ CREATE TABLE public.fornecedores (
 
 
 --
+-- Dependencies: 284
 -- Name: TABLE fornecedores; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2855,6 +2460,7 @@ COMMENT ON TABLE public.fornecedores IS 'Cadastro de fornecedores';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.nome; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2862,6 +2468,7 @@ COMMENT ON COLUMN public.fornecedores.nome IS 'Nome do fornecedor';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.nif; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2869,6 +2476,7 @@ COMMENT ON COLUMN public.fornecedores.nif IS 'Número de Identificação Fiscal'
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.email; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2876,6 +2484,7 @@ COMMENT ON COLUMN public.fornecedores.email IS 'Email de contacto';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.telefone; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2883,6 +2492,7 @@ COMMENT ON COLUMN public.fornecedores.telefone IS 'Telefone de contacto';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.morada; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2890,6 +2500,7 @@ COMMENT ON COLUMN public.fornecedores.morada IS 'Morada completa';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.cidade; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2897,6 +2508,7 @@ COMMENT ON COLUMN public.fornecedores.cidade IS 'Cidade';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.codigo_postal; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2904,6 +2516,7 @@ COMMENT ON COLUMN public.fornecedores.codigo_postal IS 'Código postal';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.pais; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2911,6 +2524,7 @@ COMMENT ON COLUMN public.fornecedores.pais IS 'País';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.contacto; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2918,6 +2532,7 @@ COMMENT ON COLUMN public.fornecedores.contacto IS 'Nome da pessoa de contacto';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.observacoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2925,6 +2540,7 @@ COMMENT ON COLUMN public.fornecedores.observacoes IS 'Observações gerais';
 
 
 --
+-- Dependencies: 284
 -- Name: COLUMN fornecedores.ativo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2945,6 +2561,7 @@ CREATE SEQUENCE public.fornecedores_id_seq
 
 
 --
+-- Dependencies: 283
 -- Name: fornecedores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -2969,6 +2586,7 @@ CREATE TABLE public.impressoras (
 
 
 --
+-- Dependencies: 324
 -- Name: TABLE impressoras; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2976,6 +2594,7 @@ COMMENT ON TABLE public.impressoras IS 'Cadastro de impressoras do sistema';
 
 
 --
+-- Dependencies: 324
 -- Name: COLUMN impressoras.caminho_rede; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -2996,6 +2615,7 @@ CREATE SEQUENCE public.impressoras_id_seq
 
 
 --
+-- Dependencies: 323
 -- Name: impressoras_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3021,6 +2641,7 @@ CREATE TABLE public.itens_fatura_entrada (
 
 
 --
+-- Dependencies: 288
 -- Name: TABLE itens_fatura_entrada; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3028,6 +2649,7 @@ COMMENT ON TABLE public.itens_fatura_entrada IS 'Itens de cada fatura de compra'
 
 
 --
+-- Dependencies: 288
 -- Name: COLUMN itens_fatura_entrada.quantidade; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3035,6 +2657,7 @@ COMMENT ON COLUMN public.itens_fatura_entrada.quantidade IS 'Quantidade comprada
 
 
 --
+-- Dependencies: 288
 -- Name: COLUMN itens_fatura_entrada.preco_unitario; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3042,6 +2665,7 @@ COMMENT ON COLUMN public.itens_fatura_entrada.preco_unitario IS 'Preço de compr
 
 
 --
+-- Dependencies: 288
 -- Name: COLUMN itens_fatura_entrada.subtotal; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3062,6 +2686,7 @@ CREATE SEQUENCE public.itens_fatura_entrada_id_seq
 
 
 --
+-- Dependencies: 287
 -- Name: itens_fatura_entrada_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3086,6 +2711,7 @@ CREATE TABLE public.itens_pedido (
 
 
 --
+-- Dependencies: 314
 -- Name: TABLE itens_pedido; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3106,6 +2732,7 @@ CREATE SEQUENCE public.itens_pedido_id_seq
 
 
 --
+-- Dependencies: 313
 -- Name: itens_pedido_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3140,6 +2767,7 @@ CREATE SEQUENCE public.itens_venda_id_seq
 
 
 --
+-- Dependencies: 225
 -- Name: itens_venda_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3161,6 +2789,7 @@ CREATE TABLE public.locais_mesa (
 
 
 --
+-- Dependencies: 308
 -- Name: TABLE locais_mesa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3181,6 +2810,7 @@ CREATE SEQUENCE public.locais_mesa_id_seq
 
 
 --
+-- Dependencies: 307
 -- Name: locais_mesa_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3204,6 +2834,7 @@ CREATE TABLE public.logs_acesso (
 
 
 --
+-- Dependencies: 346
 -- Name: TABLE logs_acesso; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3224,6 +2855,7 @@ CREATE SEQUENCE public.logs_acesso_id_seq
 
 
 --
+-- Dependencies: 345
 -- Name: logs_acesso_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3245,6 +2877,7 @@ CREATE TABLE public.mesas (
 
 
 --
+-- Dependencies: 310
 -- Name: TABLE mesas; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3265,6 +2898,7 @@ CREATE SEQUENCE public.mesas_id_seq
 
 
 --
+-- Dependencies: 309
 -- Name: mesas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3288,6 +2922,7 @@ CREATE TABLE public.pagamentos_divida (
 
 
 --
+-- Dependencies: 247
 -- Name: TABLE pagamentos_divida; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3308,6 +2943,7 @@ CREATE SEQUENCE public.pagamentos_divida_id_seq
 
 
 --
+-- Dependencies: 246
 -- Name: pagamentos_divida_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3329,6 +2965,7 @@ CREATE TABLE public.pagamentos_venda (
 
 
 --
+-- Dependencies: 240
 -- Name: TABLE pagamentos_venda; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3336,6 +2973,7 @@ COMMENT ON TABLE public.pagamentos_venda IS 'Armazena os pagamentos de cada vend
 
 
 --
+-- Dependencies: 240
 -- Name: COLUMN pagamentos_venda.venda_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3343,6 +2981,7 @@ COMMENT ON COLUMN public.pagamentos_venda.venda_id IS 'ID da venda';
 
 
 --
+-- Dependencies: 240
 -- Name: COLUMN pagamentos_venda.forma_pagamento_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3350,6 +2989,7 @@ COMMENT ON COLUMN public.pagamentos_venda.forma_pagamento_id IS 'ID da forma de 
 
 
 --
+-- Dependencies: 240
 -- Name: COLUMN pagamentos_venda.valor; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3370,6 +3010,7 @@ CREATE SEQUENCE public.pagamentos_venda_id_seq
 
 
 --
+-- Dependencies: 239
 -- Name: pagamentos_venda_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3395,6 +3036,7 @@ CREATE TABLE public.pedidos (
 
 
 --
+-- Dependencies: 312
 -- Name: TABLE pedidos; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3402,6 +3044,7 @@ COMMENT ON TABLE public.pedidos IS 'Pedidos realizados nas mesas';
 
 
 --
+-- Dependencies: 312
 -- Name: COLUMN pedidos.usuario_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3409,6 +3052,7 @@ COMMENT ON COLUMN public.pedidos.usuario_id IS 'Usuário responsável pelo pedid
 
 
 --
+-- Dependencies: 312
 -- Name: COLUMN pedidos.status; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3429,6 +3073,7 @@ CREATE SEQUENCE public.pedidos_id_seq
 
 
 --
+-- Dependencies: 311
 -- Name: pedidos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3448,6 +3093,7 @@ CREATE TABLE public.perfil_permissoes (
 
 
 --
+-- Dependencies: 301
 -- Name: TABLE perfil_permissoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3468,6 +3114,7 @@ CREATE SEQUENCE public.perfil_permissoes_id_seq
 
 
 --
+-- Dependencies: 300
 -- Name: perfil_permissoes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3489,6 +3136,7 @@ CREATE TABLE public.perfis_usuario (
 
 
 --
+-- Dependencies: 294
 -- Name: TABLE perfis_usuario; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3509,6 +3157,7 @@ CREATE SEQUENCE public.perfis_usuario_id_seq
 
 
 --
+-- Dependencies: 293
 -- Name: perfis_usuario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3531,6 +3180,7 @@ CREATE TABLE public.permissoes (
 
 
 --
+-- Dependencies: 299
 -- Name: TABLE permissoes; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3538,6 +3188,7 @@ COMMENT ON TABLE public.permissoes IS 'Operações/permissões disponíveis no s
 
 
 --
+-- Dependencies: 299
 -- Name: COLUMN permissoes.codigo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3545,6 +3196,7 @@ COMMENT ON COLUMN public.permissoes.codigo IS 'Código único da permissão usad
 
 
 --
+-- Dependencies: 299
 -- Name: COLUMN permissoes.categoria; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3565,6 +3217,7 @@ CREATE SEQUENCE public.permissoes_id_seq
 
 
 --
+-- Dependencies: 298
 -- Name: permissoes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3586,6 +3239,7 @@ CREATE TABLE public.produto_composicao (
 
 
 --
+-- Dependencies: 267
 -- Name: TABLE produto_composicao; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3593,6 +3247,7 @@ COMMENT ON TABLE public.produto_composicao IS 'Composição de produtos - produt
 
 
 --
+-- Dependencies: 267
 -- Name: COLUMN produto_composicao.produto_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3600,6 +3255,7 @@ COMMENT ON COLUMN public.produto_composicao.produto_id IS 'Produto principal (ex
 
 
 --
+-- Dependencies: 267
 -- Name: COLUMN produto_composicao.produto_componente_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3607,6 +3263,7 @@ COMMENT ON COLUMN public.produto_composicao.produto_componente_id IS 'Produto co
 
 
 --
+-- Dependencies: 267
 -- Name: COLUMN produto_composicao.quantidade; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3627,6 +3284,7 @@ CREATE SEQUENCE public.produto_composicao_id_seq
 
 
 --
+-- Dependencies: 266
 -- Name: produto_composicao_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3658,6 +3316,7 @@ CREATE TABLE public.produtos (
 
 
 --
+-- Dependencies: 222
 -- Name: COLUMN produtos.codigo_barras; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3665,6 +3324,7 @@ COMMENT ON COLUMN public.produtos.codigo_barras IS 'Código de barras do produto
 
 
 --
+-- Dependencies: 222
 -- Name: COLUMN produtos.estoque_minimo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3697,6 +3357,7 @@ CREATE SEQUENCE public.produtos_id_seq
 
 
 --
+-- Dependencies: 221
 -- Name: produtos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3716,6 +3377,7 @@ CREATE TABLE public.servidor_tempo (
 
 
 --
+-- Dependencies: 339
 -- Name: TABLE servidor_tempo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3736,6 +3398,7 @@ CREATE SEQUENCE public.servidor_tempo_id_seq
 
 
 --
+-- Dependencies: 338
 -- Name: servidor_tempo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3769,6 +3432,7 @@ CREATE SEQUENCE public.setores_id_seq
 
 
 --
+-- Dependencies: 232
 -- Name: setores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3806,6 +3470,7 @@ CREATE SEQUENCE public.terminais_id_seq
 
 
 --
+-- Dependencies: 331
 -- Name: terminais_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3841,6 +3506,7 @@ CREATE SEQUENCE public.terminal_logs_id_seq
 
 
 --
+-- Dependencies: 333
 -- Name: terminal_logs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3862,6 +3528,7 @@ CREATE TABLE public.tipos_documento (
 
 
 --
+-- Dependencies: 326
 -- Name: TABLE tipos_documento; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3882,6 +3549,7 @@ CREATE SEQUENCE public.tipos_documento_id_seq
 
 
 --
+-- Dependencies: 325
 -- Name: tipos_documento_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -3905,6 +3573,7 @@ CREATE TABLE public.usuarios (
 
 
 --
+-- Dependencies: 296
 -- Name: TABLE usuarios; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3912,6 +3581,7 @@ COMMENT ON TABLE public.usuarios IS 'Usuários do sistema';
 
 
 --
+-- Dependencies: 296
 -- Name: COLUMN usuarios.nome; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3919,6 +3589,7 @@ COMMENT ON COLUMN public.usuarios.nome IS 'Nome do usuário (deve ser único)';
 
 
 --
+-- Dependencies: 296
 -- Name: COLUMN usuarios.perfil_id; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3926,6 +3597,7 @@ COMMENT ON COLUMN public.usuarios.perfil_id IS 'Perfil/categoria do usuário';
 
 
 --
+-- Dependencies: 296
 -- Name: COLUMN usuarios.codigo; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -3946,6 +3618,7 @@ CREATE SEQUENCE public.usuarios_id_seq
 
 
 --
+-- Dependencies: 295
 -- Name: usuarios_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -4107,6 +3780,7 @@ CREATE VIEW public.v_caixa_atual AS
 
 
 --
+-- Dependencies: 275
 -- Name: VIEW v_caixa_atual; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4188,6 +3862,7 @@ CREATE VIEW public.v_conferencias_caixa AS
 
 
 --
+-- Dependencies: 258
 -- Name: VIEW v_conferencias_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4215,6 +3890,7 @@ CREATE VIEW public.v_despesas_caixa AS
 
 
 --
+-- Dependencies: 271
 -- Name: VIEW v_despesas_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4278,6 +3954,7 @@ CREATE TABLE public.vendas (
 
 
 --
+-- Dependencies: 224
 -- Name: COLUMN vendas.tipo_venda; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4467,6 +4144,7 @@ CREATE VIEW public.v_pagamentos_divida_caixa AS
 
 
 --
+-- Dependencies: 272
 -- Name: VIEW v_pagamentos_divida_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4719,6 +4397,7 @@ CREATE VIEW public.v_produtos_vendidos_caixa AS
 
 
 --
+-- Dependencies: 273
 -- Name: VIEW v_produtos_vendidos_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4772,6 +4451,7 @@ CREATE VIEW public.v_resumo_caixa AS
 
 
 --
+-- Dependencies: 270
 -- Name: VIEW v_resumo_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4819,6 +4499,7 @@ CREATE VIEW public.v_resumo_produtos_caixa AS
 
 
 --
+-- Dependencies: 274
 -- Name: VIEW v_resumo_produtos_caixa; Type: COMMENT; Schema: public; Owner: -
 --
 
@@ -4921,6 +4602,7 @@ CREATE SEQUENCE public.vendas_id_seq
 
 
 --
+-- Dependencies: 223
 -- Name: vendas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -7136,96 +6818,10 @@ ALTER TABLE ONLY public.vendas
     ADD CONSTRAINT vendas_terminal_id_fkey FOREIGN KEY (terminal_id) REFERENCES public.terminais(id) ON DELETE SET NULL;
 
 
+-- Completed on 2025-12-06 22:09:56
+
 --
-
--- =====================================================
--- DADOS INICIAIS: USUÁRIO ADMIN (VERSÃO SIMPLES)
--- Adicionado automaticamente por combinar_arquivos_simples.py
--- NOTA: Permissões devem ser configuradas manualmente
--- =====================================================
-
--- =====================================================
--- DADOS INICIAIS MÍNIMOS: APENAS USUÁRIO ADMIN
--- =====================================================
--- Este script cria APENAS o usuário Admin/0000
--- Sem perfis, sem permissões (você configura manualmente)
--- =====================================================
-
--- DESABILITAR TRIGGERS TEMPORARIAMENTE
-SET session_replication_role = 'replica';
-
--- =====================================================
--- 1. CRIAR PERFIL "Super Administrador" (se não existir)
--- =====================================================
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM public.perfis_usuario WHERE nome = 'Super Administrador') THEN
-        INSERT INTO public.perfis_usuario (nome, descricao)
-        VALUES ('Super Administrador', 'Acesso total ao sistema');
-        RAISE NOTICE 'Perfil "Super Administrador" criado';
-    ELSE
-        RAISE NOTICE 'Perfil "Super Administrador" já existe';
-    END IF;
-END $$;
-
--- =====================================================
--- 2. CRIAR USUÁRIO ADMIN/0000 (se não existir)
--- =====================================================
-
-DO $$
-DECLARE
-    perfil_admin_id INTEGER;
-BEGIN
-    -- Buscar ID do perfil Super Administrador
-    SELECT id INTO perfil_admin_id
-    FROM public.perfis_usuario
-    WHERE nome = 'Super Administrador'
-    LIMIT 1;
-
-    IF perfil_admin_id IS NULL THEN
-        RAISE EXCEPTION 'Perfil "Super Administrador" não encontrado';
-    END IF;
-
-    -- Criar ou atualizar usuário Admin
-    IF NOT EXISTS (SELECT 1 FROM public.usuarios WHERE codigo = '0000') THEN
-        INSERT INTO public.usuarios (nome, codigo, perfil_id, ativo)
-        VALUES ('Admin', '0000', perfil_admin_id, true);
-        RAISE NOTICE 'Usuário "Admin" criado com código 0000';
-    ELSE
-        UPDATE public.usuarios
-        SET nome = 'Admin',
-            ativo = true,
-            perfil_id = perfil_admin_id
-        WHERE codigo = '0000';
-        RAISE NOTICE 'Usuário "Admin" atualizado';
-    END IF;
-END $$;
-
--- REABILITAR TRIGGERS
-SET session_replication_role = 'origin';
-
--- =====================================================
--- MENSAGEM FINAL
--- =====================================================
-
-DO $$
-BEGIN
-    RAISE NOTICE '====================================================';
-    RAISE NOTICE 'USUÁRIO ADMIN CRIADO COM SUCESSO!';
-    RAISE NOTICE '====================================================';
-    RAISE NOTICE 'Nome: Admin';
-    RAISE NOTICE 'Código: 0000';
-    RAISE NOTICE 'Perfil: Super Administrador';
-    RAISE NOTICE '';
-    RAISE NOTICE 'IMPORTANTE:';
-    RAISE NOTICE '- Configure as permissões manualmente na administração';
-    RAISE NOTICE '- Este usuário foi criado sem permissões definidas';
-    RAISE NOTICE '====================================================';
-END $$;
-
 -- PostgreSQL database dump complete
 --
 
---\unrestrict QxOwgbMxBhc2hgR4SktTJFWznvcJWZl2kH92CcsZH1UUIYVXxsA1HBto8wG0Wnx
 

@@ -458,10 +458,10 @@ class _AdminPageState extends State<AdminPage> {
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.3, // Cards retangulares
+                crossAxisCount: crossAxisCount + 1, // Mais colunas = botões menores
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.5, // Cards mais retangulares e compactos
               ),
               itemCount: itensFiltrados.length,
               itemBuilder: (context, index) {
@@ -523,48 +523,32 @@ class _AdminPageState extends State<AdminPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: cor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 item.icone,
-                size: 40,
+                size: 28,
                 color: cor,
               ),
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 8),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
+              padding: EdgeInsets.symmetric(horizontal: 6),
               child: Text(
                 item.titulo,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
             ),
-            if (item.descricao != null) ...[
-              SizedBox(height: 4),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  item.descricao!,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),

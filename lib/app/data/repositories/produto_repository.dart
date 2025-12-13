@@ -57,8 +57,8 @@ class ProdutoRepository {
 
   Future<int> inserir(ProdutoModel produto) async {
     return await _db.insert('''
-      INSERT INTO produtos (nome, familia_id, preco, preco_compra, estoque, ativo, contavel, iva, setor_id, area_id)
-      VALUES (@nome, @familia_id, @preco, @preco_compra, @estoque, @ativo, @contavel, @iva, @setor_id, @area_id)
+      INSERT INTO produtos (nome, familia_id, preco, preco_compra, estoque, ativo, contavel, iva, setor_id, area_id, codigo_barras)
+      VALUES (@nome, @familia_id, @preco, @preco_compra, @estoque, @ativo, @contavel, @iva, @setor_id, @area_id, @codigo_barras)
     ''', parameters: produto.toMap());
   }
 
@@ -75,6 +75,7 @@ class ProdutoRepository {
           iva = @iva,
           setor_id = @setor_id,
           area_id = @area_id,
+          codigo_barras = @codigo_barras,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = @id
     ''', parameters: {

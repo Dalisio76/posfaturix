@@ -8,6 +8,7 @@ class FamiliaRepository {
   Future<List<FamiliaModel>> listarTodas() async {
     final result = await _db.query('''
       SELECT * FROM v_familias_com_setores
+      WHERE ativo = true
       ORDER BY nome
     ''');
 
@@ -17,7 +18,7 @@ class FamiliaRepository {
   Future<FamiliaModel?> buscarPorId(int id) async {
     final result = await _db.query('''
       SELECT * FROM v_familias_com_setores
-      WHERE id = @id
+      WHERE id = @id AND ativo = true
     ''', parameters: {'id': id});
 
     if (result.isEmpty) return null;

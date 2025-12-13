@@ -62,7 +62,7 @@ class AdminController extends GetxController {
       clientes.value = await _clienteRepo.listarTodos();
       despesas.value = await _despesaRepo.listarTodas();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao carregar dados: $e');
+      // Erro silencioso
     } finally {
       isLoading.value = false;
     }
@@ -75,10 +75,9 @@ class AdminController extends GetxController {
         await _empresaRepo.atualizar(empresa.value!.id!, novaEmpresa);
         await carregarDados();
         Get.back();
-        Get.snackbar('Sucesso', 'Dados da empresa atualizados!');
       }
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar empresa: $e');
+      // Erro silencioso
     }
   }
 
@@ -89,9 +88,8 @@ class AdminController extends GetxController {
       await _formaPagamentoRepo.inserir(forma);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Forma de pagamento adicionada!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao adicionar: $e');
+      // Erro silencioso
     }
   }
 
@@ -101,19 +99,18 @@ class AdminController extends GetxController {
       await _formaPagamentoRepo.atualizar(id, forma);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Forma de pagamento atualizada!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar: $e');
+      // Erro silencioso
     }
   }
 
   Future<void> deletarFormaPagamento(int id) async {
     try {
       await _formaPagamentoRepo.deletar(id);
-      await carregarDados();
-      Get.snackbar('Sucesso', 'Forma de pagamento removida!');
+      formasPagamento.removeWhere((f) => f.id == id);
+      formasPagamento.refresh();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao remover: $e');
+      // Erro silencioso
     }
   }
 
@@ -124,9 +121,8 @@ class AdminController extends GetxController {
       await _setorRepo.inserir(setor);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Setor adicionado!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao adicionar: $e');
+      // Erro silencioso
     }
   }
 
@@ -136,19 +132,18 @@ class AdminController extends GetxController {
       await _setorRepo.atualizar(id, setor);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Setor atualizado!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar: $e');
+      // Erro silencioso
     }
   }
 
   Future<void> deletarSetor(int id) async {
     try {
       await _setorRepo.deletar(id);
-      await carregarDados();
-      Get.snackbar('Sucesso', 'Setor removido!');
+      setores.removeWhere((s) => s.id == id);
+      setores.refresh();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao remover: $e');
+      // Erro silencioso
     }
   }
 
@@ -163,9 +158,8 @@ class AdminController extends GetxController {
       await _areaRepo.inserir(area);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Área adicionada!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao adicionar: $e');
+      // Erro silencioso
     }
   }
 
@@ -179,19 +173,18 @@ class AdminController extends GetxController {
       await _areaRepo.atualizar(id, area);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Área atualizada!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar: $e');
+      // Erro silencioso
     }
   }
 
   Future<void> deletarArea(int id) async {
     try {
       await _areaRepo.deletar(id);
-      await carregarDados();
-      Get.snackbar('Sucesso', 'Área removida!');
+      areas.removeWhere((a) => a.id == id);
+      areas.refresh();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao remover: $e');
+      // Erro silencioso
     }
   }
 
@@ -202,9 +195,8 @@ class AdminController extends GetxController {
       await _familiaRepo.inserir(familia, setorIds);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Família adicionada com sucesso!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao adicionar família: $e');
+      // Erro silencioso
     }
   }
 
@@ -214,19 +206,18 @@ class AdminController extends GetxController {
       await _familiaRepo.atualizar(id, familia, setorIds);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Família atualizada com sucesso!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar família: $e');
+      // Erro silencioso
     }
   }
 
   Future<void> deletarFamilia(int id) async {
     try {
       await _familiaRepo.deletar(id);
-      await carregarDados();
-      Get.snackbar('Sucesso', 'Família removida!');
+      familias.removeWhere((f) => f.id == id);
+      familias.refresh();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao remover família: $e');
+      // Erro silencioso
     }
   }
 
@@ -236,15 +227,12 @@ class AdminController extends GetxController {
     List<ProdutoComposicaoModel>? composicao,
   ]) async {
     try {
-      // Inserir produto
       final produtoId = await _produtoRepo.inserir(produto);
 
-      // Salvar composição se fornecida
       if (composicao != null && composicao.isNotEmpty) {
         await _composicaoRepo.salvarComposicao(produtoId, composicao);
       }
 
-      // Memorizar seleções para o próximo produto
       ultimaFamiliaSelecionada.value = produto.familiaId;
       if (produto.setorId != null) {
         ultimoSetorSelecionado.value = produto.setorId;
@@ -255,9 +243,8 @@ class AdminController extends GetxController {
 
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Produto adicionado!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao adicionar produto: $e');
+      // Erro silencioso
     }
   }
 
@@ -267,28 +254,23 @@ class AdminController extends GetxController {
     List<ProdutoComposicaoModel>? composicao,
   ]) async {
     try {
-      // Atualizar produto
       await _produtoRepo.atualizar(id, produto);
 
-      // Atualizar composição
       if (composicao != null) {
         await _composicaoRepo.salvarComposicao(id, composicao);
       }
 
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Produto atualizado!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar produto: $e');
+      // Erro silencioso
     }
   }
 
-  Future<List<ProdutoComposicaoModel>> buscarComposicaoProduto(
-      int produtoId) async {
+  Future<List<ProdutoComposicaoModel>> buscarComposicaoProduto(int produtoId) async {
     try {
       return await _composicaoRepo.buscarComposicao(produtoId);
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao buscar composição: $e');
       return [];
     }
   }
@@ -296,10 +278,10 @@ class AdminController extends GetxController {
   Future<void> deletarProduto(int id) async {
     try {
       await _produtoRepo.deletar(id);
-      await carregarDados();
-      Get.snackbar('Sucesso', 'Produto removido!');
+      produtos.removeWhere((p) => p.id == id);
+      produtos.refresh();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao remover produto: $e');
+      // Erro silencioso
     }
   }
 
@@ -309,9 +291,8 @@ class AdminController extends GetxController {
       await _clienteRepo.inserir(cliente);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Cliente adicionado!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao adicionar cliente: $e');
+      // Erro silencioso
     }
   }
 
@@ -320,19 +301,18 @@ class AdminController extends GetxController {
       await _clienteRepo.atualizar(id, cliente);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Cliente atualizado!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar cliente: $e');
+      // Erro silencioso
     }
   }
 
   Future<void> deletarCliente(int id) async {
     try {
       await _clienteRepo.deletar(id);
-      await carregarDados();
-      Get.snackbar('Sucesso', 'Cliente removido!');
+      clientes.removeWhere((c) => c.id == id);
+      clientes.refresh();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao remover cliente: $e');
+      // Erro silencioso
     }
   }
 
@@ -342,9 +322,8 @@ class AdminController extends GetxController {
       await _despesaRepo.inserir(despesa);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Despesa adicionada!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao adicionar despesa: $e');
+      // Erro silencioso
     }
   }
 
@@ -353,19 +332,18 @@ class AdminController extends GetxController {
       await _despesaRepo.atualizar(id, despesa);
       await carregarDados();
       Get.back();
-      Get.snackbar('Sucesso', 'Despesa atualizada!');
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao atualizar despesa: $e');
+      // Erro silencioso
     }
   }
 
   Future<void> deletarDespesa(int id) async {
     try {
       await _despesaRepo.deletar(id);
-      await carregarDados();
-      Get.snackbar('Sucesso', 'Despesa removida!');
+      despesas.removeWhere((d) => d.id == id);
+      despesas.refresh();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao remover despesa: $e');
+      // Erro silencioso
     }
   }
 }

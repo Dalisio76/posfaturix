@@ -535,6 +535,7 @@ class ProdutosTab extends GetView<AdminController> {
                     labelText: 'Nome *',
                     border: OutlineInputBorder(),
                   ),
+                  textCapitalization: TextCapitalization.characters,
                 ),
                 const SizedBox(height: 15),
 
@@ -987,9 +988,9 @@ class ProdutosTab extends GetView<AdminController> {
             child: const Text('CANCELAR'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Get.back();
-              controller.deletarProduto(id);
+              await controller.deletarProduto(id);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('REMOVER'),

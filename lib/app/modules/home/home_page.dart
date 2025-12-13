@@ -25,27 +25,9 @@ class HomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo ou Nome do Sistema
-              Icon(
-                Icons.point_of_sale,
-                size: 100,
-                color: Colors.white,
-              ),
-              SizedBox(height: 20),
               Text(
-                'SISTEMA PDV',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                'Frentex e Serviços',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white70,
-                ),
+                'FATURIX',
+                style: TextStyle(fontSize: 48, color: Colors.white70),
               ),
               SizedBox(height: 60),
 

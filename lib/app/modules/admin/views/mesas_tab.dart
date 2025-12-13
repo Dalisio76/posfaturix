@@ -18,6 +18,10 @@ class _MesasTabState extends State<MesasTab> {
   final RxList<MesaModel> mesas = <MesaModel>[].obs;
   final RxBool isLoading = false.obs;
 
+  // Seleção múltipla
+  final RxSet<int> mesasSelecionadas = <int>{}.obs;
+  final RxBool modoSelecao = false.obs;
+
   @override
   void initState() {
     super.initState();
@@ -30,10 +34,61 @@ class _MesasTabState extends State<MesasTab> {
       locais.value = await _localRepo.listarTodos();
       mesas.value = await _mesaRepo.listarTodas();
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao carregar dados: $e');
+      // Erro silencioso
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _toggleSelecaoMesa(int mesaId) {
+    if (mesasSelecionadas.contains(mesaId)) {
+      mesasSelecionadas.remove(mesaId);
+    } else {
+      mesasSelecionadas.add(mesaId);
+    }
+    modoSelecao.value = mesasSelecionadas.isNotEmpty;
+  }
+
+  void _selecionarTodasDoLocal(int localId) {
+    final mesasDoLocal = mesas.where((m) => m.localId == localId).toList();
+    for (var mesa in mesasDoLocal) {
+      if (mesa.id != null) {
+        mesasSelecionadas.add(mesa.id!);
+      }
+    }
+    modoSelecao.value = mesasSelecionadas.isNotEmpty;
+  }
+
+  void _limparSelecao() {
+    mesasSelecionadas.clear();
+    modoSelecao.value = false;
+  }
+
+  Future<void> _deletarMesasSelecionadas() async {
+    Get.dialog(
+      AlertDialog(
+        title: Text('Confirmar'),
+        content: Text('Deseja remover ${mesasSelecionadas.length} mesa(s)?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back();
+              for (var id in mesasSelecionadas.toList()) {
+                await _mesaRepo.deletar(id);
+              }
+              _limparSelecao();
+              _carregarDados();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('REMOVER'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -53,22 +108,55 @@ class _MesasTabState extends State<MesasTab> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Spacer(),
-              ElevatedButton.icon(
+              ElevatedButton(
                 onPressed: _adicionarLocal,
-                icon: Icon(Icons.add),
-                label: Text('NOVO LOCAL'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Get.theme.primaryColor,
                 ),
+                child: Text('NOVO LOCAL'),
               ),
               SizedBox(width: 12),
-              ElevatedButton.icon(
+              ElevatedButton(
                 onPressed: _carregarDados,
-                icon: Icon(Icons.refresh),
-                label: Text('ATUALIZAR'),
+                child: Text('ATUALIZAR'),
               ),
             ],
           ),
+
+          // Barra de seleção
+          Obx(() {
+            if (modoSelecao.value) {
+              return Container(
+                margin: EdgeInsets.only(top: 12),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.red[50],
+                child: Row(
+                  children: [
+                    Text(
+                      '${mesasSelecionadas.length} mesa(s) selecionada(s)',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Spacer(),
+                    ElevatedButton(
+                      onPressed: _deletarMesasSelecionadas,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text('APAGAR SELECIONADAS'),
+                    ),
+                    SizedBox(width: 8),
+                    TextButton(
+                      onPressed: _limparSelecao,
+                      child: Text('CANCELAR'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return SizedBox.shrink();
+          }),
+
           Divider(height: 32),
 
           // Conteúdo
@@ -87,10 +175,9 @@ class _MesasTabState extends State<MesasTab> {
                       SizedBox(height: 16),
                       Text('Nenhum local cadastrado'),
                       SizedBox(height: 16),
-                      ElevatedButton.icon(
+                      ElevatedButton(
                         onPressed: _adicionarLocal,
-                        icon: Icon(Icons.add),
-                        label: Text('ADICIONAR LOCAL'),
+                        child: Text('ADICIONAR LOCAL'),
                       ),
                     ],
                   ),
@@ -124,14 +211,25 @@ class _MesasTabState extends State<MesasTab> {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (mesasDoLocal.isNotEmpty)
+                            IconButton(
+                              icon: Icon(Icons.select_all, color: Colors.orange),
+                              onPressed: () => _selecionarTodasDoLocal(local.id!),
+                              tooltip: 'Selecionar todas',
+                            ),
                           IconButton(
                             icon: Icon(Icons.add, color: Colors.green),
                             onPressed: () => _adicionarMesasEmLote(local),
-                            tooltip: 'Adicionar mesas em lote',
+                            tooltip: 'Adicionar mesas',
                           ),
                           IconButton(
                             icon: Icon(Icons.edit, color: Colors.blue),
                             onPressed: () => _editarLocal(local),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deletarLocal(local),
+                            tooltip: 'Remover local',
                           ),
                         ],
                       ),
@@ -155,31 +253,32 @@ class _MesasTabState extends State<MesasTab> {
                                     children: [
                                       Text('Nenhuma mesa cadastrada neste local'),
                                       SizedBox(height: 12),
-                                      ElevatedButton.icon(
+                                      ElevatedButton(
                                         onPressed: () => _adicionarMesasEmLote(local),
-                                        icon: Icon(Icons.add),
-                                        label: Text('ADICIONAR MESAS'),
+                                        child: Text('ADICIONAR MESAS'),
                                       ),
                                     ],
                                   ),
                                 )
                               else
-                                Wrap(
+                                Obx(() => Wrap(
                                   spacing: 8,
                                   runSpacing: 8,
                                   children: mesasDoLocal.map((mesa) {
-                                    return Chip(
+                                    final isSelected = mesasSelecionadas.contains(mesa.id);
+                                    return FilterChip(
                                       label: Text('Mesa ${mesa.numero}'),
                                       avatar: Icon(
                                         Icons.table_restaurant,
                                         size: 18,
-                                        color: mesa.isLivre ? Colors.green : Colors.orange,
+                                        color: isSelected ? Colors.white : (mesa.isLivre ? Colors.green : Colors.orange),
                                       ),
-                                      deleteIcon: Icon(Icons.delete, size: 18),
-                                      onDeleted: () => _deletarMesa(mesa),
+                                      selected: isSelected,
+                                      selectedColor: Colors.red[300],
+                                      onSelected: (_) => _toggleSelecaoMesa(mesa.id!),
                                     );
                                   }).toList(),
-                                ),
+                                )),
                             ],
                           ),
                         ),
@@ -230,10 +329,7 @@ class _MesasTabState extends State<MesasTab> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (nomeController.text.isEmpty) {
-                Get.snackbar('Erro', 'Nome é obrigatório');
-                return;
-              }
+              if (nomeController.text.isEmpty) return;
 
               try {
                 final local = LocalMesaModel(
@@ -246,7 +342,7 @@ class _MesasTabState extends State<MesasTab> {
                 Get.back();
                 _carregarDados();
               } catch (e) {
-                Get.snackbar('Erro', 'Erro ao adicionar local: $e');
+                // Erro silencioso
               }
             },
             child: Text('SALVAR'),
@@ -297,10 +393,48 @@ class _MesasTabState extends State<MesasTab> {
                 Get.back();
                 _carregarDados();
               } catch (e) {
-                Get.snackbar('Erro', 'Erro ao atualizar local: $e');
+                // Erro silencioso
               }
             },
             child: Text('SALVAR'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deletarLocal(LocalMesaModel local) {
+    final mesasDoLocal = mesas.where((m) => m.localId == local.id).toList();
+
+    Get.dialog(
+      AlertDialog(
+        title: Text('Confirmar'),
+        content: Text(
+          mesasDoLocal.isNotEmpty
+            ? 'Este local possui ${mesasDoLocal.length} mesa(s). Deseja remover o local e todas as mesas?'
+            : 'Deseja remover o local "${local.nome}"?'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                // Deletar mesas primeiro
+                for (var mesa in mesasDoLocal) {
+                  await _mesaRepo.deletar(mesa.id!);
+                }
+                await _localRepo.deletar(local.id!);
+                Get.back();
+                _carregarDados();
+              } catch (e) {
+                // Erro silencioso
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('REMOVER'),
           ),
         ],
       ),
@@ -347,7 +481,6 @@ class _MesasTabState extends State<MesasTab> {
               final quantidade = int.tryParse(quantidadeController.text);
 
               if (numeroInicial == null || quantidade == null || quantidade < 1) {
-                Get.snackbar('Erro', 'Valores inválidos');
                 return;
               }
 
@@ -360,38 +493,10 @@ class _MesasTabState extends State<MesasTab> {
                 Get.back();
                 _carregarDados();
               } catch (e) {
-                Get.snackbar('Erro', 'Erro ao criar mesas: $e');
+                // Erro silencioso
               }
             },
             child: Text('CRIAR'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _deletarMesa(MesaModel mesa) {
-    Get.dialog(
-      AlertDialog(
-        title: Text('Confirmar'),
-        content: Text('Deseja realmente excluir a Mesa ${mesa.numero}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('CANCELAR'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                await _mesaRepo.deletar(mesa.id!);
-                Get.back();
-                _carregarDados();
-              } catch (e) {
-                Get.snackbar('Erro', 'Erro ao excluir mesa: $e');
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('EXCLUIR'),
           ),
         ],
       ),

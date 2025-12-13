@@ -2,82 +2,186 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/admin_controller.dart';
 
-class FamiliasTab extends GetView<AdminController> {
+class FamiliasTab extends StatelessWidget {
+  final RxList<int> familiasSelecionadas = <int>[].obs;
+  final RxBool selecionarTodas = false.obs;
+
   @override
   Widget build(BuildContext context) {
+    final AdminController controller = Get.find<AdminController>();
+
     return Scaffold(
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.familias.isEmpty) {
-          return Center(
-            child: Text('Nenhuma família cadastrada'),
-          );
-        }
-
-        return ListView.builder(
-          padding: EdgeInsets.all(16),
-          itemCount: controller.familias.length,
-          itemBuilder: (context, index) {
-            final familia = controller.familias[index];
-            return Card(
-              child: ListTile(
-                title: Text(familia.nome),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          // Barra de ações
+          Obx(() {
+            if (familiasSelecionadas.isNotEmpty) {
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: Colors.red[50],
+                child: Row(
                   children: [
-                    if (familia.descricao != null && familia.descricao!.isNotEmpty)
-                      Text(familia.descricao!),
-                    if (familia.setoresTexto != null && familia.setoresTexto!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.store, size: 14, color: Colors.green),
-                            SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                'Setores: ${familia.setoresTexto}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                  color: Colors.green[700],
-                                ),
+                    Text(
+                      '${familiasSelecionadas.length} selecionada(s)',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Spacer(),
+                    ElevatedButton(
+                      onPressed: () => _confirmarDeleteMultiplas(controller),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text('APAGAR SELECIONADAS'),
+                    ),
+                    SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () {
+                        familiasSelecionadas.clear();
+                        selecionarTodas.value = false;
+                      },
+                      child: Text('CANCELAR'),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return SizedBox.shrink();
+          }),
+
+          // Lista
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (controller.familias.isEmpty) {
+                return Center(
+                  child: Text('Nenhuma família cadastrada'),
+                );
+              }
+
+              return Column(
+                children: [
+                  // Header com selecionar todas
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: Colors.grey[200],
+                    child: Row(
+                      children: [
+                        Obx(() => Checkbox(
+                          value: selecionarTodas.value,
+                          onChanged: (value) {
+                            selecionarTodas.value = value ?? false;
+                            if (value == true) {
+                              familiasSelecionadas.value = controller.familias
+                                  .where((f) => f.id != null)
+                                  .map((f) => f.id!)
+                                  .toList();
+                            } else {
+                              familiasSelecionadas.clear();
+                            }
+                          },
+                        )),
+                        Text(
+                          'SELECIONAR TODAS',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        Spacer(),
+                        Text(
+                          '${controller.familias.length} famílias',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Lista de famílias
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(16),
+                      itemCount: controller.familias.length,
+                      itemBuilder: (context, index) {
+                        final familia = controller.familias[index];
+                        return Obx(() {
+                          final isSelected = familiasSelecionadas.contains(familia.id);
+                          return Card(
+                            color: isSelected ? Colors.red[50] : null,
+                            child: ListTile(
+                              leading: Checkbox(
+                                value: isSelected,
+                                onChanged: (value) {
+                                  if (value == true) {
+                                    familiasSelecionadas.add(familia.id!);
+                                  } else {
+                                    familiasSelecionadas.remove(familia.id);
+                                  }
+                                  // Atualizar estado de "selecionar todas"
+                                  selecionarTodas.value = familiasSelecionadas.length == controller.familias.length;
+                                },
+                              ),
+                              title: Text(familia.nome),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (familia.descricao != null && familia.descricao!.isNotEmpty)
+                                    Text(familia.descricao!),
+                                  if (familia.setoresTexto != null && familia.setoresTexto!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.store, size: 14, color: Colors.green),
+                                          SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              'Setores: ${familia.setoresTexto}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontStyle: FontStyle.italic,
+                                                color: Colors.green[700],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit, color: Colors.blue),
+                                    onPressed: () => _mostrarDialogFamilia(controller, familia),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _confirmarDelete(controller, familia.id!),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () => _mostrarDialogFamilia(familia),
+                          );
+                        });
+                      },
                     ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _confirmarDelete(familia.id!),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      }),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _mostrarDialogFamilia(null),
+        onPressed: () => _mostrarDialogFamilia(Get.find<AdminController>(), null),
         child: Icon(Icons.add),
       ),
     );
   }
 
-  void _mostrarDialogFamilia(familia) {
+  void _mostrarDialogFamilia(AdminController controller, familia) {
     final nomeController = TextEditingController(text: familia?.nome ?? '');
     final descController = TextEditingController(text: familia?.descricao ?? '');
 
@@ -98,6 +202,7 @@ class FamiliasTab extends GetView<AdminController> {
                   labelText: 'Nome *',
                   border: OutlineInputBorder(),
                 ),
+                textCapitalization: TextCapitalization.characters,
               ),
               SizedBox(height: 15),
               TextField(
@@ -172,14 +277,14 @@ class FamiliasTab extends GetView<AdminController> {
 
               if (familia == null) {
                 controller.adicionarFamilia(
-                  nomeController.text,
+                  nomeController.text.toUpperCase(),
                   descController.text,
                   setoresSelecionados.toList(),
                 );
               } else {
                 controller.editarFamilia(
                   familia.id!,
-                  nomeController.text,
+                  nomeController.text.toUpperCase(),
                   descController.text,
                   setoresSelecionados.toList(),
                 );
@@ -192,7 +297,7 @@ class FamiliasTab extends GetView<AdminController> {
     );
   }
 
-  void _confirmarDelete(int id) {
+  void _confirmarDelete(AdminController controller, int id) {
     Get.dialog(
       AlertDialog(
         title: Text('Confirmar'),
@@ -214,4 +319,35 @@ class FamiliasTab extends GetView<AdminController> {
       ),
     );
   }
+
+  void _confirmarDeleteMultiplas(AdminController controller) {
+    Get.dialog(
+      AlertDialog(
+        title: Text('Confirmar'),
+        content: Text('Deseja realmente remover ${familiasSelecionadas.length} família(s)?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back();
+
+              // Deletar cada família selecionada
+              for (final id in familiasSelecionadas.toList()) {
+                await controller.deletarFamilia(id);
+              }
+
+              familiasSelecionadas.clear();
+              selecionarTodas.value = false;
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text('REMOVER TODAS'),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

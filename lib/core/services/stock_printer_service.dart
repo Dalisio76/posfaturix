@@ -1,7 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:pdf/widgets.dart';
 import '../../app/data/models/produto_model.dart';
 import '../../app/data/models/empresa_model.dart';
 import 'package:intl/intl.dart';
@@ -91,7 +90,7 @@ class StockPrinterService {
   }
 
   static pw.Widget _buildTable(List<ProdutoModel> produtos) {
-    return TableHelper.fromTextArray(
+    return pw.TableHelper.fromTextArray(
       headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
       cellStyle: pw.TextStyle(fontSize: 9),
       headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),

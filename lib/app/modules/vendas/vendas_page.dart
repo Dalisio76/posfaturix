@@ -164,19 +164,18 @@ class _VendasPageState extends State<VendasPage> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4),
                 child: Builder(
-                  builder: (context) => ElevatedButton.icon(
+                  builder: (context) => ElevatedButton(
                     onPressed: () {
                       Scaffold.of(context).openDrawer();
                     },
-                    icon: Icon(Icons.menu, size: 24),
-                    label: Text(
-                      'MENU',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[700],
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    ),
+                    child: Text(
+                      'MENU',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -184,24 +183,23 @@ class _VendasPageState extends State<VendasPage> {
               // Botão de Pesquisa
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4),
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: _abrirPesquisa,
-                  icon: Icon(Icons.search, size: 24),
-                  label: Text(
-                    'PESQUISAR (F1)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange[700],
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                  child: Text(
+                    'PESQUISAR (F1)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               // Botão LIMPAR/REMOVER
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4),
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: () {
                     if (_itemSelecionadoIndex != null) {
                       // Remover apenas o item selecionado
@@ -214,18 +212,14 @@ class _VendasPageState extends State<VendasPage> {
                       controller.limparCarrinho();
                     }
                   },
-                  icon: Icon(
-                    _itemSelecionadoIndex != null ? Icons.remove_circle : Icons.delete_sweep,
-                    size: 24,
-                  ),
-                  label: Text(
-                    _itemSelecionadoIndex != null ? 'REMOVER' : 'LIMPAR (F8)',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[700],
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  ),
+                  child: Text(
+                    _itemSelecionadoIndex != null ? 'REMOVER' : 'LIMPAR (F8)',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -253,7 +247,7 @@ class _VendasPageState extends State<VendasPage> {
 
               // LADO DIREITO: Carrinho
               Container(
-                width: 380,
+                width: 320,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border(left: BorderSide(color: Colors.grey.shade300)),
@@ -652,13 +646,12 @@ class _VendasPageState extends State<VendasPage> {
               SizedBox(height: 16),
               Text('Nenhum produto encontrado', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
               SizedBox(height: 12),
-              ElevatedButton.icon(
+              ElevatedButton(
                 onPressed: _abrirPesquisa,
-                icon: Icon(Icons.search, size: 22),
-                label: Text('PESQUISAR'),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 ),
+                child: Text('PESQUISAR'),
               ),
             ],
           ),
@@ -1152,24 +1145,18 @@ class _VendasPageState extends State<VendasPage> {
               () => SizedBox(
                 width: double.infinity,
                 height: 70,
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: controller.abrirSelecaoMesa,
-                  icon: Icon(
-                    controller.temProdutosNoCarrinho
-                        ? Icons.table_restaurant
-                        : Icons.receipt_long,
-                    size: 28,
-                  ),
-                  label: Text(
-                    controller.textoBotaoPedido,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: controller.temProdutosNoCarrinho
                         ? Colors.orange[700]
                         : Colors.blue[700],
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.all(18),
+                  ),
+                  child: Text(
+                    controller.textoBotaoPedido,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

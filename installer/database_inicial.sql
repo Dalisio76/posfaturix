@@ -7202,6 +7202,34 @@ BEGIN
     END IF;
 END $$;
 
+-- =====================================================
+-- TIPOS DE DOCUMENTO
+-- =====================================================
+
+INSERT INTO public.tipos_documento (codigo, nome, descricao)
+SELECT 'FR', 'FATURA RECIBO', 'Fatura com recibo integrado'
+WHERE NOT EXISTS (SELECT 1 FROM public.tipos_documento WHERE codigo = 'FR');
+
+INSERT INTO public.tipos_documento (codigo, nome, descricao)
+SELECT 'FT', 'FATURA', 'Fatura comercial'
+WHERE NOT EXISTS (SELECT 1 FROM public.tipos_documento WHERE codigo = 'FT');
+
+INSERT INTO public.tipos_documento (codigo, nome, descricao)
+SELECT 'VD', 'VENDA A DINHEIRO', 'Venda a dinheiro simplificada'
+WHERE NOT EXISTS (SELECT 1 FROM public.tipos_documento WHERE codigo = 'VD');
+
+INSERT INTO public.tipos_documento (codigo, nome, descricao)
+SELECT 'NC', 'NOTA DE CREDITO', 'Nota de crédito para devoluções'
+WHERE NOT EXISTS (SELECT 1 FROM public.tipos_documento WHERE codigo = 'NC');
+
+INSERT INTO public.tipos_documento (codigo, nome, descricao)
+SELECT 'ND', 'NOTA DE DEBITO', 'Nota de débito'
+WHERE NOT EXISTS (SELECT 1 FROM public.tipos_documento WHERE codigo = 'ND');
+
+INSERT INTO public.tipos_documento (codigo, nome, descricao)
+SELECT 'RC', 'RECIBO', 'Recibo de pagamento'
+WHERE NOT EXISTS (SELECT 1 FROM public.tipos_documento WHERE codigo = 'RC');
+
 -- REABILITAR TRIGGERS
 SET session_replication_role = 'origin';
 

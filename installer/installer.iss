@@ -90,10 +90,6 @@ Source: "..\build\windows\x64\runner\Release\data\*"; DestDir: "{app}\data"; Fla
 ; Ícone
 Source: "..\assets\favicon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
-; Arquivos de configuração e scripts
-Source: "database_inicial.sql"; DestDir: "{app}\database"; Flags: ignoreversion
-Source: "configurar_database.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "README_INSTALACAO.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
 
 ; Documentação
 Source: "..\GUIA_IMPRESSORAS_REDE.md"; DestDir: "{app}\docs"; Flags: ignoreversion skipifsourcedoesntexist

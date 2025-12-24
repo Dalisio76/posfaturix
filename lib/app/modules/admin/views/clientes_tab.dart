@@ -101,6 +101,11 @@ class ClientesTab extends GetView<AdminController> {
     final observacoesController =
         TextEditingController(text: cliente?.observacoes ?? '');
 
+    // Mensagem de erro/sucesso
+    final mensagemErro = RxnString();
+    final mensagemSucesso = RxnString();
+    final salvando = false.obs;
+
     Get.dialog(
       AlertDialog(
         title:
@@ -111,6 +116,64 @@ class ClientesTab extends GetView<AdminController> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Mensagem de erro
+                Obx(() {
+                  if (mensagemErro.value != null) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        border: Border.all(color: Colors.red),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              mensagemErro.value!,
+                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+
+                // Mensagem de sucesso
+                Obx(() {
+                  if (mensagemSucesso.value != null) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        border: Border.all(color: Colors.green),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.green),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              mensagemSucesso.value!,
+                              style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+
                 TextField(
                   controller: nomeController,
                   decoration: InputDecoration(
@@ -207,51 +270,89 @@ class ClientesTab extends GetView<AdminController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('CANCELAR'),
+            child: Text('FECHAR'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          Obx(() => ElevatedButton(
+            onPressed: salvando.value ? null : () async {
+              // Limpar mensagens anteriores
+              mensagemErro.value = null;
+              mensagemSucesso.value = null;
+
               if (nomeController.text.isEmpty) {
-                Get.snackbar('Erro', 'O nome é obrigatório');
+                mensagemErro.value = 'O nome é obrigatório';
                 return;
               }
 
+              salvando.value = true;
+
               final novoCliente = ClienteModel(
-                nome: nomeController.text,
+                nome: nomeController.text.trim().toUpperCase(),
                 contacto: contactoController.text.isEmpty
                     ? null
-                    : contactoController.text,
+                    : contactoController.text.trim(),
                 contacto2: contacto2Controller.text.isEmpty
                     ? null
-                    : contacto2Controller.text,
+                    : contacto2Controller.text.trim(),
                 email: emailController.text.isEmpty
                     ? null
-                    : emailController.text,
+                    : emailController.text.trim(),
                 endereco: enderecoController.text.isEmpty
                     ? null
-                    : enderecoController.text,
+                    : enderecoController.text.trim(),
                 bairro: bairroController.text.isEmpty
                     ? null
-                    : bairroController.text,
+                    : bairroController.text.trim(),
                 cidade: cidadeController.text.isEmpty
                     ? null
-                    : cidadeController.text,
+                    : cidadeController.text.trim(),
                 nuit: nuitController.text.isEmpty
                     ? null
-                    : nuitController.text,
+                    : nuitController.text.trim(),
                 observacoes: observacoesController.text.isEmpty
                     ? null
-                    : observacoesController.text,
+                    : observacoesController.text.trim(),
               );
 
+              String? resultado;
               if (cliente == null) {
-                controller.adicionarCliente(novoCliente);
+                resultado = await controller.adicionarCliente(novoCliente);
               } else {
-                controller.editarCliente(cliente.id!, novoCliente);
+                resultado = await controller.editarCliente(cliente.id!, novoCliente);
+              }
+
+              salvando.value = false;
+
+              if (resultado != null) {
+                // Erro - mostrar mensagem
+                mensagemErro.value = resultado;
+              } else {
+                // Sucesso
+                if (cliente == null) {
+                  // Novo cliente - limpar campos para continuar registrando
+                  mensagemSucesso.value = 'Cliente "${novoCliente.nome}" salvo com sucesso! Continue registrando...';
+                  nomeController.clear();
+                  contactoController.clear();
+                  contacto2Controller.clear();
+                  emailController.clear();
+                  enderecoController.clear();
+                  bairroController.clear();
+                  cidadeController.clear();
+                  nuitController.clear();
+                  observacoesController.clear();
+                } else {
+                  // Edição - fechar dialog
+                  Get.back();
+                }
               }
             },
-            child: Text('SALVAR'),
-          ),
+            child: salvando.value
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Text('SALVAR'),
+          )),
         ],
       ),
     );

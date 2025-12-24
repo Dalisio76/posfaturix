@@ -55,6 +55,48 @@ class ProdutoRepository {
     return ProdutoModel.fromMap(result.first);
   }
 
+  /// Verifica se já existe um produto com o mesmo nome
+  Future<bool> existeProdutoComNome(String nome, {int? excluirId}) async {
+    String sql = '''
+      SELECT COUNT(*) as total FROM produtos
+      WHERE UPPER(TRIM(nome)) = UPPER(TRIM(@nome)) AND ativo = true
+    ''';
+
+    if (excluirId != null) {
+      sql += ' AND id != @excluir_id';
+    }
+
+    final result = await _db.query(sql, parameters: {
+      'nome': nome,
+      if (excluirId != null) 'excluir_id': excluirId,
+    });
+
+    final total = result.first['total'] as int;
+    return total > 0;
+  }
+
+  /// Verifica se já existe um produto com o mesmo código de barras
+  Future<bool> existeProdutoComCodigoBarras(String codigoBarras, {int? excluirId}) async {
+    if (codigoBarras.isEmpty) return false;
+
+    String sql = '''
+      SELECT COUNT(*) as total FROM produtos
+      WHERE codigo_barras = @codigo_barras AND ativo = true
+    ''';
+
+    if (excluirId != null) {
+      sql += ' AND id != @excluir_id';
+    }
+
+    final result = await _db.query(sql, parameters: {
+      'codigo_barras': codigoBarras,
+      if (excluirId != null) 'excluir_id': excluirId,
+    });
+
+    final total = result.first['total'] as int;
+    return total > 0;
+  }
+
   Future<int> inserir(ProdutoModel produto) async {
     return await _db.insert('''
       INSERT INTO produtos (nome, familia_id, preco, preco_compra, estoque, ativo, contavel, iva, setor_id, area_id, codigo_barras)

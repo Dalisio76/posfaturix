@@ -32,19 +32,15 @@ class VendaRepository {
     List<PagamentoVendaModel> pagamentos,
   ) async {
     return await _db.transaction((conn) async {
-      // 0. Obter próximo número sequencial
-      final proximoNumero = await obterProximoNumeroVenda();
-
       // 1. Inserir venda
       final vendaResult = await conn.execute(
         Sql.named('''
-          INSERT INTO vendas (numero, numero_venda, total, terminal)
-          VALUES (@numero, @numero_venda, @total, @terminal)
+          INSERT INTO vendas (numero, total, terminal)
+          VALUES (@numero, @total, @terminal)
           RETURNING id
         '''),
         parameters: {
           'numero': venda.numero,
-          'numero_venda': proximoNumero,
           'total': venda.total,
           'terminal': venda.terminal,
         },

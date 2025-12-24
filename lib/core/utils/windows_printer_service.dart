@@ -2,7 +2,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../app/data/models/venda_model.dart';
 import '../../app/data/models/item_venda_model.dart';
 import '../../app/data/models/empresa_model.dart';
@@ -40,8 +39,6 @@ class WindowsPrinterService {
     List<PagamentoVendaModel>? pagamentos,
   ) async {
     try {
-      print('DEBUG: Iniciando impressao com ${itens.length} itens');
-
       // Gerar PDF do cupom
       final pdf = await _gerarCupomPDF(venda, itens, empresa, pagamentos);
 
@@ -49,13 +46,9 @@ class WindowsPrinterService {
       final printer = await _buscarImpressora(printerName);
 
       if (printer == null) {
-        print('ERRO: Impressora "$printerName" nao encontrada');
-        print('Impressoras disponiveis:');
-        await listarImpressoras();
+        print('Impressora "$printerName" nao encontrada');
         return false;
       }
-
-      print('DEBUG: PDF gerado, enviando para impressora...');
 
       // Imprimir diretamente na impressora
       await Printing.directPrintPdf(
@@ -63,7 +56,6 @@ class WindowsPrinterService {
         onLayout: (format) => pdf.save(),
       );
 
-      print('SUCESSO: Recibo impresso com sucesso na impressora: $printerName');
       return true;
     } catch (e) {
       print('ERRO: Erro ao imprimir recibo: $e');
@@ -85,13 +77,8 @@ class WindowsPrinterService {
   ) async {
     final pdf = pw.Document();
 
-    print('DEBUG: Carregando fonte com suporte Unicode...');
-
-    // SOLUCAO: Usar fonte do sistema que suporta Unicode
-    // Isso baixa a fonte Roboto do Google Fonts e cria um pw.Font
-    final ttf = await PdfGoogleFonts.robotoRegular();
-
-    print('DEBUG: Fonte carregada com sucesso');
+    // Usar fonte padrao Helvetica (rapido, sem internet)
+    final ttf = pw.Font.helvetica();
 
     // Calcular valores (DEFAULT - serão substituídos pelos reais futuramente)
     final subtotal = venda.total;
@@ -112,20 +99,9 @@ class WindowsPrinterService {
     final setor = PrintLayoutConfig.setorPadrao; // TODO: Usar setor real do banco
 
     // Calcular altura necessária do papel baseada no conteúdo
-    // Altura base + altura por item + altura do rodapé
     final numItens = itens.length;
     final numPagamentos = pagamentos?.length ?? 0;
-
-    print('DEBUG: Gerando PDF com $numItens itens e $numPagamentos pagamentos');
-
-    // Estimativa de altura (em mm):
-    // - Cabecalho: ~60mm
-    // - Cada item: ~15mm (nome + preco + espacos)
-    // - Totais e pagamentos: ~50mm
-    // - Rodape: ~60mm
     final alturaEstimada = 60.0 + (numItens * 15.0) + (numPagamentos * 10.0) + 50.0 + 60.0;
-
-    print('DEBUG: Altura estimada do papel: ${alturaEstimada}mm');
 
     // Criar formato customizado de papel térmico com altura dinâmica
     final formatoCustomizado = PdfPageFormat(
@@ -143,16 +119,16 @@ class WindowsPrinterService {
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            // ========== CABEÇALHO - DADOS DA EMPRESA ==========
+            // ========== CABECALHO - DADOS DA EMPRESA ==========
             if (empresa != null) ...[
               pw.Text(
-                empresa.nome.toUpperCase(),
+                _sanitizarTexto(empresa.nome.toUpperCase()),
                 style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteTituloPrincipal),
               ),
               if (empresa.endereco != null && empresa.endereco!.isNotEmpty) ...[
                 pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
                 pw.Text(
-                  empresa.endereco!.toUpperCase(),
+                  _sanitizarTexto(empresa.endereco!.toUpperCase()),
                   style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
                 ),
               ],
@@ -173,7 +149,7 @@ class WindowsPrinterService {
               if (empresa.cidade != null && empresa.cidade!.isNotEmpty) ...[
                 pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
                 pw.Text(
-                  empresa.cidade!.toUpperCase(),
+                  _sanitizarTexto(empresa.cidade!.toUpperCase()),
                   style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
                 ),
               ],
@@ -227,38 +203,19 @@ class WindowsPrinterService {
             _buildLinhaPontilhada(),
 
             // ========== ITENS DA VENDA ==========
-            ...itens.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              if (index == 0) {
-                print('DEBUG: Adicionando ${itens.length} itens ao PDF');
-              }
-              if (index == 23) {
-                print('DEBUG: Processando item 24 (indice 23): ${item.produtoNome}');
-              }
-              if (index == 24) {
-                print('DEBUG: Processando item 25 (indice 24): ${item.produtoNome}');
-              }
-              if (index == itens.length - 1) {
-                print('DEBUG: Processado ultimo item (indice ${index}): ${item.produtoNome}');
-              }
-              return _buildItemRowCompacto(item);
-            }),
+            ...itens.map((item) => _buildItemRowCompacto(item)),
 
             _buildLinhaPontilhada(),
             pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
 
             // ========== IVA (16%) - DEFAULT ==========
-            pw.Builder(builder: (context) {
-              print('DEBUG: Adicionando secao de IVA/TVA');
-              return pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('TVA (${(taxaIVA * 100).toInt()}%)', style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
-                  pw.Text(_formatarValorSimples(valorIVA), style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
-                ],
-              );
-            }),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('TVA (${(taxaIVA * 100).toInt()}%)', style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+                pw.Text(_formatarValorSimples(valorIVA), style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal)),
+              ],
+            ),
             pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
 
             // ========== DESCONTO - DEFAULT ==========
@@ -288,7 +245,7 @@ class WindowsPrinterService {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      'PAGO  ${pagamento.formaPagamentoNome?.toUpperCase() ?? 'CASH'}',
+                      'PAGO  ${_sanitizarTexto(pagamento.formaPagamentoNome?.toUpperCase() ?? 'CASH')}',
                       style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal),
                     ),
                     pw.Text(
@@ -323,12 +280,12 @@ class WindowsPrinterService {
 
             // ========== INFORMAÇÕES ADICIONAIS (RODAPÉ) ==========
             pw.Text(
-              'CONTA DE REFERÊNCIA: $contaReferencia',
+              'CONTA DE REFERENCIA: $contaReferencia',
               style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
             ),
             pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
             pw.Text(
-              'CONTA CRIADA POR:    ${operador.toUpperCase()}',
+              'CONTA CRIADA POR:    ${_sanitizarTexto(operador.toUpperCase())}',
               style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
             ),
             pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
@@ -343,19 +300,19 @@ class WindowsPrinterService {
             ),
             pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
             pw.Text(
-              'OPERADOR:    ${operador.toUpperCase()}',
+              'OPERADOR:    ${_sanitizarTexto(operador.toUpperCase())}',
               style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
             ),
             pw.SizedBox(height: PrintLayoutConfig.espacoEntreLinhaDados),
             pw.Text(
-              'SECTOR: $setor',
+              'SECTOR: ${_sanitizarTexto(setor)}',
               style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
             ),
             pw.SizedBox(height: PrintLayoutConfig.espacoAntesRodape),
 
             // ========== RODAPÉ FINAL ==========
             pw.Text(
-              '/*${empresa?.nome.toUpperCase() ?? 'SISTEMA PDV'}*/',
+              '/*${_sanitizarTexto(empresa?.nome.toUpperCase() ?? 'SISTEMA PDV')}*/',
               style: pw.TextStyle(fontSize: PrintLayoutConfig.fontePequena),
             ),
             pw.SizedBox(height: PrintLayoutConfig.espacoPequeno),
@@ -387,7 +344,7 @@ class WindowsPrinterService {
             pw.Expanded(
               flex: 4,
               child: pw.Text(
-                item.produtoNome?.toUpperCase() ?? 'PRODUTO',
+                _sanitizarTexto(item.produtoNome?.toUpperCase() ?? 'PRODUTO'),
                 style: pw.TextStyle(fontSize: PrintLayoutConfig.fonteNormal),
               ),
             ),
@@ -510,7 +467,7 @@ class WindowsPrinterService {
                   ),
                 ),
                 pw.SizedBox(height: 10),
-                pw.Text('Impressora: $_sanitizarTexto($nomeImpressora)'),
+                pw.Text('Impressora: ${_sanitizarTexto(nomeImpressora)}'),
                 pw.SizedBox(height: 5),
                 pw.Text('Status: OK'),
                 pw.SizedBox(height: 10),
@@ -545,17 +502,13 @@ class WindowsPrinterService {
     List<PagamentoVendaModel>? pagamentos,
   ) async {
     try {
-      print('DEBUG: Gerando PDF para salvar...');
       final pdf = await _gerarCupomPDF(venda, itens, empresa, pagamentos);
-
-      print('DEBUG: Salvando PDF em arquivo...');
       await Printing.sharePdf(
         bytes: await pdf.save(),
         filename: 'recibo_venda_${venda.numero}.pdf',
       );
-      print('DEBUG: PDF salvo com sucesso');
     } catch (e) {
-      print('ERRO: Erro ao salvar recibo: $e');
+      print('Erro ao salvar recibo: $e');
     }
   }
 
@@ -693,8 +646,8 @@ class WindowsPrinterService {
   }) async {
     final pdf = pw.Document();
 
-    // Carregar fonte com suporte Unicode
-    final ttf = await PdfGoogleFonts.robotoRegular();
+    // Usar fonte padrao Helvetica (rapido, sem internet)
+    final ttf = pw.Font.helvetica();
 
     // Calcular altura necessária
     final numItens = itens.length;
@@ -722,7 +675,7 @@ class WindowsPrinterService {
             ),
             pw.Center(
               child: pw.Text(
-                'PEDIDO - ${nomeArea.toUpperCase()}',
+                'PEDIDO - ${_sanitizarTexto(nomeArea.toUpperCase())}',
                 style: pw.TextStyle(
                   fontSize: 9,
                   fontWeight: pw.FontWeight.bold,
@@ -739,7 +692,7 @@ class WindowsPrinterService {
 
             // Mesa
             pw.Text(
-              'Mesa: $nomeMesa',
+              'Mesa: ${_sanitizarTexto(nomeMesa)}',
               style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 1),
@@ -747,7 +700,7 @@ class WindowsPrinterService {
             // Usuário (se fornecido)
             if (nomeUsuario != null && nomeUsuario.isNotEmpty) ...[
               pw.Text(
-                'Usuario: $nomeUsuario',
+                'Usuario: ${_sanitizarTexto(nomeUsuario)}',
                 style: pw.TextStyle(fontSize: 7),
               ),
               pw.SizedBox(height: 1),
@@ -788,7 +741,7 @@ class WindowsPrinterService {
                       ),
                       pw.Expanded(
                         child: pw.Text(
-                          nome.toUpperCase(),
+                          _sanitizarTexto(nome.toUpperCase()),
                           style: pw.TextStyle(fontSize: 8),
                         ),
                       ),
@@ -799,7 +752,7 @@ class WindowsPrinterService {
                     pw.Padding(
                       padding: pw.EdgeInsets.only(left: 25),
                       child: pw.Text(
-                        'OBS: $obs',
+                        'OBS: ${_sanitizarTexto(obs.toString())}',
                         style: pw.TextStyle(fontSize: 7, fontStyle: pw.FontStyle.italic),
                       ),
                     ),
@@ -818,12 +771,12 @@ class WindowsPrinterService {
             if (observacoes != null && observacoes.isNotEmpty) ...[
               pw.SizedBox(height: 3),
               pw.Text(
-                'OBSERVAÇÕES:',
+                'OBSERVACOES:',
                 style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
               ),
               pw.SizedBox(height: 1),
               pw.Text(
-                observacoes,
+                _sanitizarTexto(observacoes),
                 style: pw.TextStyle(fontSize: 7),
               ),
               pw.SizedBox(height: 3),

@@ -27,6 +27,7 @@ class _VendasPageState extends State<VendasPage> {
   final CaixaController caixaController = Get.put(CaixaController());
   final EmpresaRepository _empresaRepo = EmpresaRepository();
   final TextEditingController _barcodeController = TextEditingController();
+  final FocusNode _barcodeFocusNode = FocusNode();
 
   Timer? _inactivityTimer;
   bool _timeoutAtivo = true;
@@ -45,6 +46,7 @@ class _VendasPageState extends State<VendasPage> {
   void dispose() {
     _inactivityTimer?.cancel();
     _barcodeController.dispose();
+    _barcodeFocusNode.dispose();
     super.dispose();
   }
 
@@ -171,11 +173,17 @@ class _VendasPageState extends State<VendasPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[700],
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 20,
+                      ),
                     ),
                     child: Text(
                       'MENU',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -279,7 +287,10 @@ class _VendasPageState extends State<VendasPage> {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Get.theme.primaryColor, Get.theme.primaryColor.withOpacity(0.8)],
+                colors: [
+                  Get.theme.primaryColor,
+                  Get.theme.primaryColor.withOpacity(0.8),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -301,10 +312,7 @@ class _VendasPageState extends State<VendasPage> {
                 SizedBox(height: 4),
                 Text(
                   'Opções Adicionais',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -323,7 +331,11 @@ class _VendasPageState extends State<VendasPage> {
           ),
           Divider(height: 1),
           ListTile(
-            leading: Icon(Icons.point_of_sale, color: Colors.purple[700], size: 32),
+            leading: Icon(
+              Icons.point_of_sale,
+              color: Colors.purple[700],
+              size: 32,
+            ),
             title: Text(
               'Fecho Caixa',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -377,85 +389,25 @@ class _VendasPageState extends State<VendasPage> {
   }
 
   void _processarCodigoBarras(String codigo) {
-    if (codigo.isEmpty) return;
+    final codigoLimpo = codigo.trim();
+    if (codigoLimpo.isEmpty) return;
 
-    // Buscar produto por código ou código de barras
+    // Buscar produto por código ou código de barras (com trim para garantir)
     final produto = controller.produtos.firstWhereOrNull(
-      (p) => p.codigo == codigo || p.codigoBarras == codigo,
+      (p) =>
+          p.codigo.trim() == codigoLimpo ||
+          (p.codigoBarras != null && p.codigoBarras!.trim() == codigoLimpo),
     );
 
     if (produto != null) {
       controller.adicionarAoCarrinho(produto);
-      _barcodeController.clear();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white, size: 24),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Produto Adicionado',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '${produto.nome} - ${Formatters.formatarMoeda(produto.preco)}',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green[700],
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-          margin: EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-    } else {
-      _barcodeController.clear();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.error_outline, color: Colors.white, size: 24),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Produto Não Encontrado',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Código "$codigo" não encontrado',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.red[700],
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-          margin: EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
     }
+
+    // Limpar campo e manter foco para próximo scan
+    _barcodeController.clear();
+    Future.delayed(Duration(milliseconds: 50), () {
+      _barcodeFocusNode.requestFocus();
+    });
   }
 
   Widget _buildBarcodeScannerField() {
@@ -469,8 +421,10 @@ class _VendasPageState extends State<VendasPage> {
           Expanded(
             child: TextField(
               controller: _barcodeController,
+              focusNode: _barcodeFocusNode,
+              autofocus: true,
               decoration: InputDecoration(
-                hintText: 'Scan...',
+                hintText: 'Scan código de barras...',
                 hintStyle: TextStyle(color: Colors.grey[600], fontSize: 11),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -482,16 +436,22 @@ class _VendasPageState extends State<VendasPage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
-                  borderSide: BorderSide(color: Colors.blue[600]!, width: 1.5),
+                  borderSide: BorderSide(
+                    color: Colors.blue[600]!,
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 4,
+                ),
                 isDense: true,
               ),
               style: TextStyle(fontSize: 11),
               onSubmitted: _processarCodigoBarras,
-              textInputAction: TextInputAction.search,
+              textInputAction: TextInputAction.done,
             ),
           ),
         ],
@@ -539,9 +499,7 @@ class _VendasPageState extends State<VendasPage> {
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.grey[200],
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[400]!, width: 2),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[400]!, width: 2)),
       ),
       child: Obx(() {
         if (controller.familiasFiltradas.isEmpty) {
@@ -549,7 +507,11 @@ class _VendasPageState extends State<VendasPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.category_outlined, size: 28, color: Colors.grey[400]),
+                Icon(
+                  Icons.category_outlined,
+                  size: 28,
+                  color: Colors.grey[400],
+                ),
                 SizedBox(height: 6),
                 Text(
                   controller.areaSelecionadaId == null
@@ -566,9 +528,13 @@ class _VendasPageState extends State<VendasPage> {
         return LayoutBuilder(
           builder: (context, constraints) {
             // Responsivo: ajusta quantidade de colunas baseado na largura
-            int crossAxisCount = constraints.maxWidth > 1200 ? 8 :
-                                 constraints.maxWidth > 900 ? 6 :
-                                 constraints.maxWidth > 600 ? 4 : 3;
+            int crossAxisCount = constraints.maxWidth > 1200
+                ? 8
+                : constraints.maxWidth > 900
+                ? 6
+                : constraints.maxWidth > 600
+                ? 4
+                : 3;
 
             return GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -580,10 +546,12 @@ class _VendasPageState extends State<VendasPage> {
               itemCount: controller.familiasFiltradas.length,
               itemBuilder: (context, index) {
                 final familia = controller.familiasFiltradas[index];
-                final isSelected = controller.familiaSelecionada?.id == familia.id;
+                final isSelected =
+                    controller.familiaSelecionada?.id == familia.id;
 
                 return InkWell(
-                  onTap: () => controller.selecionarFamilia(isSelected ? null : familia),
+                  onTap: () =>
+                      controller.selecionarFamilia(isSelected ? null : familia),
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -601,12 +569,26 @@ class _VendasPageState extends State<VendasPage> {
                             ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected ? Colors.blue[700]! : Colors.grey[300]!,
+                        color: isSelected
+                            ? Colors.blue[700]!
+                            : Colors.grey[300]!,
                         width: isSelected ? 2 : 1,
                       ),
                       boxShadow: isSelected
-                          ? [BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 8, offset: Offset(0, 4))]
-                          : [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+                          ? [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: Offset(0, 4),
+                              ),
+                            ]
+                          : [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                     ),
                     child: Center(
                       child: Text(
@@ -642,9 +624,16 @@ class _VendasPageState extends State<VendasPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.shopping_basket_outlined, size: 64, color: Colors.grey[300]),
+              Icon(
+                Icons.shopping_basket_outlined,
+                size: 64,
+                color: Colors.grey[300],
+              ),
               SizedBox(height: 16),
-              Text('Nenhum produto encontrado', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+              Text(
+                'Nenhum produto encontrado',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
               SizedBox(height: 12),
               ElevatedButton(
                 onPressed: _abrirPesquisa,
@@ -663,10 +652,15 @@ class _VendasPageState extends State<VendasPage> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Responsivo: ajusta quantidade de colunas baseado na largura
-            int crossAxisCount = constraints.maxWidth > 1400 ? 6 :
-                                 constraints.maxWidth > 1100 ? 5 :
-                                 constraints.maxWidth > 800 ? 4 :
-                                 constraints.maxWidth > 500 ? 3 : 2;
+            int crossAxisCount = constraints.maxWidth > 1400
+                ? 6
+                : constraints.maxWidth > 1100
+                ? 5
+                : constraints.maxWidth > 800
+                ? 4
+                : constraints.maxWidth > 500
+                ? 3
+                : 2;
 
             return GridView.builder(
               padding: EdgeInsets.all(12),
@@ -690,8 +684,11 @@ class _VendasPageState extends State<VendasPage> {
 
   Widget _buildCardProduto(produto) {
     // Definir cor baseada no estoque
-    Color corEstoque = produto.estoque > 10 ? Colors.green[600]! :
-                       produto.estoque > 0 ? Colors.orange[600]! : Colors.red[600]!;
+    Color corEstoque = produto.estoque > 10
+        ? Colors.green[600]!
+        : produto.estoque > 0
+        ? Colors.orange[600]!
+        : Colors.red[600]!;
 
     return Material(
       color: Colors.transparent,
@@ -788,7 +785,10 @@ class _VendasPageState extends State<VendasPage> {
 
     Get.dialog(
       AlertDialog(
-        title: Text('Adicionar ${produto.nome}', style: TextStyle(fontSize: 16)),
+        title: Text(
+          'Adicionar ${produto.nome}',
+          style: TextStyle(fontSize: 16),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -829,10 +829,7 @@ class _VendasPageState extends State<VendasPage> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('CANCELAR'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: Text('CANCELAR')),
           ElevatedButton(
             onPressed: () {
               int quantidade = int.tryParse(quantidadeController.text) ?? 1;
@@ -951,7 +948,9 @@ class _VendasPageState extends State<VendasPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: isSelected ? Colors.blue[900] : Colors.grey[800],
+                          color: isSelected
+                              ? Colors.blue[900]
+                              : Colors.grey[800],
                         ),
                       ),
                     ),
@@ -976,7 +975,9 @@ class _VendasPageState extends State<VendasPage> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: isSelected ? Colors.blue[700] : Get.theme.primaryColor,
+                        color: isSelected
+                            ? Colors.blue[700]
+                            : Get.theme.primaryColor,
                       ),
                     ),
                   ],
@@ -996,7 +997,9 @@ class _VendasPageState extends State<VendasPage> {
       StatefulBuilder(
         builder: (context, setState) {
           return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Container(
               width: 400,
               padding: EdgeInsets.all(20),
@@ -1038,14 +1041,18 @@ class _VendasPageState extends State<VendasPage> {
                   TecladoNumerico(
                     onNumeroPressed: (numero) {
                       setState(() {
-                        if (numero == '.' && quantidadeTexto.contains('.')) return;
+                        if (numero == '.' && quantidadeTexto.contains('.'))
+                          return;
                         quantidadeTexto += numero;
                       });
                     },
                     onBackspace: () {
                       setState(() {
                         if (quantidadeTexto.isNotEmpty) {
-                          quantidadeTexto = quantidadeTexto.substring(0, quantidadeTexto.length - 1);
+                          quantidadeTexto = quantidadeTexto.substring(
+                            0,
+                            quantidadeTexto.length - 1,
+                          );
                         }
                       });
                     },
@@ -1063,7 +1070,10 @@ class _VendasPageState extends State<VendasPage> {
                       Expanded(
                         child: TextButton(
                           onPressed: () => Get.back(),
-                          child: Text('CANCELAR', style: TextStyle(fontSize: 16)),
+                          child: Text(
+                            'CANCELAR',
+                            style: TextStyle(fontSize: 16),
+                          ),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 16),
                           ),
@@ -1074,9 +1084,13 @@ class _VendasPageState extends State<VendasPage> {
                         flex: 2,
                         child: ElevatedButton(
                           onPressed: () {
-                            int novaQuantidade = int.tryParse(quantidadeTexto) ?? 0;
+                            int novaQuantidade =
+                                int.tryParse(quantidadeTexto) ?? 0;
                             if (novaQuantidade > 0) {
-                              controller.atualizarQuantidade(index, novaQuantidade);
+                              controller.atualizarQuantidade(
+                                index,
+                                novaQuantidade,
+                              );
                               Get.back();
                             } else {
                               Get.snackbar(
@@ -1091,7 +1105,13 @@ class _VendasPageState extends State<VendasPage> {
                             backgroundColor: Colors.green,
                             padding: EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: Text('CONFIRMAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            'CONFIRMAR',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -1191,8 +1211,7 @@ class _VendasPageState extends State<VendasPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.payment, size: 42, color: Colors.white),
-                        SizedBox(width: 16),
+                        SizedBox(width: 6),
                         Text(
                           'FINALIZAR VENDA (F2)',
                           style: TextStyle(
@@ -1232,7 +1251,9 @@ class _VendasPageState extends State<VendasPage> {
           backgroundColor: Colors.orange[700],
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -1284,14 +1305,19 @@ class _VendasPageState extends State<VendasPage> {
               Icon(Icons.error_outline, color: Colors.white, size: 24),
               SizedBox(width: 12),
               Expanded(
-                child: Text('Erro ao fechar caixa: $e', style: TextStyle(fontSize: 16)),
+                child: Text(
+                  'Erro ao fechar caixa: $e',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ],
           ),
           backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -1366,14 +1392,19 @@ class _VendasPageState extends State<VendasPage> {
               Icon(Icons.error_outline, color: Colors.white, size: 24),
               SizedBox(width: 12),
               Expanded(
-                child: Text('Erro ao imprimir relatório: $e', style: TextStyle(fontSize: 16)),
+                child: Text(
+                  'Erro ao imprimir relatório: $e',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ],
           ),
           backgroundColor: Colors.red[700],
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
 

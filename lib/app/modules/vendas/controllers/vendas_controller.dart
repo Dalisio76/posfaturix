@@ -98,7 +98,7 @@ class VendasController extends GetxController {
       empresa.value = await _empresaRepo.buscarDados();
       produtosFiltrados.value = produtos;
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao carregar dados: $e');
+      print('Erro ao carregar dados: $e');
     } finally {
       isLoading.value = false;
     }
@@ -202,7 +202,6 @@ class VendasController extends GetxController {
 
   Future<void> finalizarVenda() async {
     if (carrinho.isEmpty) {
-      Get.snackbar('Erro', 'Carrinho vazio');
       return;
     }
 
@@ -246,12 +245,7 @@ class VendasController extends GetxController {
       );
 
       if (!sucesso) {
-        Get.snackbar(
-          'Erro',
-          'Não foi possível abrir o caixa. Tente novamente.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        print('Erro ao abrir caixa');
         return;
       }
     }
@@ -366,7 +360,7 @@ class VendasController extends GetxController {
         await _imprimirEFinalizar(vendaCompleta, itens, pagamentos);
       }
     } catch (e) {
-      Get.snackbar('Erro', 'Erro ao finalizar venda: $e');
+      print('Erro ao finalizar venda: $e');
     }
   }
 
@@ -405,25 +399,11 @@ class VendasController extends GetxController {
 
     Get.back(); // Fechar loading
 
-    // Mostrar resultado da impressão
+    // Log resultado da impressão
     if (sucesso) {
-      Get.snackbar(
-        'Sucesso',
-        'Recibo impresso com sucesso!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: Duration(seconds: 2),
-      );
+      print('Recibo impresso com sucesso');
     } else {
-      Get.snackbar(
-        'Aviso',
-        'Venda finalizada, mas não foi possível imprimir o recibo. Verifique se a impressora "balcao" está configurada.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        duration: Duration(seconds: 4),
-      );
+      print('Falha ao imprimir recibo');
     }
 
     _finalizarSemImprimir();
@@ -484,12 +464,7 @@ class VendasController extends GetxController {
 
       await _dividaRepo.inserir(divida);
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Erro ao registrar dívida: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      print('Erro ao registrar dívida: $e');
     }
   }
 
@@ -531,7 +506,7 @@ class VendasController extends GetxController {
     try {
       final usuarioId = _authService.usuarioLogado.value?.id;
       if (usuarioId == null) {
-        Get.snackbar('Erro', 'Usuário não autenticado');
+        print('Usuário não autenticado');
         return;
       }
 
@@ -541,14 +516,7 @@ class VendasController extends GetxController {
       if (mesa.isOcupada && mesa.pedidoId != null) {
         // Mesa já tem pedido - adicionar itens ao pedido existente
         pedidoId = mesa.pedidoId!;
-
-        Get.snackbar(
-          'Adicionando',
-          'Adicionando itens ao pedido existente da Mesa ${mesa.numero}',
-          backgroundColor: Colors.blue,
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        print('Adicionando itens ao pedido existente da Mesa ${mesa.numero}');
       } else {
         // Mesa livre - criar novo pedido
         final numeroPedido = 'PD${DateTime.now().millisecondsSinceEpoch}';
@@ -561,14 +529,7 @@ class VendasController extends GetxController {
         );
 
         pedidoId = await _pedidoRepo.criar(pedido);
-
-        Get.snackbar(
-          'Sucesso',
-          'Pedido criado na Mesa ${mesa.numero}',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: Duration(seconds: 2),
-        );
+        print('Pedido criado na Mesa ${mesa.numero}');
       }
 
       // Adicionar itens do carrinho ao pedido
@@ -594,12 +555,7 @@ class VendasController extends GetxController {
       // Atualizar dados para refletir mudanças
       await carregarDados();
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Erro ao processar pedido: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      print('Erro ao processar pedido: $e');
     }
   }
 
@@ -685,13 +641,7 @@ class VendasController extends GetxController {
 
       // Fechar pedido
       await _pedidoRepo.fechar(pedido.id!);
-
-      Get.snackbar(
-        'Sucesso',
-        'Pedido da Mesa ${mesa.numero} finalizado com sucesso!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      print('Pedido da Mesa ${mesa.numero} finalizado com sucesso!');
 
       // Verificar configuração de impressão
       final definicoes = await DefinicoesService.carregar();
@@ -734,12 +684,7 @@ class VendasController extends GetxController {
       // Recarregar dados
       await carregarDados();
     } catch (e) {
-      Get.snackbar(
-        'Erro',
-        'Erro ao finalizar pedido: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      print('Erro ao finalizar pedido: $e');
     }
   }
 

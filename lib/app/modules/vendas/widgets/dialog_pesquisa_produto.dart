@@ -21,6 +21,7 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
   final RxString textoPesquisa = ''.obs;
   final RxList<ProdutoModel> produtosFiltrados = <ProdutoModel>[].obs;
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -35,7 +36,15 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  void _selecionarPrimeiroProduto() {
+    if (produtosFiltrados.isNotEmpty) {
+      widget.onProdutoSelecionado(produtosFiltrados.first);
+      Get.back();
+    }
   }
 
   void _filtrarProdutos() {
@@ -108,6 +117,7 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
               ),
               child: TextField(
                 controller: _searchController,
+                focusNode: _searchFocusNode,
                 autofocus: true,
                 style: TextStyle(
                   fontSize: 20,
@@ -115,7 +125,7 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
                   fontWeight: FontWeight.bold,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Digite para pesquisar...',
+                  hintText: 'Digite para pesquisar... (Enter = adicionar)',
                   hintStyle: TextStyle(
                     fontSize: 20,
                     color: Colors.grey,
@@ -125,6 +135,8 @@ class _DialogPesquisaProdutoState extends State<DialogPesquisaProduto> {
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
+                onSubmitted: (_) => _selecionarPrimeiroProduto(),
+                textInputAction: TextInputAction.done,
               ),
             ),
 

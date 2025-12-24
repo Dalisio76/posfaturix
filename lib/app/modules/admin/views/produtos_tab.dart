@@ -500,6 +500,11 @@ class ProdutosTab extends GetView<AdminController> {
     // Lista de composição
     final composicoes = <ProdutoComposicaoModel>[].obs;
 
+    // Mensagem de erro/sucesso
+    final mensagemErro = RxnString();
+    final mensagemSucesso = RxnString();
+    final salvando = false.obs;
+
     // Carregar composição se estiver editando
     if (produto?.id != null) {
       composicoes.value = await controller.buscarComposicaoProduto(produto!.id!);
@@ -515,6 +520,64 @@ class ProdutosTab extends GetView<AdminController> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Mensagem de erro
+                Obx(() {
+                  if (mensagemErro.value != null) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        border: Border.all(color: Colors.red),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              mensagemErro.value!,
+                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+
+                // Mensagem de sucesso
+                Obx(() {
+                  if (mensagemSucesso.value != null) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        border: Border.all(color: Colors.green),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.green),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              mensagemSucesso.value!,
+                              style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+
                 // Código automático - só mostrar se estiver editando
                 if (produto != null)
                   Padding(
@@ -769,20 +832,31 @@ class ProdutosTab extends GetView<AdminController> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('CANCELAR'),
+            child: const Text('FECHAR'),
           ),
-          ElevatedButton(
-            onPressed: () {
+          Obx(() => ElevatedButton(
+            onPressed: salvando.value ? null : () async {
+              // Limpar mensagens anteriores
+              mensagemErro.value = null;
+              mensagemSucesso.value = null;
+
               if (nomeController.text.isEmpty ||
                   familiaIdSelecionada.value == null) {
-                Get.snackbar('Erro', 'Preencha todos os campos obrigatórios');
+                mensagemErro.value = 'Preencha todos os campos obrigatórios (Nome e Família)';
                 return;
               }
 
+              if (precoController.text.isEmpty || (double.tryParse(precoController.text) ?? 0) <= 0) {
+                mensagemErro.value = 'Informe um preço de venda válido';
+                return;
+              }
+
+              salvando.value = true;
+
               final novoProduto = ProdutoModel(
                 codigo: produto?.codigo ?? '', // Será gerado automaticamente se vazio
-                nome: nomeController.text,
-                codigoBarras: codigoBarrasController.text.isEmpty ? null : codigoBarrasController.text,
+                nome: nomeController.text.trim().toUpperCase(),
+                codigoBarras: codigoBarrasController.text.isEmpty ? null : codigoBarrasController.text.trim(),
                 familiaId: familiaIdSelecionada.value!,
                 preco: double.tryParse(precoController.text) ?? 0,
                 precoCompra: double.tryParse(precoCompraController.text) ?? 0,
@@ -793,14 +867,43 @@ class ProdutosTab extends GetView<AdminController> {
                 areaId: areaIdSelecionada.value,
               );
 
+              String? resultado;
               if (produto == null) {
-                controller.adicionarProduto(novoProduto, composicoes.toList());
+                resultado = await controller.adicionarProduto(novoProduto, composicoes.toList());
               } else {
-                controller.editarProduto(produto.id!, novoProduto, composicoes.toList());
+                resultado = await controller.editarProduto(produto.id!, novoProduto, composicoes.toList());
+              }
+
+              salvando.value = false;
+
+              if (resultado != null) {
+                // Erro - mostrar mensagem
+                mensagemErro.value = resultado;
+              } else {
+                // Sucesso
+                if (produto == null) {
+                  // Novo produto - limpar campos para continuar registrando
+                  mensagemSucesso.value = 'Produto "${novoProduto.nome}" salvo com sucesso! Continue registrando...';
+                  nomeController.clear();
+                  codigoBarrasController.clear();
+                  precoController.clear();
+                  precoCompraController.text = '0';
+                  estoqueController.text = '0';
+                  composicoes.clear();
+                } else {
+                  // Edição - fechar dialog
+                  Get.back();
+                }
               }
             },
-            child: const Text('SALVAR'),
-          ),
+            child: salvando.value
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Text('SALVAR'),
+          )),
         ],
       ),
     );

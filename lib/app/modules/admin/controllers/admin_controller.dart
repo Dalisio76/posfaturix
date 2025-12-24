@@ -222,11 +222,46 @@ class AdminController extends GetxController {
   }
 
   // PRODUTO
-  Future<void> adicionarProduto(
+
+  /// Verifica se produto já existe (por nome ou código de barras)
+  /// Retorna mensagem de erro ou null se não existe duplicado
+  Future<String?> verificarProdutoDuplicado(String nome, String? codigoBarras, {int? excluirId}) async {
+    try {
+      // Verificar nome duplicado
+      final existeNome = await _produtoRepo.existeProdutoComNome(nome, excluirId: excluirId);
+      if (existeNome) {
+        return 'Já existe um produto com o nome "$nome"';
+      }
+
+      // Verificar código de barras duplicado
+      if (codigoBarras != null && codigoBarras.isNotEmpty) {
+        final existeCodigo = await _produtoRepo.existeProdutoComCodigoBarras(codigoBarras, excluirId: excluirId);
+        if (existeCodigo) {
+          return 'Já existe um produto com o código de barras "$codigoBarras"';
+        }
+      }
+
+      return null; // Sem duplicado
+    } catch (e) {
+      return 'Erro ao verificar duplicados: $e';
+    }
+  }
+
+  /// Adiciona produto e retorna resultado: null = sucesso, String = mensagem de erro
+  Future<String?> adicionarProduto(
     ProdutoModel produto, [
     List<ProdutoComposicaoModel>? composicao,
   ]) async {
     try {
+      // Verificar duplicados antes de inserir
+      final erroDuplicado = await verificarProdutoDuplicado(
+        produto.nome,
+        produto.codigoBarras,
+      );
+      if (erroDuplicado != null) {
+        return erroDuplicado;
+      }
+
       final produtoId = await _produtoRepo.inserir(produto);
 
       if (composicao != null && composicao.isNotEmpty) {
@@ -242,18 +277,29 @@ class AdminController extends GetxController {
       }
 
       await carregarDados();
-      Get.back();
+      return null; // Sucesso
     } catch (e) {
-      // Erro silencioso
+      return 'Erro ao adicionar produto: $e';
     }
   }
 
-  Future<void> editarProduto(
+  /// Edita produto e retorna resultado: null = sucesso, String = mensagem de erro
+  Future<String?> editarProduto(
     int id,
     ProdutoModel produto, [
     List<ProdutoComposicaoModel>? composicao,
   ]) async {
     try {
+      // Verificar duplicados (excluindo o próprio produto)
+      final erroDuplicado = await verificarProdutoDuplicado(
+        produto.nome,
+        produto.codigoBarras,
+        excluirId: id,
+      );
+      if (erroDuplicado != null) {
+        return erroDuplicado;
+      }
+
       await _produtoRepo.atualizar(id, produto);
 
       if (composicao != null) {
@@ -261,9 +307,9 @@ class AdminController extends GetxController {
       }
 
       await carregarDados();
-      Get.back();
+      return null; // Sucesso
     } catch (e) {
-      // Erro silencioso
+      return 'Erro ao editar produto: $e';
     }
   }
 
@@ -286,23 +332,70 @@ class AdminController extends GetxController {
   }
 
   // ===== CLIENTE =====
-  Future<void> adicionarCliente(ClienteModel cliente) async {
+
+  /// Verifica se cliente já existe (por nome, telefone ou NUIT)
+  /// Retorna mensagem de erro ou null se não existe duplicado
+  Future<String?> verificarClienteDuplicado(ClienteModel cliente, {int? excluirId}) async {
     try {
-      await _clienteRepo.inserir(cliente);
-      await carregarDados();
-      Get.back();
+      // Verificar nome duplicado
+      final existeNome = await _clienteRepo.existeClienteComNome(cliente.nome, excluirId: excluirId);
+      if (existeNome) {
+        return 'Já existe um cliente com o nome "${cliente.nome}"';
+      }
+
+      // Verificar telefone duplicado
+      if (cliente.contacto != null && cliente.contacto!.isNotEmpty) {
+        final existeTelefone = await _clienteRepo.existeClienteComTelefone(cliente.contacto!, excluirId: excluirId);
+        if (existeTelefone) {
+          return 'Já existe um cliente com o telefone "${cliente.contacto}"';
+        }
+      }
+
+      // Verificar NUIT duplicado
+      if (cliente.nuit != null && cliente.nuit!.isNotEmpty) {
+        final existeNuit = await _clienteRepo.existeClienteComNuit(cliente.nuit!, excluirId: excluirId);
+        if (existeNuit) {
+          return 'Já existe um cliente com o NUIT "${cliente.nuit}"';
+        }
+      }
+
+      return null; // Sem duplicado
     } catch (e) {
-      // Erro silencioso
+      return 'Erro ao verificar duplicados: $e';
     }
   }
 
-  Future<void> editarCliente(int id, ClienteModel cliente) async {
+  /// Adiciona cliente e retorna resultado: null = sucesso, String = mensagem de erro
+  Future<String?> adicionarCliente(ClienteModel cliente) async {
     try {
+      // Verificar duplicados antes de inserir
+      final erroDuplicado = await verificarClienteDuplicado(cliente);
+      if (erroDuplicado != null) {
+        return erroDuplicado;
+      }
+
+      await _clienteRepo.inserir(cliente);
+      await carregarDados();
+      return null; // Sucesso
+    } catch (e) {
+      return 'Erro ao adicionar cliente: $e';
+    }
+  }
+
+  /// Edita cliente e retorna resultado: null = sucesso, String = mensagem de erro
+  Future<String?> editarCliente(int id, ClienteModel cliente) async {
+    try {
+      // Verificar duplicados (excluindo o próprio cliente)
+      final erroDuplicado = await verificarClienteDuplicado(cliente, excluirId: id);
+      if (erroDuplicado != null) {
+        return erroDuplicado;
+      }
+
       await _clienteRepo.atualizar(id, cliente);
       await carregarDados();
-      Get.back();
+      return null; // Sucesso
     } catch (e) {
-      // Erro silencioso
+      return 'Erro ao editar cliente: $e';
     }
   }
 
